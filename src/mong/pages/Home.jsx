@@ -1,7 +1,10 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom';
 import Container from '../components/Container.jsx'
 
 export default function Home() {
+  const navigate = useNavigate();
+
   return (
     <div style={{ backgroundColor: '#000', minHeight: '100vh', color: '#fff' }}>
       <Container>
@@ -37,7 +40,10 @@ export default function Home() {
             ))}
           </div>
 
-          <button style={{ backgroundColor: '#00d4aa', color: '#000', border: 'none', borderRadius: 8, height: 48, padding: '0 24px', marginTop: 24, cursor: 'pointer', fontSize: 18, fontWeight: 500 }}>
+          <button
+            style={{ backgroundColor: '#00d4aa', color: '#000', border: 'none', borderRadius: 8, height: 48, padding: '0 24px', marginTop: 24, cursor: 'pointer', fontSize: 18, fontWeight: 500 }}
+            onClick={() => navigate('/signup')}
+          >
             mong과 함께 시작하기
           </button>
 

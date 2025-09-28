@@ -1,5 +1,6 @@
 // Login.jsx
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import moonIcon from "../assets/moonIcon.svg";
 import "../styles/login.css";
 
@@ -7,11 +8,16 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const [showPw, setShowPw] = useState(false);
+  const navigate = useNavigate();
 
   const onSubmit = (e) => {
     e.preventDefault();
     // TODO: 로그인 요청 연결 (API 연동)
     console.log({ email, password: pw });
+  };
+
+  const handleForgotPassword = () => {
+    navigate("/forgot-password");
   };
 
   return (
@@ -102,7 +108,7 @@ export default function Login() {
 
             {/* 비밀번호 찾기 */}
             <div className="login-forgot-password">
-              <button type="button">
+              <button type="button" onClick={handleForgotPassword}>
                 비밀번호를 잊으셨나요?
               </button>
             </div>
@@ -112,7 +118,10 @@ export default function Login() {
           <div className="login-footer">
             <p>
               아직 계정이 없으신가요?{" "}
-              <button type="button">
+              <button
+              type="button"
+              onClick={() => navigate("/signup")}
+              >
                 회원가입
               </button>
             </p>
