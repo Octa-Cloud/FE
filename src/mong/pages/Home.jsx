@@ -43,7 +43,7 @@ export default function Home() {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
             <span style={{ color: '#a1a1aa', fontSize: 14 }}>이미 계정이 있으신가요?</span>
-            <a href="#login" style={{ color: '#00d4aa', fontSize: 16, fontWeight: 500, textDecoration: 'none' }}>로그인</a>
+            <a href="/login" style={{ color: '#00d4aa', fontSize: 16, fontWeight: 500, textDecoration: 'none' }}>로그인</a>
           </div>
 
           <div style={{ width: 448, maxWidth: '100%', marginTop: 24 }}>
