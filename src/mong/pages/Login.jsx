@@ -1,13 +1,16 @@
 // Login.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import moonIcon from "../assets/moonIcon.svg";
+import AuthHeader from "../components/AuthHeader";
+import FormField from "../components/FormField";
+import AuthButton from "../components/AuthButton";
+import AuthFooter from "../components/AuthFooter";
 import "../styles/login.css";
+import "../styles/common.css";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
-  const [showPw, setShowPw] = useState(false);
   const navigate = useNavigate();
 
   const onSubmit = (e) => {
@@ -24,87 +27,42 @@ export default function Login() {
     <div className="login-container">
       <div className="login-card">
         {/* Header */}
-        <div className="login-header">
-          <div className="login-logo-container">
-            <div className="login-logo">
-              <img src={moonIcon} alt="moon icon" />
-            </div>
-            <h1 className="login-title">mong</h1>
-          </div>
-
-          <div>
-            <h4 className="login-subtitle">로그인</h4>
-            <p className="login-description">
-              계정에 로그인하여 수면 여행을 계속하세요
-            </p>
-          </div>
-        </div>
+        <AuthHeader 
+          title="로그인"
+          description="계정에 로그인하여 수면 여행을 계속하세요"
+        />
 
         {/* Content */}
         <div className="login-content">
           <form className="login-form" onSubmit={onSubmit}>
             {/* 이메일 */}
-            <div className="login-field">
-              <label className="login-label" htmlFor="email">
-                이메일
-              </label>
-              <input
-                type="email"
-                className="login-input"
-                id="email"
-                placeholder="이메일을 입력하세요"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
-                required
-              />
-            </div>
+            <FormField
+              label="이메일"
+              id="email"
+              type="email"
+              placeholder="이메일을 입력하세요"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              required
+            />
 
             {/* 비밀번호 */}
-            <div className="login-field">
-              <label className="login-label" htmlFor="password">
-                비밀번호
-              </label>
-              <div className="login-password-container">
-                <input
-                  type={showPw ? "text" : "password"}
-                  className="login-password-input"
-                  id="password"
-                  placeholder="비밀번호를 입력하세요"
-                  value={pw}
-                  onChange={(e) => setPw(e.target.value)}
-                  autoComplete="current-password"
-                  required
-                />
-                <button
-                  className="login-password-toggle"
-                  type="button"
-                  onClick={() => setShowPw((v) => !v)}
-                  aria-label={showPw ? "비밀번호 숨기기" : "비밀번호 보기"}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                  </svg>
-                </button>
-              </div>
-            </div>
+            <FormField
+              label="비밀번호"
+              id="password"
+              type="password"
+              placeholder="비밀번호를 입력하세요"
+              value={pw}
+              onChange={(e) => setPw(e.target.value)}
+              autoComplete="current-password"
+              required
+            />
 
             {/* 로그인 버튼 */}
-            <button className="login-button" type="submit">
+            <AuthButton type="submit">
               로그인
-            </button>
+            </AuthButton>
 
             {/* 비밀번호 찾기 */}
             <div className="login-forgot-password">
@@ -115,17 +73,11 @@ export default function Login() {
           </form>
 
           {/* Footer */}
-          <div className="login-footer">
-            <p>
-              아직 계정이 없으신가요?{" "}
-              <button
-              type="button"
-              onClick={() => navigate("/signup")}
-              >
-                회원가입
-              </button>
-            </p>
-          </div>
+          <AuthFooter
+            text="아직 계정이 없으신가요?"
+            linkText="회원가입"
+            onLinkClick={() => navigate("/signup")}
+          />
         </div>
       </div>
     </div>

@@ -1,8 +1,11 @@
 // ForgotPassword.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import moonIcon from "../assets/moonIcon.svg";
+import AuthHeader from "../components/AuthHeader";
+import FormField from "../components/FormField";
+import AuthButton from "../components/AuthButton";
 import "../styles/login.css";
+import "../styles/common.css";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -25,21 +28,10 @@ export default function ForgotPassword() {
     <div className="login-container">
       <div className="login-card">
         {/* Header */}
-        <div className="login-header">
-          <div className="login-logo-container">
-            <div className="login-logo">
-              <img src={moonIcon} alt="moon icon" />
-            </div>
-            <h1 className="login-title">mong</h1>
-          </div>
-
-          <div>
-            <h4 className="login-subtitle">로그인</h4>
-            <p className="login-description">
-              계정에 로그인하여 수면 여행을 계속하세요
-            </p>
-          </div>
-        </div>
+        <AuthHeader 
+          title="로그인"
+          description="계정에 로그인하여 수면 여행을 계속하세요"
+        />
 
         {/* Content */}
         <div className="login-content">
@@ -53,34 +45,29 @@ export default function ForgotPassword() {
               </div>
 
               {/* 이메일 */}
-              <div className="login-field">
-                <label className="login-label" htmlFor="forgot-email">
-                  이메일
-                </label>
-                <input
-                  type="email"
-                  className="login-input"
-                  id="forgot-email"
-                  placeholder="이메일을 입력하세요"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  autoComplete="email"
-                  required
-                />
-              </div>
+              <FormField
+                label="이메일"
+                id="forgot-email"
+                type="email"
+                placeholder="이메일을 입력하세요"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+                required
+              />
 
               {/* 버튼들 */}
               <div className="forgot-password-buttons">
-                <button className="login-button" type="submit">
+                <AuthButton type="submit">
                   비밀번호 재설정 링크 받기
-                </button>
-                <button
-                  className="forgot-password-back-button"
+                </AuthButton>
+                <AuthButton
                   type="button"
+                  variant="secondary"
                   onClick={handleBackToLogin}
                 >
                   로그인으로 돌아가기
-                </button>
+                </AuthButton>
               </div>
             </form>
           ) : (
@@ -97,9 +84,9 @@ export default function ForgotPassword() {
                   이메일이 보이지 않는다면 스팸 폴더를 확인해주세요.
                 </p>
               </div>
-              <button className="login-button" onClick={handleBackToLogin}>
+              <AuthButton onClick={handleBackToLogin}>
                 로그인으로 돌아가기
-              </button>
+              </AuthButton>
             </div>
           )}
         </div>

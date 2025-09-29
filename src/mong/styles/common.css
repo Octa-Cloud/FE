@@ -1,0 +1,638 @@
+/* Common Auth Components Styles */
+
+/* Auth Header */
+.auth-header {
+  padding: 1.5rem 1.5rem 0 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.auth-logo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.auth-logo {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background-color: rgba(19, 225, 201, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-logo img {
+  height: 2rem;
+  width: 2rem;
+  color: var(--color-primary);
+}
+
+.auth-title {
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.auth-subtitle {
+  font-size: 1.5rem;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.auth-description {
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+  margin: 0.5rem 0 0 0;
+}
+
+/* Stepper */
+.auth-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding-top: 1rem;
+}
+
+.stepper-step {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stepper-step.completed {
+  color: #10b981;
+}
+
+.stepper-step.current {
+  color: var(--color-primary);
+}
+
+.stepper-step-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid;
+}
+
+.stepper-step.completed .stepper-step-icon {
+  background-color: rgba(16, 185, 129, 0.1);
+  border-color: #10b981;
+}
+
+.stepper-step.current .stepper-step-icon {
+  background-color: rgba(19, 225, 201, 0.1);
+  border-color: var(--color-primary);
+}
+
+.stepper-step-icon svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.stepper-step-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.stepper-connector {
+  width: 2rem;
+  height: 0.125rem;
+  background-color: #10b981;
+}
+
+/* Form Field */
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  user-select: none;
+}
+
+.form-input {
+  width: 100%;
+  height: 3rem;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.form-input::placeholder {
+  color: var(--color-text-secondary);
+}
+
+.form-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(19, 225, 201, 0.1);
+}
+
+.form-input:invalid {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.form-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.form-helper-text {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* Form Field Buttons */
+.form-field-buttons {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+/* Form Input Group with Status */
+.form-input-group {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.form-input-with-status {
+  flex: 1;
+}
+
+.form-status-indicator {
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  height: 3rem;
+  background-color: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 0.375rem;
+}
+
+.form-status-indicator svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #10b981;
+}
+
+/* Short Form Field */
+.short-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.short-form-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  user-select: none;
+}
+
+.short-form-input {
+  width: 100%;
+  height: 3rem;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.short-form-input::placeholder {
+  color: var(--color-text-secondary);
+}
+
+.short-form-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(19, 225, 201, 0.1);
+}
+
+.short-form-input:invalid {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.short-form-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Short Form Password Field */
+.short-form-password-container {
+  position: relative;
+}
+
+.short-form-password-input {
+  width: 100%;
+  height: 3rem;
+  padding: 0.75rem 3rem 0.75rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.short-form-password-input::placeholder {
+  color: var(--color-text-secondary);
+}
+
+.short-form-password-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(19, 225, 201, 0.1);
+}
+
+.short-form-password-input:invalid {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.short-form-password-toggle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 3rem;
+  padding: 0 0.75rem;
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+}
+
+.short-form-password-toggle:hover {
+  color: var(--color-text-primary);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.short-form-password-toggle svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* Short Form Select Field */
+.short-form-select-container {
+  position: relative;
+}
+
+.short-form-select-trigger {
+  width: 100%;
+  height: 3rem;
+  padding: 0 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.short-form-select-trigger:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.short-form-select-trigger:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(19, 225, 201, 0.1);
+}
+
+.short-form-select-trigger svg {
+  width: 1rem;
+  height: 1rem;
+  opacity: 0.5;
+}
+
+.short-form-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  margin-top: 0.25rem;
+}
+
+.short-form-dropdown-item {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  color: var(--color-text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.short-form-dropdown-item:hover {
+  background-color: var(--color-border);
+}
+
+.short-form-dropdown-item:first-child {
+  border-radius: 0.375rem 0.375rem 0 0;
+}
+
+.short-form-dropdown-item:last-child {
+  border-radius: 0 0 0.375rem 0.375rem;
+}
+
+/* Short Form Date Field */
+.short-form-date-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.short-form-date-input {
+  width: 100%;
+  height: 3rem;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  text-align: center;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+/* 월/일 입력 필드는 작게, 연도는 더 넓게 */
+.short-form-date-input[placeholder="MM"],
+.short-form-date-input[placeholder="DD"] {
+  flex: 0.8;
+  min-width: 0;
+}
+
+.short-form-date-input[placeholder="YYYY"] {
+  flex: 1.6;
+  min-width: 0;
+}
+
+.short-form-date-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(19, 225, 201, 0.1);
+}
+
+.short-form-date-input:invalid {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.short-form-date-separator {
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.short-form-calendar-button {
+  padding: 0.25rem;
+  background-color: var(--color-border);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2rem;
+  height: 3rem;
+}
+
+.short-form-calendar-button:hover {
+  background-color: var(--color-primary);
+  color: #000;
+}
+
+.short-form-helper-text {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* Password Field */
+.password-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.password-container {
+  position: relative;
+}
+
+.password-input {
+  width: 100%;
+  height: 3rem;
+  padding: 0.75rem 3rem 0.75rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.password-input::placeholder {
+  color: var(--color-text-secondary);
+}
+
+.password-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(19, 225, 201, 0.1);
+}
+
+.password-input:invalid {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.password-toggle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 3rem;
+  padding: 0 0.75rem;
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+}
+
+.password-toggle:hover {
+  color: var(--color-text-primary);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.password-toggle svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* Auth Button */
+.auth-button {
+  width: 100%;
+  height: 3rem;
+  background-color: var(--color-primary);
+  color: #000;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.auth-button:hover:not(:disabled) {
+  background-color: rgba(19, 225, 201, 0.9);
+}
+
+.auth-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(19, 225, 201, 0.1);
+}
+
+.auth-button:disabled {
+  background-color: var(--color-border);
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+}
+
+.auth-button-secondary {
+  width: 100%;
+  height: 3rem;
+  background: none;
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.auth-button-secondary:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: var(--color-primary);
+}
+
+.auth-button-secondary:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(19, 225, 201, 0.1);
+}
+
+.auth-button-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Auth Footer */
+.auth-footer {
+  text-align: center;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.auth-footer p {
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.auth-footer-link {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.auth-footer-link:hover {
+  color: rgba(19, 225, 201, 0.8);
+}
+
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .auth-header {
+    padding: 1rem 1rem 0 1rem;
+  }
+  
+  .auth-title {
+    font-size: 2.5rem;
+  }
+  
+  .auth-subtitle {
+    font-size: 1.25rem;
+  }
+  
+  .auth-stepper {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .stepper-connector {
+    display: none;
+  }
+}
