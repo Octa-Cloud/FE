@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import AuthHeader from "../components/AuthHeader";
 import FormField from "../components/FormField";
 import AuthButton from "../components/AuthButton";
+import moonIcon from "../assets/moonIcon.svg";
 import "../styles/login.css";
 import "../styles/common.css";
 
@@ -84,9 +85,15 @@ export default function ForgotPassword() {
                   이메일이 보이지 않는다면 스팸 폴더를 확인해주세요.
                 </p>
               </div>
-              <AuthButton onClick={handleBackToLogin}>
-                로그인으로 돌아가기
-              </AuthButton>
+              <div className="email-sent-button">
+                <button 
+                  type="button" 
+                  className="email-sent-link"
+                  onClick={handleBackToLogin}
+                >
+                  로그인으로 돌아가기
+                </button>
+              </div>
             </div>
           )}
         </div>
