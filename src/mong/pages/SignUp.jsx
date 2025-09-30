@@ -6,6 +6,7 @@ import FormField from "../components/FormField";
 import ShortFormField from "../components/ShortFormField";
 import AuthButton from "../components/AuthButton";
 import AuthFooter from "../components/AuthFooter";
+import CheckIcon from "../assets/checkIcon.svg";
 import "../styles/signup.css";
 import "../styles/common.css";
 
@@ -201,7 +202,9 @@ export default function SignupCard() {
     {
       label: "이메일",
       completed: emailValid,
-      icon: (
+      icon: emailValid ? (
+        <img src={CheckIcon} alt="" width="24" height="24" />
+      ) : (
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="24"
@@ -221,7 +224,9 @@ export default function SignupCard() {
     {
       label: "인증",
       completed: verificationValid,
-      icon: (
+      icon: verificationValid ? (
+        <img src={CheckIcon} alt="" width="24" height="24" />
+      ) : (
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="24"
