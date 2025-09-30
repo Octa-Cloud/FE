@@ -17,6 +17,11 @@ export default function Login() {
     e.preventDefault();
     // TODO: 로그인 요청 연결 (API 연동)
     console.log({ email, password: pw });
+    
+    // 이메일과 비밀번호가 입력되었을 때 프로필 페이지로 이동
+    if (email && pw) {
+      navigate('/profile');
+    }
   };
 
   const handleForgotPassword = () => {

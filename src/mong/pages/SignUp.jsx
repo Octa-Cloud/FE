@@ -75,6 +75,13 @@ export default function SignupCard() {
     e.preventDefault();
     // TODO: 제출 로직 연결
     console.log("Final submit:", formData);
+    
+    // 모든 필수 정보가 입력되었고 비밀번호가 일치할 때 프로필 페이지로 이동
+    if (formData.name && formData.birthMonth && formData.birthDay && formData.birthYear && 
+        formData.gender && formData.password && formData.confirmPassword &&
+        formData.password === formData.confirmPassword) {
+      navigate('/profile');
+    }
   };
 
   // 입력값 변경 처리

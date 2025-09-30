@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 export default function ShortFormField({ 
   label, 
   id, 
+  name,
   type = "text", 
   placeholder, 
   value, 
@@ -99,6 +100,7 @@ export default function ShortFormField({
             type="button"
             className="short-form-select-trigger"
             onClick={() => setShowDropdown(!showDropdown)}
+            disabled={disabled}
           >
             <span>{value || placeholder}</span>
             <svg

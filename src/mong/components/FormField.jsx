@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, forwardRef } from "react";
 
-export default function FormField({ 
+const FormField = forwardRef(({ 
   label, 
   id, 
   type = "text", 
@@ -19,7 +19,7 @@ export default function FormField({
   buttons = null,
   showStatusIndicator = false,
   statusIcon = null
-}) {
+}, ref) => {
   const [showPassword, setShowPassword] = useState(false);
 
   // 비밀번호 필드인지 확인
@@ -33,9 +33,11 @@ export default function FormField({
       {children || (
         <div className={isPasswordField ? 'password-container' : (showStatusIndicator ? 'form-input-group' : '')}>
           <input
+            ref={ref}
             type={isPasswordField && showPassword ? "text" : type}
             className={isPasswordField ? 'password-input' : (showStatusIndicator ? 'form-input form-input-with-status' : 'form-input')}
             id={id}
+            name={id}
             placeholder={placeholder}
             value={value}
             onChange={onChange}
@@ -102,4 +104,8 @@ export default function FormField({
       )}
     </div>
   );
-}
+});
+
+FormField.displayName = 'FormField';
+
+export default FormField;
