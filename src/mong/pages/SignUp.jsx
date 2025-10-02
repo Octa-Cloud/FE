@@ -1,6 +1,7 @@
 // SignupCard.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../store/hooks";
 import AuthHeader from "../components/AuthHeader";
 import FormField from "../components/FormField";
 import ShortFormField from "../components/ShortFormField";
@@ -12,6 +13,7 @@ import "../styles/common.css";
 
 export default function SignupCard() {
   const navigate = useNavigate();
+  const { register, loading, error } = useAuth();
   
   // 단계 관리
   const [currentStep, setCurrentStep] = useState(1);
@@ -72,16 +74,30 @@ export default function SignupCard() {
   };
 
   // 최종 제출
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
-    // TODO: 제출 로직 연결
-    console.log("Final submit:", formData);
     
-    // 모든 필수 정보가 입력되었고 비밀번호가 일치할 때 프로필 페이지로 이동
-    if (formData.name && formData.birthMonth && formData.birthDay && formData.birthYear && 
-        formData.gender && formData.password && formData.confirmPassword &&
-        formData.password === formData.confirmPassword) {
+    // 비밀번호 확인
+    if (formData.password !== formData.confirmPassword) {
+      alert('비밀번호가 일치하지 않습니다.');
+      return;
+    }
+
+    try {
+      const userData = {
+        email: formData.email,
+        password: formData.password,
+        name: formData.name,
+        birthDate: `${formData.birthYear}-${formData.birthMonth}-${formData.birthDay}`,
+        gender: formData.gender,
+      };
+
+      await register(userData);
+      
+      // 회원가입 성공 시 프로필 페이지로 이동
       navigate('/profile');
+    } catch (error) {
+      console.error('Registration failed:', error);
     }
   };
 
@@ -470,9 +486,20 @@ export default function SignupCard() {
                 />
               </div>
 
+              {/* 에러 메시지 */}
+              {error && (
+                <div className="error-message" style={{ color: '#ef4444', marginBottom: '1rem' }}>
+                  {error}
+                </div>
+              )}
+
               {/* 제출 */}
-              <AuthButton type="submit" className="signup-button">
-                mong과 함께 시작하기
+              <AuthButton 
+                type="submit" 
+                className="signup-button"
+                disabled={loading}
+              >
+                {loading ? '가입 중...' : 'mong과 함께 시작하기'}
               </AuthButton>
             </form>
           )}

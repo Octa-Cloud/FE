@@ -1,6 +1,7 @@
 // ForgotPassword.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../store/hooks";
 import AuthHeader from "../components/AuthHeader";
 import FormField from "../components/FormField";
 import AuthButton from "../components/AuthButton";
@@ -12,6 +13,9 @@ export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [isEmailSent, setIsEmailSent] = useState(false);
   const navigate = useNavigate();
+  // useAuth는 더 이상 필요하지 않음
+
+  // testCredentials는 더 이상 사용하지 않음 (다중 계정 시스템으로 변경)
 
   const onSubmit = (e) => {
     e.preventDefault();

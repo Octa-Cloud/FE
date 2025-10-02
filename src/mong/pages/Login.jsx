@@ -1,6 +1,7 @@
 // Login.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../store/hooks";
 import AuthHeader from "../components/AuthHeader";
 import FormField from "../components/FormField";
 import AuthButton from "../components/AuthButton";
@@ -12,15 +13,51 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const navigate = useNavigate();
+  const { login, loading, error } = useAuth();
 
-  const onSubmit = (e) => {
+  // testCredentials는 더 이상 사용하지 않음 (다중 계정 시스템으로 변경)
+
+  const onSubmit = async (e) => {
     e.preventDefault();
-    // TODO: 로그인 요청 연결 (API 연동)
-    console.log({ email, password: pw });
     
-    // 이메일과 비밀번호가 입력되었을 때 프로필 페이지로 이동
-    if (email && pw) {
+    // 입력값 검증
+    if (!email.trim()) {
+      alert('이메일을 입력해주세요.');
+      return;
+    }
+    
+    if (!pw.trim()) {
+      alert('비밀번호를 입력해주세요.');
+      return;
+    }
+    
+    // 로그인 시도
+    const result = await login({ email: email.trim(), password: pw });
+    
+    // 로그인 성공 시에만 프로필 페이지로 이동
+    if (login.fulfilled.match(result)) {
       navigate('/profile');
+    } else if (login.rejected.match(result)) {
+      // 로그인 실패 시 사용자 친화적인 alert 메시지 표시
+      const errorMessage = result.payload || '로그인에 실패했습니다.';
+      
+      // 보안을 위해 일반적인 메시지만 표시
+      let userMessage = errorMessage;
+      if (errorMessage.includes('이메일 또는 비밀번호가 일치하지 않습니다') || errorMessage.includes('등록된 사용자가 없습니다')) {
+        userMessage = '이메일 또는 비밀번호가 일치하지 않습니다.';
+      } else if (errorMessage.includes('로그인 시도 횟수가 너무 많습니다')) {
+        userMessage = errorMessage; // 시도 횟수 제한 메시지는 그대로 표시
+      }
+      
+      alert(userMessage);
+      
+      // 입력 필드 초기화 (보안상 민감한 정보 제거)
+      if (errorMessage.includes('이메일 또는 비밀번호가 일치하지 않습니다')) {
+        setPw(''); // 비밀번호만 초기화 (이메일은 유지하여 편의성 제공)
+      }
+      
+      // 오류 메시지를 콘솔에도 출력 (디버깅용)
+      console.error('Login failed:', errorMessage);
     }
   };
 
@@ -64,9 +101,25 @@ export default function Login() {
               required
             />
 
+            {/* 에러 메시지 */}
+            {error && (
+              <div className="error-message" style={{ 
+                textAlign: 'center', 
+                padding: '1rem', 
+                color: '#dc3545',
+                backgroundColor: '#f8d7da',
+                border: '1px solid #f5c6cb',
+                borderRadius: '8px',
+                marginBottom: '1rem'
+              }}>
+                {error}
+              </div>
+            )}
+
+
             {/* 로그인 버튼 */}
-            <AuthButton type="submit">
-              로그인
+            <AuthButton type="submit" disabled={loading}>
+              {loading ? '로그인 중...' : '로그인'}
             </AuthButton>
 
             {/* 비밀번호 찾기 */}
