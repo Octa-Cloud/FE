@@ -5,33 +5,64 @@ export const updateUserProfile = createAsyncThunk(
   'user/updateUserProfile',
   async (userData, { rejectWithValue, getState }) => {
     try {
-      // 실제 API 호출 대신 로컬 스토리지 업데이트
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        const user = JSON.parse(storedUser);
-        const updatedUser = {
-          ...user,
-          ...userData,
-          updatedAt: new Date().toISOString(),
-        };
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-        
-        // 이메일이나 비밀번호가 변경된 경우 auth state의 testCredentials도 업데이트
+      console.log('🔄 updateUserProfile 시작, userData:', userData);
+      
+      // 현재 로그인된 사용자 가져오기
+      const currentUser = localStorage.getItem('user');
+      console.log('👤 현재 사용자:', currentUser);
+      
+      // localStorage 전체 상태 확인
+      console.log('🔍 localStorage 전체 상태:');
+      console.log('  - user:', localStorage.getItem('user'));
+      console.log('  - users:', localStorage.getItem('users'));
+      
+      if (!currentUser) {
+        // Redux state에서 현재 사용자 정보 확인 시도
         const state = getState();
-        const authState = state.auth;
+        const authUser = state.auth.user;
+        console.log('🔄 Redux auth state에서 사용자 확인:', authUser);
         
-        if (userData.email && userData.email !== authState.testCredentials.email) {
-          // 이메일이 변경된 경우 testCredentials 업데이트
-          return { ...updatedUser, credentialsUpdated: true, newCredentials: { email: userData.email, password: userData.password || authState.testCredentials.password } };
-        } else if (userData.password && userData.password !== authState.testCredentials.password) {
-          // 비밀번호가 변경된 경우 testCredentials 업데이트
-          return { ...updatedUser, credentialsUpdated: true, newCredentials: { email: authState.testCredentials.email, password: userData.password } };
+        if (authUser) {
+          console.log('💾 Redux state에서 사용자 정보를 localStorage에 복원');
+          localStorage.setItem('user', JSON.stringify(authUser));
+          return { ...authUser, ...userData, updatedAt: new Date().toISOString() };
         }
         
-        return updatedUser;
+        throw new Error('User not found - 현재 로그인된 사용자가 없습니다. 다시 로그인해주세요.');
       }
-      throw new Error('User not found');
+      
+      const user = JSON.parse(currentUser);
+      console.log('📝 파싱된 사용자 정보:', user);
+      
+      // 사용자 정보 업데이트
+      const updatedUser = {
+        ...user,
+        ...userData,
+        updatedAt: new Date().toISOString(),
+      };
+      console.log('✅ 업데이트된 사용자 정보:', updatedUser);
+      
+      // localStorage에 업데이트된 사용자 저장
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      console.log('💾 localStorage.user 업데이트 완료');
+      
+      // users 배열에서도 해당 사용자 정보 업데이트
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const userIndex = users.findIndex(u => u.id === user.id || u.email === user.email);
+      
+      if (userIndex !== -1) {
+        users[userIndex] = updatedUser;
+        localStorage.setItem('users', JSON.stringify(users));
+        console.log('👥 localStorage.users 배열 업데이트 완료');
+      } else {
+        console.warn('⚠️ users 배열에서 사용자를 찾을 수 없음');
+      }
+      
+      console.log('🎉 프로필 업데이트 성공:', updatedUser);
+      return updatedUser;
+      
     } catch (error) {
+      console.error('❌ 프로필 업데이트 실패:', error);
       return rejectWithValue(error.message);
     }
   }

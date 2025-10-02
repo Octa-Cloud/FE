@@ -84,8 +84,16 @@ const BasicInfoForm = ({ userData, tempFormData, isEditing, onEdit, onSave, onCa
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = () => {
+    console.log('Save button clicked, formData:', formData);
+    console.log('Current formData state:', {
+      name: formData.name,
+      email: formData.email,
+      birthDate: formData.birthDate,
+      gender: formData.gender
+    });
+    
+    // 모든 필드 수정 허용 - 이름 필드 수정 불필요
     onSave(formData);
   };
 
@@ -114,7 +122,7 @@ const BasicInfoForm = ({ userData, tempFormData, isEditing, onEdit, onSave, onCa
         <p className="basic-info-description">개인정보를 수정할 수 있습니다</p>
       </div>
       
-      <form onSubmit={handleSubmit} className="basic-info-content">
+      <form onSubmit={(e) => e.preventDefault()} className="basic-info-content">
         <div className="form-fields">
           <FormField
             ref={nameInputRef}
@@ -175,7 +183,7 @@ const BasicInfoForm = ({ userData, tempFormData, isEditing, onEdit, onSave, onCa
             </button>
           ) : (
             <>
-              <button type="submit" className="save-button">
+              <button type="button" onClick={handleSubmit} className="save-button">
                 저장
               </button>
               <button type="button" onClick={handleCancel} className="cancel-button">

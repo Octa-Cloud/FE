@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../store/hooks";
+import { loginUser } from "../store/slices/authSlice";
 import AuthHeader from "../components/AuthHeader";
 import FormField from "../components/FormField";
 import AuthButton from "../components/AuthButton";
@@ -35,9 +36,9 @@ export default function Login() {
     const result = await login({ email: email.trim(), password: pw });
     
     // 로그인 성공 시에만 프로필 페이지로 이동
-    if (login.fulfilled.match(result)) {
+    if (loginUser.fulfilled.match(result)) {
       navigate('/profile');
-    } else if (login.rejected.match(result)) {
+    } else if (loginUser.rejected.match(result)) {
       // 로그인 실패 시 사용자 친화적인 alert 메시지 표시
       const errorMessage = result.payload || '로그인에 실패했습니다.';
       

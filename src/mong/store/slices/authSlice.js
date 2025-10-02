@@ -33,22 +33,32 @@ export const loginUser = createAsyncThunk(
 
       // 로컬 스토리지에서 사용자 목록 확인
       const storedUsers = localStorage.getItem('users');
+      console.log('🔍 저장된 사용자 목록:', storedUsers);
+      
       if (!storedUsers) {
         throw new Error('등록된 사용자가 없습니다. 먼저 회원가입을 해주세요.');
       }
       
       const users = JSON.parse(storedUsers);
+      console.log('👥 파싱된 사용자 목록:', users);
       
       // 사용자 목록이 비어있는지 확인
       if (users.length === 0) {
         throw new Error('등록된 사용자가 없습니다. 먼저 회원가입을 해주세요.');
       }
       
+      console.log('🔑 입력된 로그인 정보:', credentials);
+      
       // 입력한 이메일과 비밀번호와 일치하는 사용자 찾기
-      const matchedUser = users.find(user => 
-        user.email.trim() === credentials.email.trim() && 
-        user.password === credentials.password
-      );
+      const matchedUser = users.find(user => {
+        const emailMatch = user.email.trim() === credentials.email.trim();
+        const passwordMatch = user.password === credentials.password;
+        console.log(`📧 사용자 ${user.email} 이메일 매치:`, emailMatch);
+        console.log(`🔒 사용자 ${user.email} 비밀번호 매치:`, passwordMatch);
+        return emailMatch && passwordMatch;
+      });
+      
+      console.log('✅ 매치된 사용자:', matchedUser);
       
       // 일치하는 사용자가 없으면 오류
       if (!matchedUser) {
@@ -190,6 +200,11 @@ const authSlice = createSlice({
         state.user = action.payload;
         state.isAuthenticated = true;
         state.error = null;
+        
+        // 🔑 핵심 수정: 로그인 성공 시 localStorage.user 설정
+        localStorage.setItem('user', JSON.stringify(action.payload));
+        console.log('💾 로그인 성공 - localStorage.user 설정:', action.payload);
+        
         // 로그인 성공 시 테스트 자격증명 업데이트
         state.testCredentials = {
           email: action.payload.email,
@@ -217,6 +232,11 @@ const authSlice = createSlice({
         state.user = action.payload;
         state.isAuthenticated = true;
         state.error = null;
+        
+        // 🔑 핵심 수정: 회원가입 성공 시 localStorage.user 설정
+        localStorage.setItem('user', JSON.stringify(action.payload));
+        console.log('💾 회원가입 성공 - localStorage.user 설정:', action.payload);
+        
         // 회원가입 성공 시 테스트 자격증명 업데이트
         state.testCredentials = {
           email: action.payload.email,

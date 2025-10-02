@@ -31,11 +31,11 @@ export const useAuth = () => {
 
   // 안전한 액션 디스패치 함수들 (메모이제이션)
   const safeLogin = React.useCallback((credentials) => {
-    dispatch(loginUser(credentials));
+    return dispatch(loginUser(credentials));
   }, [dispatch]);
 
   const safeRegister = React.useCallback((userData) => {
-    dispatch(registerUser(userData));
+    return dispatch(registerUser(userData));
   }, [dispatch]);
 
   const safeLogout = React.useCallback(() => {
@@ -91,7 +91,7 @@ export const useUserProfile = () => {
   }, [dispatch]);
 
   const safeUpdateProfile = React.useCallback((userData) => {
-    dispatch(updateUserProfile(userData));
+    return dispatch(updateUserProfile(userData));
   }, [dispatch]);
 
   const safeSetTempProfile = React.useCallback((profile) => {
