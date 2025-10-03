@@ -1,8 +1,9 @@
 import React, { useState, forwardRef } from "react";
 import EyeIcon from "../assets/eyeIcon.svg";
 import CheckIcon from "../assets/checkIcon.svg";
+import { FormFieldProps } from "../types";
 
-const FormField = forwardRef(({ 
+const FormField = forwardRef<HTMLInputElement, FormFieldProps>(({ 
   label, 
   id, 
   type = "text", 
@@ -22,7 +23,7 @@ const FormField = forwardRef(({
   showStatusIndicator = false,
   statusIcon = null
 }, ref) => {
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
 
   // 비밀번호 필드인지 확인
   const isPasswordField = type === "password" || showPasswordToggle;

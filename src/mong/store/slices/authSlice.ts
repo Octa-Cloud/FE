@@ -1,9 +1,11 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { User, LoginCredentials, RegisterData } from '../../types';
+import { AuthState } from '../../types/redux';
 
 // 비동기 액션들
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
-  async (credentials, { rejectWithValue, getState }) => {
+  async (credentials: LoginCredentials, { rejectWithValue, getState }) => {
     try {
       // 입력값 검증
       if (!credentials.email || !credentials.password) {
@@ -11,13 +13,13 @@ export const loginUser = createAsyncThunk(
       }
 
       // 로그인 시도 횟수 제한 확인
-      const state = getState();
+      const state = getState() as { auth: AuthState };
       const { loginAttempts, lastLoginAttempt } = state.auth;
       
       // 5분 내에 5회 이상 실패한 경우 차단
       if (loginAttempts >= 5) {
         const now = Date.now();
-        const timeDiff = now - (lastLoginAttempt || 0);
+        const timeDiff = now - (lastLoginAttempt ? parseInt(lastLoginAttempt) : 0);
         const fiveMinutes = 5 * 60 * 1000;
         
         if (timeDiff < fiveMinutes) {
@@ -39,7 +41,7 @@ export const loginUser = createAsyncThunk(
         throw new Error('등록된 사용자가 없습니다. 먼저 회원가입을 해주세요.');
       }
       
-      const users = JSON.parse(storedUsers);
+      const users: User[] = JSON.parse(storedUsers);
       console.log('👥 파싱된 사용자 목록:', users);
       
       // 사용자 목록이 비어있는지 확인
@@ -70,17 +72,17 @@ export const loginUser = createAsyncThunk(
       
     } catch (error) {
       console.error('Login validation error:', error);
-      return rejectWithValue(error.message);
+      return rejectWithValue((error as Error).message);
     }
   }
 );
 
 export const registerUser = createAsyncThunk(
   'auth/registerUser',
-  async (userData, { rejectWithValue }) => {
+  async (userData: RegisterData, { rejectWithValue }) => {
     try {
       // 기존 사용자 목록 가져오기
-      const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
+      const existingUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
       
       // 이메일 중복 확인
       const emailExists = existingUsers.some(user => user.email === userData.email);
@@ -89,7 +91,7 @@ export const registerUser = createAsyncThunk(
       }
       
       // 새 사용자 생성
-      const newUser = {
+      const newUser: User = {
         id: Date.now().toString(),
         email: userData.email,
         password: userData.password,
@@ -108,12 +110,12 @@ export const registerUser = createAsyncThunk(
       
       return newUser;
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue((error as Error).message);
     }
   }
 );
 
-const initialState = {
+const initialState: AuthState = {
   user: null,
   isAuthenticated: false,
   loading: false,
@@ -142,11 +144,11 @@ const authSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
-    updateTestCredentials: (state, action) => {
+    updateTestCredentials: (state, action: PayloadAction<{ email: string; password: string }>) => {
       state.testCredentials = action.payload;
     },
     // 프로필 수정 시 자격증명 업데이트
-    updateCredentialsFromProfile: (state, action) => {
+    updateCredentialsFromProfile: (state, action: PayloadAction<{ email?: string; password?: string }>) => {
       const { email, password } = action.payload;
       if (email) state.testCredentials.email = email;
       if (password) state.testCredentials.password = password;
@@ -161,11 +163,11 @@ const authSlice = createSlice({
       const storedUser = localStorage.getItem('user');
       if (storedUser) {
         try {
-          const user = JSON.parse(storedUser);
+          const user: User = JSON.parse(storedUser);
           // 사용자 목록에서 해당 사용자가 여전히 존재하는지 확인
           const storedUsers = localStorage.getItem('users');
           if (storedUsers) {
-            const users = JSON.parse(storedUsers);
+            const users: User[] = JSON.parse(storedUsers);
             const userExists = users.find(u => u.id === user.id && u.email === user.email);
             if (userExists) {
               // 이미 같은 사용자 정보가 있으면 업데이트하지 않음
@@ -216,11 +218,11 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload as string;
         state.isAuthenticated = false;
         // 로그인 실패 시 시도 횟수 증가
         state.loginAttempts += 1;
-        state.lastLoginAttempt = Date.now();
+        state.lastLoginAttempt = Date.now().toString();
       })
       // 회원가입
       .addCase(registerUser.pending, (state) => {
@@ -245,7 +247,7 @@ const authSlice = createSlice({
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload as string;
         state.isAuthenticated = false;
       });
   },

@@ -1,4 +1,4 @@
-// SignupCard.jsx
+// SignupCard.tsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../store/hooks";
@@ -10,16 +10,17 @@ import AuthFooter from "../components/AuthFooter";
 import CheckIcon from "../assets/checkIcon.svg";
 import "../styles/signup.css";
 import "../styles/common.css";
+import { FormData, PasswordValidation, User } from "../types";
 
 export default function SignupCard() {
   const navigate = useNavigate();
   const { register, loading, error } = useAuth();
   
   // 단계 관리
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState<number>(1);
   
   // 폼 데이터
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     email: "",
     verificationCode: "",
     name: "",
@@ -32,21 +33,21 @@ export default function SignupCard() {
   });
   
   // UI 상태
-  const [emailValid, setEmailValid] = useState(false);
-  const [verificationSent, setVerificationSent] = useState(false);
-  const [verificationValid, setVerificationValid] = useState(false);
-  const [showGenderDropdown, setShowGenderDropdown] = useState(false);
-  const [showResendMessage, setShowResendMessage] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [emailValid, setEmailValid] = useState<boolean>(false);
+  const [verificationSent, setVerificationSent] = useState<boolean>(false);
+  const [verificationValid, setVerificationValid] = useState<boolean>(false);
+  const [showGenderDropdown, setShowGenderDropdown] = useState<boolean>(false);
+  const [showResendMessage, setShowResendMessage] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   // 이메일 포맷 검증
-  const validateEmail = (email) => {
+  const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
   // 비밀번호 검증 함수
-  const validatePassword = (password) => {
+  const validatePassword = (password: string): PasswordValidation => {
     const hasLowerCase = /[a-z]/.test(password);
     const hasNumber = /\d/.test(password);
     const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
@@ -60,11 +61,11 @@ export default function SignupCard() {
   };
 
   // 이메일 입력 처리
-  const handleEmailSubmit = (e) => {
+  const handleEmailSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (validateEmail(formData.email)) {
       // 이메일 중복 검증
-      const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
+      const existingUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
       const duplicateEmail = existingUsers.find(user => user.email === formData.email);
       
       if (duplicateEmail) {
@@ -79,7 +80,7 @@ export default function SignupCard() {
   };
 
   // 인증번호 입력 처리
-  const handleVerificationSubmit = (e) => {
+  const handleVerificationSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (formData.verificationCode.length === 6) {
       setVerificationValid(true);
@@ -95,8 +96,8 @@ export default function SignupCard() {
   };
 
   // 중복 검증 함수
-  const checkDuplicateCredentials = (email, password) => {
-    const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
+  const checkDuplicateCredentials = (email: string, password: string) => {
+    const existingUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
     const duplicateEmail = existingUsers.find(user => user.email === email);
     const duplicatePassword = existingUsers.find(user => user.password === password);
     
@@ -104,7 +105,7 @@ export default function SignupCard() {
   };
 
   // 필수 필드 검증 함수
-  const validateRequiredFields = () => {
+  const validateRequiredFields = (): boolean => {
     // 우선순위: 이메일 -> 이름 -> 생년월일 -> 성별 -> 비밀번호 -> 비밀번호 확인
     if (!formData.email.trim()) {
       setErrorMessage('이메일을 입력해주세요.');
@@ -140,7 +141,7 @@ export default function SignupCard() {
   };
 
   // 최종 제출
-  const onSubmit = async (e) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     // 필수 필드 검증
@@ -151,7 +152,7 @@ export default function SignupCard() {
     // 비밀번호 형식 검증
     const passwordValidation = validatePassword(formData.password);
     if (!passwordValidation.isValid) {
-      let missingRequirements = [];
+      let missingRequirements: string[] = [];
       if (!passwordValidation.hasLowerCase) missingRequirements.push('소문자');
       if (!passwordValidation.hasNumber) missingRequirements.push('숫자');
       if (!passwordValidation.hasSpecialChar) missingRequirements.push('특수문자');
@@ -194,7 +195,7 @@ export default function SignupCard() {
         password: formData.password,
         name: formData.name,
         birthDate: `${formData.birthYear}-${formData.birthMonth}-${formData.birthDay}`,
-        gender: formData.gender,
+        gender: formData.gender as 'male' | 'female',
       };
 
       await register(userData);
@@ -208,7 +209,7 @@ export default function SignupCard() {
   };
 
   // 입력값 변경 처리
-  const handleInputChange = (field, value) => {
+  const handleInputChange = (field: keyof FormData, value: string) => {
     // 입력값이 변경되면 에러 메시지 초기화
     if (errorMessage) {
       setErrorMessage('');
@@ -224,12 +225,10 @@ export default function SignupCard() {
     });
   };
 
-
-
   // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (showGenderDropdown && !event.target.closest('.signup-select-container')) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showGenderDropdown && !(event.target as Element).closest('.signup-select-container')) {
         setShowGenderDropdown(false);
       }
     };
@@ -459,7 +458,7 @@ export default function SignupCard() {
                       type="text"
                       className="short-form-date-input"
                       placeholder="MM"
-                      maxLength="2"
+                      maxLength={2}
                       value={formData.birthMonth || ''}
                       onChange={(e) => {
                         const numericValue = e.target.value.replace(/[^0-9]/g, '');
@@ -480,7 +479,7 @@ export default function SignupCard() {
                       type="text"
                       className="short-form-date-input"
                       placeholder="DD"
-                      maxLength="2"
+                      maxLength={2}
                       value={formData.birthDay || ''}
                       onChange={(e) => {
                         const numericValue = e.target.value.replace(/[^0-9]/g, '');
@@ -501,7 +500,7 @@ export default function SignupCard() {
                       type="text"
                       className="short-form-date-input"
                       placeholder="YYYY"
-                      maxLength="4"
+                      maxLength={4}
                       value={formData.birthYear || ''}
                       onChange={(e) => {
                         const numericValue = e.target.value.replace(/[^0-9]/g, '');

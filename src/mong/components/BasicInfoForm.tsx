@@ -2,8 +2,17 @@ import React, { useState, useEffect, useRef } from 'react';
 import FormField from './FormField';
 import ShortFormField from './ShortFormField';
 import '../styles/profile.css';
+import { BasicInfoFormProps } from '../types';
 
-const BasicInfoForm = ({ userData, tempFormData, isEditing, onEdit, onSave, onCancel, onFormDataChange }) => {
+const BasicInfoForm = ({ 
+  userData, 
+  tempFormData, 
+  isEditing, 
+  onEdit, 
+  onSave, 
+  onCancel, 
+  onFormDataChange 
+}: BasicInfoFormProps) => {
   const [formData, setFormData] = useState({
     name: userData.name || '',
     email: userData.email || '',
@@ -11,7 +20,7 @@ const BasicInfoForm = ({ userData, tempFormData, isEditing, onEdit, onSave, onCa
     gender: userData.gender || ''
   });
 
-  const nameInputRef = useRef(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   // userData가 변경될 때 formData 업데이트 (편집 모드가 아닐 때만)
   useEffect(() => {
@@ -52,12 +61,12 @@ const BasicInfoForm = ({ userData, tempFormData, isEditing, onEdit, onSave, onCa
   useEffect(() => {
     if (isEditing && nameInputRef.current) {
       setTimeout(() => {
-        nameInputRef.current.focus();
+        nameInputRef.current?.focus();
       }, 100);
     }
   }, [isEditing]);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     console.log(`Input changed: ${name} = ${value}`);
     const newFormData = {
@@ -71,7 +80,7 @@ const BasicInfoForm = ({ userData, tempFormData, isEditing, onEdit, onSave, onCa
   };
 
   // ShortFormField용 별도 핸들러 (드롭다운에서 사용)
-  const handleShortFormChange = (fieldName) => (e) => {
+  const handleShortFormChange = (fieldName: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     console.log(`ShortForm changed: ${fieldName} = ${value}`);
     const newFormData = {

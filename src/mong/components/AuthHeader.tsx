@@ -1,7 +1,8 @@
 import React from "react";
 import moonIcon from "../assets/moonIcon.svg";
+import { AuthHeaderProps } from "../types";
 
-export default function AuthHeader({ title, description, showStepper, currentStep, steps }) {
+export default function AuthHeader({ title, description, showStepper, currentStep, steps }: AuthHeaderProps) {
   return (
     <div className="auth-header">
       <div className="auth-logo-container">
@@ -21,7 +22,7 @@ export default function AuthHeader({ title, description, showStepper, currentSte
         <div className="auth-stepper">
           {steps.map((step, index) => (
             <React.Fragment key={index}>
-              <div className={`stepper-step ${currentStep >= index + 1 ? (step.completed ? 'completed' : 'current') : ''}`}>
+              <div className={`stepper-step ${currentStep && currentStep >= index + 1 ? (step.completed ? 'completed' : 'current') : ''}`}>
                 <div className="stepper-step-icon">
                   {step.completed ? (
                     <svg

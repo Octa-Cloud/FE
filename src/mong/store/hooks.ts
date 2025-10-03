@@ -17,10 +17,12 @@ import {
   clearTempProfile, 
   clearError as clearUserError 
 } from './slices/userSlice';
+import { RootState, AppDispatch } from './index';
+import { LoginCredentials, RegisterData, User, UpdateProfileData } from '../types';
 
 // 타입 안전성을 위한 커스텀 훅들
-export const useAppDispatch = () => useDispatch();
-export const useAppSelector = useSelector;
+export const useAppDispatch = () => useDispatch<AppDispatch>();
+export const useAppSelector = <T>(selector: (state: RootState) => T) => useSelector(selector);
 
 // 인증 관련 훅들
 export const useAuth = () => {
@@ -30,11 +32,11 @@ export const useAuth = () => {
   );
 
   // 안전한 액션 디스패치 함수들 (메모이제이션)
-  const safeLogin = React.useCallback((credentials) => {
+  const safeLogin = React.useCallback((credentials: LoginCredentials) => {
     return dispatch(loginUser(credentials));
   }, [dispatch]);
 
-  const safeRegister = React.useCallback((userData) => {
+  const safeRegister = React.useCallback((userData: RegisterData) => {
     return dispatch(registerUser(userData));
   }, [dispatch]);
 
@@ -46,11 +48,11 @@ export const useAuth = () => {
     dispatch(clearAuthError());
   }, [dispatch]);
 
-  const safeUpdateTestCredentials = React.useCallback((credentials) => {
+  const safeUpdateTestCredentials = React.useCallback((credentials: { email: string; password: string }) => {
     dispatch(updateTestCredentials(credentials));
   }, [dispatch]);
 
-  const safeUpdateCredentialsFromProfile = React.useCallback((credentials) => {
+  const safeUpdateCredentialsFromProfile = React.useCallback((credentials: { email?: string; password?: string }) => {
     dispatch(updateCredentialsFromProfile(credentials));
   }, [dispatch]);
 
@@ -82,19 +84,19 @@ export const useUserProfile = () => {
   );
 
   // 안전한 액션 디스패치 함수들 (메모이제이션)
-  const safeSetProfile = React.useCallback((profile) => {
+  const safeSetProfile = React.useCallback((profile: User | null) => {
     dispatch(setProfile(profile));
   }, [dispatch]);
 
-  const safeSetEditing = React.useCallback((editing) => {
+  const safeSetEditing = React.useCallback((editing: boolean) => {
     dispatch(setEditing(editing));
   }, [dispatch]);
 
-  const safeUpdateProfile = React.useCallback((userData) => {
+  const safeUpdateProfile = React.useCallback((userData: UpdateProfileData) => {
     return dispatch(updateUserProfile(userData));
   }, [dispatch]);
 
-  const safeSetTempProfile = React.useCallback((profile) => {
+  const safeSetTempProfile = React.useCallback((profile: Partial<User> | null) => {
     dispatch(setTempProfile(profile));
   }, [dispatch]);
 

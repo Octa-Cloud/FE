@@ -5,6 +5,7 @@ import ProfileHeader from '../components/ProfileHeader';
 import ProfileStatsCard from '../components/ProfileStatsCard';
 import BasicInfoForm from '../components/BasicInfoForm';
 import '../styles/profile.css';
+import { User } from '../types';
 
 const ProfileModification = () => {
   const navigate = useNavigate();
@@ -40,7 +41,7 @@ const ProfileModification = () => {
     const localStorageUser = localStorage.getItem('user');
     if (localStorageUser) {
       try {
-        const parsedUser = JSON.parse(localStorageUser);
+        const parsedUser: User = JSON.parse(localStorageUser);
         console.log('💾 ProfileModification - localStorage 사용자 데이터 사용:', parsedUser);
         const userData = {
           ...defaultUserData,
@@ -76,7 +77,7 @@ const ProfileModification = () => {
   }, [user, profile]); // 의존성 배열 유지
 
   // 컴포넌트가 마운트되었는지 확인
-  const [isMounted, setIsMounted] = useState(false);
+  const [isMounted, setIsMounted] = useState<boolean>(false);
   
   useEffect(() => {
     setIsMounted(true);
@@ -120,7 +121,7 @@ const ProfileModification = () => {
     setEditing(true);
   };
 
-  const handleSave = async (updatedData) => {
+  const handleSave = async (updatedData: any) => {
     try {
       console.log('ProfileModification - handleSave called with:', updatedData);
       const result = await updateProfile(updatedData);
@@ -145,7 +146,7 @@ const ProfileModification = () => {
       
     } catch (error) {
       console.error('❌ Failed to update profile:', error);
-      alert(`프로필 업데이트 중 오류가 발생했습니다: ${error.message || error}`);
+      alert(`프로필 업데이트 중 오류가 발생했습니다: ${(error as Error).message || error}`);
     }
   };
 
@@ -154,7 +155,7 @@ const ProfileModification = () => {
     setEditing(false);
   };
 
-  const handleFormDataChange = (newFormData) => {
+  const handleFormDataChange = (newFormData: any) => {
     setTempProfile(newFormData);
   };
 

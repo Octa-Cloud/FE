@@ -1,9 +1,11 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { User, UpdateProfileData } from '../../types';
+import { UserProfileState } from '../../types/redux';
 
 // 사용자 정보 업데이트 비동기 액션
 export const updateUserProfile = createAsyncThunk(
   'user/updateUserProfile',
-  async (userData, { rejectWithValue, getState }) => {
+  async (userData: UpdateProfileData, { rejectWithValue, getState }) => {
     try {
       console.log('🔄 updateUserProfile 시작, userData:', userData);
       
@@ -18,7 +20,7 @@ export const updateUserProfile = createAsyncThunk(
       
       if (!currentUser) {
         // Redux state에서 현재 사용자 정보 확인 시도
-        const state = getState();
+        const state = getState() as { auth: { user: User | null } };
         const authUser = state.auth.user;
         console.log('🔄 Redux auth state에서 사용자 확인:', authUser);
         
@@ -31,15 +33,15 @@ export const updateUserProfile = createAsyncThunk(
         throw new Error('User not found - 현재 로그인된 사용자가 없습니다. 다시 로그인해주세요.');
       }
       
-      const user = JSON.parse(currentUser);
+      const user: User = JSON.parse(currentUser);
       console.log('📝 파싱된 사용자 정보:', user);
       
       // 사용자 정보 업데이트
-      const updatedUser = {
+      const updatedUser: User = {
         ...user,
         ...userData,
         updatedAt: new Date().toISOString(),
-      };
+      } as User;
       console.log('✅ 업데이트된 사용자 정보:', updatedUser);
       
       // localStorage에 업데이트된 사용자 저장
@@ -47,7 +49,7 @@ export const updateUserProfile = createAsyncThunk(
       console.log('💾 localStorage.user 업데이트 완료');
       
       // users 배열에서도 해당 사용자 정보 업데이트
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const users: User[] = JSON.parse(localStorage.getItem('users') || '[]');
       const userIndex = users.findIndex(u => u.id === user.id || u.email === user.email);
       
       if (userIndex !== -1) {
@@ -63,12 +65,12 @@ export const updateUserProfile = createAsyncThunk(
       
     } catch (error) {
       console.error('❌ 프로필 업데이트 실패:', error);
-      return rejectWithValue(error.message);
+      return rejectWithValue((error as Error).message);
     }
   }
 );
 
-const initialState = {
+const initialState: UserProfileState = {
   profile: null,
   loading: false,
   error: null,
@@ -80,13 +82,13 @@ const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    setProfile: (state, action) => {
+    setProfile: (state, action: PayloadAction<User | null>) => {
       // 이미 같은 프로필이면 업데이트하지 않음
       if (!state.profile || JSON.stringify(state.profile) !== JSON.stringify(action.payload)) {
         state.profile = action.payload;
       }
     },
-    setEditing: (state, action) => {
+    setEditing: (state, action: PayloadAction<boolean>) => {
       // 이미 같은 편집 상태면 업데이트하지 않음
       if (state.isEditing !== action.payload) {
         state.isEditing = action.payload;
@@ -96,7 +98,7 @@ const userSlice = createSlice({
       state.error = null;
     },
     // 프로필 수정을 위한 임시 데이터 설정
-    setTempProfile: (state, action) => {
+    setTempProfile: (state, action: PayloadAction<Partial<User> | null>) => {
       state.tempProfile = action.payload;
     },
     clearTempProfile: (state) => {
@@ -118,7 +120,7 @@ const userSlice = createSlice({
       })
       .addCase(updateUserProfile.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload as string;
       });
   },
 });

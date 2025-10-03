@@ -1,7 +1,8 @@
 import React from 'react';
 import '../styles/profile.css';
+import { ProfileStatsCardProps } from '../types';
 
-const ProfileStatsCard = ({ userData }) => {
+const ProfileStatsCard = ({ userData }: ProfileStatsCardProps) => {
   const { name, email, avatar, averageScore, averageSleepTime, totalDays } = userData;
 
   return (

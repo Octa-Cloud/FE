@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import EyeIcon from "../assets/eyeIcon.svg";
+import { ShortFormFieldProps } from "../types";
 
 export default function ShortFormField({ 
   label, 
@@ -18,9 +19,9 @@ export default function ShortFormField({
   helperText,
   options = [], // 드롭다운 옵션
   showPasswordToggle = false,
-}) {
-  const [showPassword, setShowPassword] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
+}: ShortFormFieldProps) {
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showDropdown, setShowDropdown] = useState<boolean>(false);
 
   // 비밀번호 필드인지 확인
   const isPasswordField = type === "password" || showPasswordToggle;
@@ -32,8 +33,8 @@ export default function ShortFormField({
   // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
     if (isDropdownField) {
-      const handleClickOutside = (event) => {
-        if (showDropdown && !event.target.closest('.short-form-select-container')) {
+      const handleClickOutside = (event: MouseEvent) => {
+        if (showDropdown && !(event.target as Element).closest('.short-form-select-container')) {
           setShowDropdown(false);
         }
       };
@@ -89,7 +90,7 @@ export default function ShortFormField({
                       target: {
                         value: option.value
                       }
-                    });
+                    } as React.ChangeEvent<HTMLInputElement>);
                     setShowDropdown(false);
                   }}
                 >

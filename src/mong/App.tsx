@@ -1,28 +1,29 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Provider, useDispatch } from 'react-redux';
-import { store } from './store';
+import { store, AppDispatch } from './store';
 import { restoreUser } from './store/slices/authSlice';
-import Home from './pages/Home.jsx';
-import SignUp from './pages/SignUp.jsx';
-import Login from './pages/Login.jsx';
-import ForgotPassword from './pages/ForgotPassword.jsx';
-import ProfileModification from './pages/ProfileModification.jsx';
+import Home from './pages/Home';
+import SignUp from './pages/SignUp';
+import Login from './pages/Login';
+import ForgotPassword from './pages/ForgotPassword';
+import ProfileModification from './pages/ProfileModification';
+import { User } from './types';
 
 // 앱 초기화 컴포넌트 - useAuth 훅 사용하지 않고 직접 dispatch 사용
 function AppInitializer() {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
     // 기본 테스트 사용자 등록 (한 번만 실행)
     const initializeDefaultUser = () => {
-      const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
+      const existingUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
       
       // 기본 테스트 사용자가 이미 있는지 확인
       const defaultUserExists = existingUsers.some(user => user.email === 'test1@gmail.com');
       
       if (!defaultUserExists) {
-        const defaultUser = {
+        const defaultUser: User = {
           id: 'default-test-user-001',
           email: 'test1@gmail.com',
           password: 'password1!',
@@ -47,7 +48,7 @@ function AppInitializer() {
 
     // 특정 사용자 제거 함수
     const removeSpecificUsers = () => {
-      const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
+      const existingUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
       const usersToRemove = ['test3@gmail.com', 'test4@gmail.com'];
       
       // 제거할 사용자들을 필터링
@@ -65,7 +66,7 @@ function AppInitializer() {
 
     // 기존 사용자 비밀번호에 특수문자 추가 함수
     const updateExistingUserPasswords = () => {
-      const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
+      const existingUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
       let hasUpdates = false;
       
       const updatedUsers = existingUsers.map(user => {
@@ -132,5 +133,3 @@ export default function App() {
     </Provider>
   );
 }
-
-

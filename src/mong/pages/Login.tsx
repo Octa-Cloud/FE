@@ -1,4 +1,4 @@
-// Login.jsx
+// Login.tsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../store/hooks";
@@ -11,14 +11,14 @@ import "../styles/login.css";
 import "../styles/common.css";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [pw, setPw] = useState("");
+  const [email, setEmail] = useState<string>("");
+  const [pw, setPw] = useState<string>("");
   const navigate = useNavigate();
   const { login, loading, error } = useAuth();
 
   // testCredentials는 더 이상 사용하지 않음 (다중 계정 시스템으로 변경)
 
-  const onSubmit = async (e) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     // 입력값 검증
@@ -52,18 +52,17 @@ export default function Login() {
       
       alert(userMessage);
       
-      // 입력 필드 초기화 (보안상 민감한 정보 제거)
-      if (errorMessage.includes('이메일 또는 비밀번호가 일치하지 않습니다')) {
-        setPw(''); // 비밀번호만 초기화 (이메일은 유지하여 편의성 제공)
-      }
-      
-      // 오류 메시지를 콘솔에도 출력 (디버깅용)
-      console.error('Login failed:', errorMessage);
+      // 로그인 실패 시 비밀번호 필드 초기화
+      setPw('');
     }
   };
 
   const handleForgotPassword = () => {
-    navigate("/forgot-password");
+    navigate('/forgot-password');
+  };
+
+  const handleSignUp = () => {
+    navigate('/signup');
   };
 
   return (
@@ -102,20 +101,8 @@ export default function Login() {
               required
             />
 
-            {/* 에러 메시지 */}
-            {error && (
-              <div className="error-message text-center p-4 text-error-600 bg-error-50 border border-error-200 rounded-lg mb-4">
-                {error}
-              </div>
-            )}
-
-            {/* 로그인 버튼 */}
-            <AuthButton type="submit" disabled={loading}>
-              {loading ? '로그인 중...' : '로그인'}
-            </AuthButton>
-
-            {/* 비밀번호 찾기 */}
-            <div className="login-forgot-password text-center">
+            {/* 비밀번호 찾기 링크 */}
+            <div className="forgot-password-link text-right">
               <button 
                 type="button" 
                 onClick={handleForgotPassword}
@@ -124,13 +111,26 @@ export default function Login() {
                 비밀번호를 잊으셨나요?
               </button>
             </div>
+
+            {/* 로그인 버튼 */}
+            <AuthButton type="submit" disabled={loading}>
+              {loading ? '로그인 중...' : '로그인'}
+            </AuthButton>
+
+            {/* 에러 메시지 */}
+            {error && (
+              <div className="error-message text-center p-4 text-error-600 bg-error-50 border border-error-200 rounded-lg mb-4">
+                {error}
+              </div>
+            )}
           </form>
 
           {/* Footer */}
-          <AuthFooter
-            text="아직 계정이 없으신가요?"
+          <AuthFooter 
+            text="계정이 없으신가요?"
             linkText="회원가입"
-            onLinkClick={() => navigate("/signup")}
+            onLinkClick={handleSignUp}
+            className="mt-6"
           />
         </div>
       </div>

@@ -1,14 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import '../styles/profile.css';
+import { ProfileHeaderProps } from '../types';
 
-const ProfileHeader = ({ onBack, onStartSleepRecord, userProfile, onLogout }) => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
+const ProfileHeader = ({ onBack, onStartSleepRecord, userProfile, onLogout }: ProfileHeaderProps) => {
+  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // 드롭다운 외부 클릭 시 닫기
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
       }
     };
@@ -23,13 +24,14 @@ const ProfileHeader = ({ onBack, onStartSleepRecord, userProfile, onLogout }) =>
     setIsDropdownOpen(!isDropdownOpen);
   };
 
-  const handleMenuClick = (action) => {
+  const handleMenuClick = (action: string) => {
     setIsDropdownOpen(false);
     if (action === 'logout' && onLogout) {
       onLogout();
     }
     // 다른 메뉴 액션들은 추후 구현
   };
+  
   return (
     <header className="profile-header">
       <div className="profile-header-content">

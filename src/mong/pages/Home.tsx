@@ -1,6 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom';
-import Container from '../components/Container.jsx'
+import Container from '../components/Container'
 
 export default function Home() {
   const navigate = useNavigate();
@@ -66,5 +66,3 @@ export default function Home() {
     </div>
   )
 }
-
-

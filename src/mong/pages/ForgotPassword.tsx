@@ -1,4 +1,4 @@
-// ForgotPassword.jsx
+// ForgotPassword.tsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../store/hooks";
@@ -8,16 +8,17 @@ import AuthButton from "../components/AuthButton";
 import moonIcon from "../assets/moonIcon.svg";
 import "../styles/login.css";
 import "../styles/common.css";
+import { User } from "../types";
 
 export default function ForgotPassword() {
-  const [email, setEmail] = useState("");
-  const [isEmailSent, setIsEmailSent] = useState(false);
+  const [email, setEmail] = useState<string>("");
+  const [isEmailSent, setIsEmailSent] = useState<boolean>(false);
   const navigate = useNavigate();
   // useAuth는 더 이상 필요하지 않음
 
   // testCredentials는 더 이상 사용하지 않음 (다중 계정 시스템으로 변경)
 
-  const onSubmit = (e) => {
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     // 입력값 검증
@@ -27,7 +28,7 @@ export default function ForgotPassword() {
     }
     
     // 등록된 사용자 목록에서 이메일 확인
-    const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
+    const existingUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
     const userExists = existingUsers.find(user => user.email === email.trim());
     
     if (!userExists) {
