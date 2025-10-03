@@ -29,7 +29,7 @@ const FormField = forwardRef(({
 
   return (
     <div className={`form-field ${isPasswordField ? 'password-field' : ''} ${className}`}>
-      <label className="form-label" htmlFor={id}>
+      <label className="form-label block text-sm font-medium text-gray-700 mb-2" htmlFor={id}>
         {label}
       </label>
       {children || (
@@ -51,7 +51,7 @@ const FormField = forwardRef(({
           />
           {isPasswordField && (
             <button
-              className="password-toggle"
+              className="password-toggle absolute right-3 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded transition-colors"
               type="button"
               onClick={() => setShowPassword((v) => !v)}
               aria-label={showPassword ? "비밀번호 숨기기" : "비밀번호 보기"}
@@ -69,10 +69,10 @@ const FormField = forwardRef(({
         </div>
       )}
       {helperText && (
-        <p className="form-helper-text">{helperText}</p>
+        <p className="form-helper-text text-sm text-gray-500 mt-1">{helperText}</p>
       )}
       {buttons && (
-        <div className="form-field-buttons">
+        <div className="form-field-buttons flex gap-2 mt-2">
           {buttons}
         </div>
       )}

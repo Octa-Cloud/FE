@@ -1,46 +1,58 @@
-/* Profile Modification Page Styles */
+/* Enhanced Profile Modification Page Styles */
 .profile-modification-page {
   min-height: 100vh;
-  background-color: #0F0F0F;
+  background: linear-gradient(135deg, var(--color-bg) 0%, var(--color-bg-secondary) 100%);
   display: flex;
   flex-direction: column;
+  position: relative;
+  overflow-x: hidden;
 }
 
 .profile-main {
   flex: 1;
   display: flex;
   justify-content: center;
-  padding: 24px;
+  padding: var(--space-xl);
+  position: relative;
+  z-index: 1;
 }
 
 .profile-container {
   width: 100%;
   max-width: 800px;
+  position: relative;
 }
 
 .profile-content {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  background-color: #0F0F0F;
-  min-height: 100vh;
+  gap: var(--space-xl);
+  background: linear-gradient(135deg, var(--color-bg-card) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-xl);
+  box-shadow: var(--shadow-xl);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-height: calc(100vh - 200px);
 }
 
-/* Profile Header Styles */
+/* Enhanced Profile Header Styles */
 .profile-header {
-  background-color: #1F1F1F;
-  border-bottom: 1px solid #404040;
+  background: linear-gradient(135deg, var(--color-bg-card) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border-bottom: 1px solid var(--color-border);
   width: 100%;
   position: relative;
   z-index: 40;
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-lg);
 }
 
 .profile-header-content {
-  height: 64px;
+  height: 72px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: 0 var(--space-xl);
   width: 100%;
 }
 
@@ -635,15 +647,22 @@
 .user-profile {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 8px;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: var(--transition-normal);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-sm);
 }
 
 .user-profile:hover {
-  background-color: #2A2A2A;
+  background: linear-gradient(135deg, var(--color-primary-light) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-primary), var(--shadow-md);
+  transform: translateY(-1px);
 }
 
 .dropdown-arrow {
@@ -659,14 +678,16 @@
   position: absolute;
   top: 100%;
   right: 0;
-  margin-top: 8px;
-  background-color: #1F1F1F;
-  border: 1px solid #404040;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  margin-top: var(--space-sm);
+  background: linear-gradient(135deg, var(--color-bg-card) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  backdrop-filter: blur(20px);
   min-width: 200px;
   z-index: 50;
   overflow: hidden;
+  animation: slideInUp 0.3s ease-out;
 }
 
 .dropdown-menu-item {

@@ -171,7 +171,7 @@ const ProfileModification = () => {
 
 
   return (
-    <div className="profile-modification-page">
+    <div className="profile-modification-page min-h-screen bg-gradient-to-br from-primary-50 to-primary-100">
       <ProfileHeader 
         onBack={handleBack}
         onStartSleepRecord={handleStartSleepRecord}
@@ -182,9 +182,9 @@ const ProfileModification = () => {
         }}
       />
       
-      <main className="profile-main">
-        <div className="profile-container">
-          <div className="profile-content">
+      <main className="profile-main p-4">
+        <div className="profile-container max-w-4xl mx-auto">
+          <div className="profile-content space-y-6">
             {/* 항상 데이터가 있도록 보장 */}
             <ProfileStatsCard userData={currentUserData} />
             <BasicInfoForm 
@@ -197,7 +197,7 @@ const ProfileModification = () => {
               onFormDataChange={handleFormDataChange}
             />
             {error && (
-              <div className="error-message" style={{ color: '#ef4444', margin: '1rem 0' }}>
+              <div className="error-message text-center p-4 text-error-600 bg-error-50 border border-error-200 rounded-lg mt-4">
                 {error}
               </div>
             )}

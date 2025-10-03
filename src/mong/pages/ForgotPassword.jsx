@@ -30,8 +30,8 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="login-container">
-      <div className="login-card">
+    <div className="login-container min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100 p-4">
+      <div className="login-card w-full max-w-md glass rounded-2xl shadow-xl p-8">
         {/* Header */}
         <AuthHeader 
           title="로그인"
@@ -39,12 +39,12 @@ export default function ForgotPassword() {
         />
 
         {/* Content */}
-        <div className="login-content">
+        <div className="login-content mt-8">
           {!isEmailSent ? (
-            <form className="login-form" onSubmit={onSubmit}>
-              <div className="forgot-password-title">
-                <h3 className="forgot-password-heading">비밀번호 찾기</h3>
-                <p className="forgot-password-description">
+            <form className="login-form space-y-6" onSubmit={onSubmit}>
+              <div className="forgot-password-title text-center mb-6">
+                <h3 className="forgot-password-heading text-2xl font-bold text-gray-800 mb-2">비밀번호 찾기</h3>
+                <p className="forgot-password-description text-gray-600">
                   가입할 때 사용한 이메일 주소를 입력해주세요
                 </p>
               </div>
@@ -62,7 +62,7 @@ export default function ForgotPassword() {
               />
 
               {/* 버튼들 */}
-              <div className="forgot-password-buttons">
+              <div className="forgot-password-buttons space-y-3">
                 <AuthButton type="submit">
                   비밀번호 재설정 링크 받기
                 </AuthButton>
@@ -76,23 +76,23 @@ export default function ForgotPassword() {
               </div>
             </form>
           ) : (
-            <div className="email-sent-container">
-              <div className="email-sent-icon">
-                <img src={moonIcon} alt="moon icon" />
+            <div className="email-sent-container text-center space-y-6">
+              <div className="email-sent-icon flex justify-center">
+                <img src={moonIcon} alt="moon icon" className="w-16 h-16 animate-float" />
               </div>
-              <div className="email-sent-content">
-                <h3 className="email-sent-title">이메일 발송 완료</h3>
-                <p className="email-sent-description">
-                  <strong>{email}</strong>로 비밀번호 재설정 링크를 보내드렸습니다.
+              <div className="email-sent-content space-y-4">
+                <h3 className="email-sent-title text-2xl font-bold text-gray-800">이메일 발송 완료</h3>
+                <p className="email-sent-description text-gray-600">
+                  <strong className="text-primary-600">{email}</strong>로 비밀번호 재설정 링크를 보내드렸습니다.
                 </p>
-                <p className="email-sent-note">
+                <p className="email-sent-note text-sm text-gray-500">
                   이메일이 보이지 않는다면 스팸 폴더를 확인해주세요.
                 </p>
               </div>
               <div className="email-sent-button">
                 <button 
                   type="button" 
-                  className="email-sent-link"
+                  className="email-sent-link text-primary-600 hover:text-primary-700 font-medium transition-colors"
                   onClick={handleBackToLogin}
                 >
                   로그인으로 돌아가기

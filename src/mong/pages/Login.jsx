@@ -67,8 +67,8 @@ export default function Login() {
   };
 
   return (
-    <div className="login-container">
-      <div className="login-card">
+    <div className="login-container min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100 p-4">
+      <div className="login-card w-full max-w-md glass rounded-2xl shadow-xl p-8">
         {/* Header */}
         <AuthHeader 
           title="로그인"
@@ -76,8 +76,8 @@ export default function Login() {
         />
 
         {/* Content */}
-        <div className="login-content">
-          <form className="login-form" onSubmit={onSubmit}>
+        <div className="login-content mt-8">
+          <form className="login-form space-y-6" onSubmit={onSubmit}>
             {/* 이메일 */}
             <FormField
               label="이메일"
@@ -104,19 +104,10 @@ export default function Login() {
 
             {/* 에러 메시지 */}
             {error && (
-              <div className="error-message" style={{ 
-                textAlign: 'center', 
-                padding: '1rem', 
-                color: '#dc3545',
-                backgroundColor: '#f8d7da',
-                border: '1px solid #f5c6cb',
-                borderRadius: '8px',
-                marginBottom: '1rem'
-              }}>
+              <div className="error-message text-center p-4 text-error-600 bg-error-50 border border-error-200 rounded-lg mb-4">
                 {error}
               </div>
             )}
-
 
             {/* 로그인 버튼 */}
             <AuthButton type="submit" disabled={loading}>
@@ -124,8 +115,12 @@ export default function Login() {
             </AuthButton>
 
             {/* 비밀번호 찾기 */}
-            <div className="login-forgot-password">
-              <button type="button" onClick={handleForgotPassword}>
+            <div className="login-forgot-password text-center">
+              <button 
+                type="button" 
+                onClick={handleForgotPassword}
+                className="text-primary-600 hover:text-primary-700 text-sm font-medium transition-colors"
+              >
                 비밀번호를 잊으셨나요?
               </button>
             </div>
