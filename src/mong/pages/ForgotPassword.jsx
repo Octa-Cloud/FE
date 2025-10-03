@@ -19,6 +19,22 @@ export default function ForgotPassword() {
 
   const onSubmit = (e) => {
     e.preventDefault();
+    
+    // 입력값 검증
+    if (!email.trim()) {
+      alert('이메일을 입력해주세요.');
+      return;
+    }
+    
+    // 등록된 사용자 목록에서 이메일 확인
+    const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
+    const userExists = existingUsers.find(user => user.email === email.trim());
+    
+    if (!userExists) {
+      alert('등록되지 않은 이메일입니다. 올바른 이메일을 입력해주세요.');
+      return;
+    }
+    
     // TODO: 비밀번호 재설정 요청 연결 (API 연동)
     console.log({ email });
     // 이메일 발송 완료 상태로 변경

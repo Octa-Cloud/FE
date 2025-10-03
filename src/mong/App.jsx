@@ -25,7 +25,7 @@ function AppInitializer() {
         const defaultUser = {
           id: 'default-test-user-001',
           email: 'test1@gmail.com',
-          password: 'password1',
+          password: 'password1!',
           name: '추민기',
           birthDate: '2004-08-19',
           gender: 'male',
@@ -45,8 +45,68 @@ function AppInitializer() {
       }
     };
 
+    // 특정 사용자 제거 함수
+    const removeSpecificUsers = () => {
+      const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
+      const usersToRemove = ['test3@gmail.com', 'test4@gmail.com'];
+      
+      // 제거할 사용자들을 필터링
+      const filteredUsers = existingUsers.filter(user => !usersToRemove.includes(user.email));
+      
+      // 변경사항이 있는 경우에만 업데이트
+      if (filteredUsers.length !== existingUsers.length) {
+        localStorage.setItem('users', JSON.stringify(filteredUsers));
+        console.log('🗑️ test3@gmail.com과 test4@gmail.com 사용자가 제거되었습니다.');
+        console.log('📊 현재 등록된 사용자 수:', filteredUsers.length);
+      } else {
+        console.log('ℹ️ 제거할 사용자가 없습니다.');
+      }
+    };
+
+    // 기존 사용자 비밀번호에 특수문자 추가 함수
+    const updateExistingUserPasswords = () => {
+      const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
+      let hasUpdates = false;
+      
+      const updatedUsers = existingUsers.map(user => {
+        // 비밀번호에 특수문자가 없는 경우 '!' 추가
+        if (user.password && !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(user.password)) {
+          hasUpdates = true;
+          return {
+            ...user,
+            password: user.password + '!'
+          };
+        }
+        return user;
+      });
+      
+      if (hasUpdates) {
+        localStorage.setItem('users', JSON.stringify(updatedUsers));
+        console.log('🔐 기존 사용자들의 비밀번호에 특수문자(!)가 추가되었습니다.');
+        
+        // 현재 로그인된 사용자도 업데이트
+        const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
+        if (currentUser && !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(currentUser.password)) {
+          const updatedCurrentUser = {
+            ...currentUser,
+            password: currentUser.password + '!'
+          };
+          localStorage.setItem('user', JSON.stringify(updatedCurrentUser));
+          console.log('🔐 현재 로그인된 사용자의 비밀번호도 업데이트되었습니다.');
+        }
+      } else {
+        console.log('ℹ️ 모든 사용자의 비밀번호가 이미 특수문자를 포함하고 있습니다.');
+      }
+    };
+
     // 기본 사용자 등록
     initializeDefaultUser();
+    
+    // 특정 사용자 제거
+    removeSpecificUsers();
+    
+    // 기존 사용자 비밀번호에 특수문자 추가
+    updateExistingUserPasswords();
     
     // 앱 시작 시 로컬 스토리지에서 사용자 정보 복원
     dispatch(restoreUser());

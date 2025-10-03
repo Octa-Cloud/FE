@@ -199,6 +199,7 @@
   font-size: 0.875rem;
   color: var(--color-text-secondary);
   margin: 0;
+  white-space: pre-line;
 }
 
 /* Form Field Buttons */

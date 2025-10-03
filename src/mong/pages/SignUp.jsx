@@ -37,6 +37,7 @@ export default function SignupCard() {
   const [verificationValid, setVerificationValid] = useState(false);
   const [showGenderDropdown, setShowGenderDropdown] = useState(false);
   const [showResendMessage, setShowResendMessage] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   // 이메일 포맷 검증
   const validateEmail = (email) => {
@@ -44,10 +45,33 @@ export default function SignupCard() {
     return emailRegex.test(email);
   };
 
+  // 비밀번호 검증 함수
+  const validatePassword = (password) => {
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+    
+    return {
+      isValid: hasLowerCase && hasNumber && hasSpecialChar,
+      hasLowerCase,
+      hasNumber,
+      hasSpecialChar
+    };
+  };
+
   // 이메일 입력 처리
   const handleEmailSubmit = (e) => {
     e.preventDefault();
     if (validateEmail(formData.email)) {
+      // 이메일 중복 검증
+      const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
+      const duplicateEmail = existingUsers.find(user => user.email === formData.email);
+      
+      if (duplicateEmail) {
+        setErrorMessage('이미 등록된 이메일입니다. 다른 이메일을 사용해주세요.');
+        return;
+      }
+      
       setEmailValid(true);
       setVerificationSent(true);
       setCurrentStep(2);
@@ -70,9 +94,71 @@ export default function SignupCard() {
     console.log("인증번호 재전송:", formData.email);
   };
 
+  // 중복 검증 함수
+  const checkDuplicateCredentials = (email, password) => {
+    const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
+    const duplicateEmail = existingUsers.find(user => user.email === email);
+    const duplicatePassword = existingUsers.find(user => user.password === password);
+    
+    return { duplicateEmail, duplicatePassword };
+  };
+
+  // 필수 필드 검증 함수
+  const validateRequiredFields = () => {
+    // 우선순위: 이메일 -> 이름 -> 생년월일 -> 성별 -> 비밀번호 -> 비밀번호 확인
+    if (!formData.email.trim()) {
+      setErrorMessage('이메일을 입력해주세요.');
+      return false;
+    }
+    
+    if (!formData.name.trim()) {
+      setErrorMessage('이름을 입력해주세요.');
+      return false;
+    }
+    
+    if (!formData.birthYear || !formData.birthMonth || !formData.birthDay) {
+      setErrorMessage('생년월일을 입력해주세요.');
+      return false;
+    }
+    
+    if (!formData.gender) {
+      setErrorMessage('성별을 선택해주세요.');
+      return false;
+    }
+    
+    if (!formData.password) {
+      setErrorMessage('비밀번호를 입력해주세요.');
+      return false;
+    }
+    
+    if (!formData.confirmPassword) {
+      setErrorMessage('비밀번호 확인을 입력해주세요.');
+      return false;
+    }
+    
+    return true;
+  };
+
   // 최종 제출
   const onSubmit = async (e) => {
     e.preventDefault();
+    
+    // 필수 필드 검증
+    if (!validateRequiredFields()) {
+      return;
+    }
+    
+    // 비밀번호 형식 검증
+    const passwordValidation = validatePassword(formData.password);
+    if (!passwordValidation.isValid) {
+      let missingRequirements = [];
+      if (!passwordValidation.hasLowerCase) missingRequirements.push('소문자');
+      if (!passwordValidation.hasNumber) missingRequirements.push('숫자');
+      if (!passwordValidation.hasSpecialChar) missingRequirements.push('특수문자');
+      
+      alert(`비밀번호는 ${missingRequirements.join(', ')}를 포함해야 합니다.`);
+      return;
+    }
     
     // 비밀번호 확인
     if (formData.password !== formData.confirmPassword) {
@@ -80,7 +166,29 @@ export default function SignupCard() {
       return;
     }
 
+    // 중복 검증
+    const { duplicateEmail, duplicatePassword } = checkDuplicateCredentials(formData.email, formData.password);
+    
+    if (duplicateEmail) {
+      setErrorMessage('이미 등록된 이메일입니다. 다른 이메일을 사용해주세요.');
+      return;
+    }
+    
+    if (duplicatePassword) {
+      setErrorMessage('이미 사용 중인 비밀번호입니다. 다른 비밀번호를 사용해주세요.');
+      // 비밀번호와 비밀번호 확인을 모두 빈 값으로 초기화
+      setFormData(prev => ({
+        ...prev,
+        password: '',
+        confirmPassword: ''
+      }));
+      return;
+    }
+
     try {
+      // 에러 메시지 초기화
+      setErrorMessage('');
+      
       const userData = {
         email: formData.email,
         password: formData.password,
@@ -95,17 +203,22 @@ export default function SignupCard() {
       navigate('/profile');
     } catch (error) {
       console.error('Registration failed:', error);
+      setErrorMessage('회원가입에 실패했습니다. 다시 시도해주세요.');
     }
   };
 
   // 입력값 변경 처리
   const handleInputChange = (field, value) => {
+    // 입력값이 변경되면 에러 메시지 초기화
+    if (errorMessage) {
+      setErrorMessage('');
+    }
+    
     setFormData(prev => {
       const newData = {
         ...prev,
         [field]: value
       };
-      
       
       return newData;
     });
@@ -208,6 +321,13 @@ export default function SignupCard() {
           steps={stepperSteps}
         />
 
+        {/* Error Message */}
+        {errorMessage && (
+          <div className="error-message text-center p-4 text-error-600 bg-error-50 border border-error-200 rounded-lg mb-4">
+            {errorMessage}
+          </div>
+        )}
+
         {/* Content */}
         <div className="signup-content mt-8">
           {/* 1단계: 이메일 입력 */}
@@ -247,7 +367,7 @@ export default function SignupCard() {
                 disabled={true}
                 readOnly={true}
                 className="signup-field"
-                helperText={`${formData.email}로 인증번호를 전송했습니다. 이메일을 확인해주세요.`}
+                helperText={`${formData.email}로 인증번호를 전송했습니다.\n이메일을 확인해주세요.`}
                 showStatusIndicator={true}
               />
 
