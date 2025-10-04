@@ -113,7 +113,7 @@ const ProfileModification = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/');
   };
 
   const handleEdit = () => {
