@@ -1,0 +1,69 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Environment variables (개인 설정만 무시)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# But allow .env.example for team sharing
+!.env.example
+
+# IDE files (개인 설정만 무시, 팀 공유 설정은 포함)
+.vscode/settings.json
+.vscode/launch.json
+.vscode/extensions.json
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dictionaries
+.idea/shelf
+.idea/vcs.xml
+.idea/jsLibraryMappings.xml
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+
+# Logs
+logs
+*.log
+
+# Bun
+.bun
+
+# Coverage
+coverage/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Yarn Integrity file
+.yarn-integrity
+
+# MCP specific
+*.mcp.json
+.mcp/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Backup files
+*.bak
+*.backup
