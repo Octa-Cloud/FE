@@ -1,7 +1,7 @@
 import React from 'react';
 import { ContainerProps } from '../types';
 
-export default function Container({ children, width = 896, className = '' }: ContainerProps) {
+const Container = React.memo<ContainerProps>(({ children, width = 896, className = '' }) => {
   return (
     <div 
       className={`w-full mx-auto ${className}`}
@@ -10,4 +10,8 @@ export default function Container({ children, width = 896, className = '' }: Con
       {children}
     </div>
   );
-}
+});
+
+Container.displayName = 'Container';
+
+export default Container;

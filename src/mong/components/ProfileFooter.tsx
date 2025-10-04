@@ -1,7 +1,7 @@
 import React from 'react';
 import { ProfileFooterProps } from '../types';
 
-const ProfileFooter: React.FC<ProfileFooterProps> = ({
+const ProfileFooter = React.memo<ProfileFooterProps>(({
   isEditing,
   isLoading = false,
   onEdit,
@@ -35,6 +35,8 @@ const ProfileFooter: React.FC<ProfileFooterProps> = ({
       )}
     </div>
   );
-};
+});
+
+ProfileFooter.displayName = 'ProfileFooter';
 
 export default ProfileFooter;

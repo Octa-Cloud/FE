@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import EyeIcon from "../assets/eyeIcon.svg";
 import { ShortFormFieldProps } from "../types";
 
-export default function ShortFormField({ 
+const ShortFormField = React.memo<ShortFormFieldProps>(({ 
   label, 
   id, 
   name,
@@ -19,7 +19,7 @@ export default function ShortFormField({
   helperText,
   options = [], // 드롭다운 옵션
   showPasswordToggle = false,
-}: ShortFormFieldProps) {
+}) => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
 
@@ -135,4 +135,8 @@ export default function ShortFormField({
       )}
     </div>
   );
-}
+});
+
+ShortFormField.displayName = 'ShortFormField';
+
+export default ShortFormField;

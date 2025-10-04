@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { User, LoginCredentials, RegisterData } from '../../types';
 import { AuthState } from '../../types/redux';
+import { userStorage } from '../../utils/storage';
 
 // 비동기 액션들
 export const loginUser = createAsyncThunk(
@@ -33,18 +34,10 @@ export const loginUser = createAsyncThunk(
         await new Promise(resolve => setTimeout(resolve, delay));
       }
 
-      // 로컬 스토리지에서 사용자 목록 확인
-      const storedUsers = localStorage.getItem('users');
-      console.log('🔍 저장된 사용자 목록:', storedUsers);
+      // 등록된 사용자 목록 확인
+      const users = userStorage.getUsers() || [];
+      console.log('👥 사용자 목록:', users);
       
-      if (!storedUsers) {
-        throw new Error('등록된 사용자가 없습니다. 먼저 회원가입을 해주세요.');
-      }
-      
-      const users: User[] = JSON.parse(storedUsers);
-      console.log('👥 파싱된 사용자 목록:', users);
-      
-      // 사용자 목록이 비어있는지 확인
       if (users.length === 0) {
         throw new Error('등록된 사용자가 없습니다. 먼저 회원가입을 해주세요.');
       }
@@ -82,7 +75,7 @@ export const registerUser = createAsyncThunk(
   async (userData: RegisterData, { rejectWithValue }) => {
     try {
       // 기존 사용자 목록 가져오기
-      const existingUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
+      const existingUsers: User[] = userStorage.getUsers() || [];
       
       // 이메일 중복 확인
       const emailExists = existingUsers.some(user => user.email === userData.email);
@@ -103,10 +96,10 @@ export const registerUser = createAsyncThunk(
       
       // 사용자 목록에 추가
       existingUsers.push(newUser);
-      localStorage.setItem('users', JSON.stringify(existingUsers));
+      userStorage.setUsers(existingUsers);
       
       // 현재 로그인된 사용자로 설정
-      localStorage.setItem('user', JSON.stringify(newUser));
+      userStorage.setCurrentUser(newUser);
       
       return newUser;
     } catch (error) {
@@ -139,7 +132,7 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.error = null;
       // 사용자 목록은 유지하고 현재 로그인된 사용자 정보만 제거
-      localStorage.removeItem('user');
+      userStorage.removeCurrentUser();
     },
     clearError: (state) => {
       state.error = null;
@@ -160,14 +153,14 @@ const authSlice = createSlice({
     },
     // 로컬 스토리지에서 사용자 정보 복원
     restoreUser: (state) => {
-      const storedUser = localStorage.getItem('user');
+      const storedUser = userStorage.getCurrentUser();
       if (storedUser) {
         try {
-          const user: User = JSON.parse(storedUser);
+          const user: User = storedUser;
           // 사용자 목록에서 해당 사용자가 여전히 존재하는지 확인
-          const storedUsers = localStorage.getItem('users');
-          if (storedUsers) {
-            const users: User[] = JSON.parse(storedUsers);
+          const storedUsers = userStorage.getUsers() || [];
+          if (storedUsers.length > 0) {
+            const users: User[] = storedUsers;
             const userExists = users.find(u => u.id === user.id && u.email === user.email);
             if (userExists) {
               // 이미 같은 사용자 정보가 있으면 업데이트하지 않음
@@ -177,7 +170,7 @@ const authSlice = createSlice({
               }
             } else {
               // 사용자가 더 이상 존재하지 않으면 로그아웃
-              localStorage.removeItem('user');
+              userStorage.removeCurrentUser();
               state.user = null;
               state.isAuthenticated = false;
             }
@@ -185,7 +178,7 @@ const authSlice = createSlice({
         } catch (error) {
           console.error('Failed to parse stored user:', error);
           // 잘못된 데이터는 제거
-          localStorage.removeItem('user');
+          userStorage.removeCurrentUser();
         }
       }
     }
@@ -204,7 +197,7 @@ const authSlice = createSlice({
         state.error = null;
         
         // 🔑 핵심 수정: 로그인 성공 시 localStorage.user 설정
-        localStorage.setItem('user', JSON.stringify(action.payload));
+        userStorage.setCurrentUser(action.payload);
         console.log('💾 로그인 성공 - localStorage.user 설정:', action.payload);
         
         // 로그인 성공 시 테스트 자격증명 업데이트
@@ -236,7 +229,7 @@ const authSlice = createSlice({
         state.error = null;
         
         // 🔑 핵심 수정: 회원가입 성공 시 localStorage.user 설정
-        localStorage.setItem('user', JSON.stringify(action.payload));
+        userStorage.setCurrentUser(action.payload);
         console.log('💾 회원가입 성공 - localStorage.user 설정:', action.payload);
         
         // 회원가입 성공 시 테스트 자격증명 업데이트

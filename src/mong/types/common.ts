@@ -15,23 +15,4 @@ export type AuthStep = 1 | 2 | 3;
 export type ButtonVariant = 'primary' | 'secondary';
 export type InputType = 'text' | 'email' | 'password' | 'tel';
 
-// API 응답 타입
-export interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  message?: string;
-}
-
-// 폼 검증 타입
-export interface PasswordValidation {
-  isValid: boolean;
-  hasLowerCase: boolean;
-  hasNumber: boolean;
-  hasSpecialChar: boolean;
-}
-
-export interface ValidationResult {
-  isValid: boolean;
-  errors: string[];
-}
+// 이 타입들은 utils.ts로 이동되었습니다.

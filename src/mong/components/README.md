@@ -1,54 +1,79 @@
-# Profile Modification Components
+# Components Directory
 
-This directory contains React components for the personal information modification page, designed to match the Figma design specifications.
+This directory contains reusable React components for the application, organized with TypeScript support and performance optimizations.
 
-## Components
+## Component Structure
 
-### ProfileHeader.jsx
-Header component with navigation and user profile information.
-- **Props:**
-  - `onBack`: Function to handle back button click
-  - `onStartSleepRecord`: Function to handle sleep recording start
-  - `userProfile`: Object containing user name and avatar
+### UI Components
+- **AuthButton.tsx** - Reusable button component with primary/secondary variants
+- **Container.tsx** - Layout container with responsive width control
+- **FormField.tsx** - Enhanced form input field with password toggle and status indicators
+- **ShortFormField.tsx** - Compact form field for dropdowns and specialized inputs
 
-### ProfileStatsCard.jsx
-Card component displaying user statistics and profile information.
-- **Props:**
-  - `userData`: Object containing user information and statistics
-    - `name`: User's name
-    - `email`: User's email
-    - `avatar`: User's avatar character
-    - `averageScore`: Average sleep score
-    - `averageSleepTime`: Average sleep time in hours
-    - `totalDays`: Total measurement days
+### Authentication Components
+- **AuthHeader.tsx** - Header for authentication pages with stepper support
+- **AuthFooter.tsx** - Footer for authentication pages with links
 
-### BasicInfoForm.jsx
-Form component for editing basic user information.
-- **Props:**
-  - `userData`: Current user data object
-  - `onSave`: Function called when form is submitted with updated data
+### Profile Components
+- **ProfileHeader.tsx** - Header with user profile dropdown menu
+- **ProfileStatsCard.tsx** - Statistics display card
+- **ProfileFooter.tsx** - Action buttons (Edit/Save/Cancel) for profile forms
+- **BasicInfoForm.tsx** - Form for editing user profile information
+
+## Performance Optimizations
+
+All components are wrapped with `React.memo` for optimal re-rendering:
+```typescript
+const Component = React.memo<Props>(({ ... }) => {
+  // Component logic
+});
+
+Component.displayName = 'Component';
+export default Component;
+```
+
+## TypeScript Support
+
+Each component has corresponding TypeScript interfaces:
+- Props are fully typed with interfaces
+- Default values are properly typed
+- Event handlers use proper React event types
 
 ## Styling
 
-All components use CSS modules with a dark theme design that matches the Figma specifications:
-- **Primary Color:** #00C896 (teal/cyan)
-- **Background:** #0F0F0F (dark)
-- **Card Background:** #2C2C2C (darker gray)
-- **Text:** White and light gray variants
-- **Borders:** #404040 (medium gray)
+Components use a hybrid approach:
+- **Tailwind CSS**: For utility classes and responsive design
+- **Custom CSS**: For complex styling and animations
+- **CSS Variables**: For consistent theming
 
-## Usage
+## Usage Examples
 
-```jsx
-import ProfileModification from '../pages/ProfileModification';
+```typescript
+import AuthButton from '../components/AuthButton';
+import FormField from '../components/FormField';
 
-// Navigate to /profile to see the page
+// Primary button
+<AuthButton variant="primary" onClick={handleSubmit}>
+  Submit
+</AuthButton>
+
+// Form field with validation
+<FormField
+  id="email"
+  label="Email"
+  type="email"
+  value={email}
+  onChange={handleChange}
+  required
+  helperText="Enter your email address"
+/>
 ```
 
 ## Features
 
-- Responsive design for mobile and desktop
-- Dark theme matching Figma design
-- Form validation and state management
-- Accessible form controls
-- Consistent styling with the rest of the application
+- **TypeScript**: Full type safety and IntelliSense support
+- **Performance**: React.memo optimization for all components
+- **Accessibility**: Proper ARIA attributes and keyboard navigation
+- **Responsive**: Mobile-first design with Tailwind CSS
+- **Theming**: Consistent design system with CSS variables
+- **Reusability**: Modular components with clear prop interfaces

@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { User, UpdateProfileData } from '../../types';
 import { UserProfileState } from '../../types/redux';
+import { userStorage } from '../../utils/storage';
 
 // 사용자 정보 업데이트 비동기 액션
 export const updateUserProfile = createAsyncThunk(
@@ -10,13 +11,13 @@ export const updateUserProfile = createAsyncThunk(
       console.log('🔄 updateUserProfile 시작, userData:', userData);
       
       // 현재 로그인된 사용자 가져오기
-      const currentUser = localStorage.getItem('user');
+      const currentUser = userStorage.getCurrentUser();
       console.log('👤 현재 사용자:', currentUser);
       
       // localStorage 전체 상태 확인
       console.log('🔍 localStorage 전체 상태:');
-      console.log('  - user:', localStorage.getItem('user'));
-      console.log('  - users:', localStorage.getItem('users'));
+      console.log('  - user:', userStorage.getCurrentUser());
+      console.log('  - users:', userStorage.getUsers());
       
       if (!currentUser) {
         // Redux state에서 현재 사용자 정보 확인 시도
@@ -26,8 +27,8 @@ export const updateUserProfile = createAsyncThunk(
         
         if (authUser) {
           console.log('💾 Redux state에서 사용자 정보를 localStorage에 복원');
-          localStorage.setItem('user', JSON.stringify(authUser));
-          return { ...authUser, ...userData, updatedAt: new Date().toISOString() };
+          userStorage.setCurrentUser(authUser);
+          return { ...authUser, ...userData, updatedAt: new Date().toISOString() } as User;
         }
         
         throw new Error('User not found - 현재 로그인된 사용자가 없습니다. 다시 로그인해주세요.');
@@ -45,16 +46,16 @@ export const updateUserProfile = createAsyncThunk(
       console.log('✅ 업데이트된 사용자 정보:', updatedUser);
       
       // localStorage에 업데이트된 사용자 저장
-      localStorage.setItem('user', JSON.stringify(updatedUser));
+      userStorage.setCurrentUser(updatedUser);
       console.log('💾 localStorage.user 업데이트 완료');
       
       // users 배열에서도 해당 사용자 정보 업데이트
-      const users: User[] = JSON.parse(localStorage.getItem('users') || '[]');
+      const users: User[] = userStorage.getUsers() || [];
       const userIndex = users.findIndex(u => u.id === user.id || u.email === user.email);
       
       if (userIndex !== -1) {
         users[userIndex] = updatedUser;
-        localStorage.setItem('users', JSON.stringify(users));
+        userStorage.setUsers(users);
         console.log('👥 localStorage.users 배열 업데이트 완료');
       } else {
         console.warn('⚠️ users 배열에서 사용자를 찾을 수 없음');

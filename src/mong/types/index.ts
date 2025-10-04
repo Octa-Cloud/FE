@@ -11,3 +11,6 @@ export * from './components';
 
 // Redux 관련 타입
 export * from './redux';
+
+// 유틸리티 타입
+export * from './utils';
