@@ -195,7 +195,7 @@ export default function SignupCard() {
         password: formData.password,
         name: formData.name,
         birthDate: `${formData.birthYear}-${formData.birthMonth}-${formData.birthDay}`,
-        gender: formData.gender as 'male' | 'female',
+        gender: formData.gender as '남' | '여',
       };
 
       await register(userData);

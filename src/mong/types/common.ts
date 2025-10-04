@@ -5,12 +5,12 @@ export interface User {
   password: string;
   name: string;
   birthDate: string;
-  gender: 'male' | 'female';
+  gender: '남' | '여';
   createdAt: string;
 }
 
 // 유틸리티 타입
-export type Gender = 'male' | 'female';
+export type Gender = '남' | '여';
 export type AuthStep = 1 | 2 | 3;
 export type ButtonVariant = 'primary' | 'secondary';
 export type InputType = 'text' | 'email' | 'password' | 'tel';

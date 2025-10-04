@@ -22,13 +22,13 @@ export interface RegisterData {
   password: string;
   name: string;
   birthDate: string;
-  gender: 'male' | 'female';
+  gender: '남' | '여';
 }
 
 export interface UpdateProfileData {
   name?: string;
   birthDate?: string;
-  gender?: 'male' | 'female';
+  gender?: '남' | '여';
   email?: string;
   password?: string;
 }

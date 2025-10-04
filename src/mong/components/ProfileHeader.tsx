@@ -62,7 +62,7 @@ const ProfileHeader = ({ onBack, onStartSleepRecord, userProfile, onLogout }: Pr
           <div className="user-profile-container" ref={dropdownRef}>
             <div className="user-profile" onClick={handleUserProfileClick}>
               <div className="user-avatar">
-                <span className="avatar-fallback">{userProfile.avatar}</span>
+                <span className="avatar-fallback">{userProfile.name.charAt(0)}</span>
               </div>
               <span className="user-name">{userProfile.name}</span>
               <svg 

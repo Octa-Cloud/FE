@@ -32,7 +32,7 @@ const ProfileModification = () => {
     averageSleepTime: 7.2,
     totalDays: 45,
     birthDate: '1990-01-15',
-    gender: 'female'
+    gender: '여'
   };
 
   // 현재 표시할 사용자 데이터 (localStorage > profile > user > defaultUserData 순으로 우선순위)

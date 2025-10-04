@@ -127,7 +127,7 @@ export const validateGender = (gender: string): ValidationResult => {
     return { isValid: false, message: '성별을 선택해주세요.' };
   }
   
-  const validGenders = ['male', 'female', 'other'];
+  const validGenders = ['남', '여'];
   if (!validGenders.includes(gender)) {
     return { isValid: false, message: '올바른 성별을 선택해주세요.' };
   }

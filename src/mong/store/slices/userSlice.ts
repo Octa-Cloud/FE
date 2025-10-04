@@ -34,8 +34,9 @@ export const updateUserProfile = createAsyncThunk(
         throw new Error('User not found - 현재 로그인된 사용자가 없습니다. 다시 로그인해주세요.');
       }
       
-      const user: User = JSON.parse(currentUser);
-      console.log('📝 파싱된 사용자 정보:', user);
+      // currentUser는 이미 파싱된 객체이므로 JSON.parse 불필요
+      const user: User = currentUser as User;
+      console.log('📝 사용자 정보:', user);
       
       // 사용자 정보 업데이트
       const updatedUser: User = {

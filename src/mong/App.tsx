@@ -30,7 +30,7 @@ function AppInitializer() {
           password: 'password1!',
           name: '추민기',
           birthDate: '2004-08-19',
-          gender: 'male',
+          gender: '남',
           createdAt: new Date().toISOString(),
         };
         

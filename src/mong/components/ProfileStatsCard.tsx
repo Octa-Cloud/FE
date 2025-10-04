@@ -9,7 +9,7 @@ const ProfileStatsCard = ({ userData }: ProfileStatsCardProps) => {
     <div className="profile-stats-card">
       <div className="profile-stats-header">
         <div className="profile-avatar">
-          <span className="avatar-fallback">{avatar}</span>
+          <span className="avatar-fallback">{name.charAt(0)}</span>
         </div>
         <h4 className="profile-name">{name}</h4>
         <p className="profile-email">{email}</p>

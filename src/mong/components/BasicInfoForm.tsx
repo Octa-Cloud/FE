@@ -177,9 +177,8 @@ const BasicInfoForm = ({
               disabled={!isEditing}
               options={[
                 { value: '', label: '선택하세요' },
-                { value: 'male', label: '남자' },
-                { value: 'female', label: '여자' },
-                { value: 'other', label: '기타' }
+                { value: '남', label: '남자' },
+                { value: '여', label: '여자' }
               ]}
               className="profile-form-field"
             />

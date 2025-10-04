@@ -28,13 +28,13 @@ const SleepGoalSetting = () => {
   const currentUser = user || profile;
   const userProfile = {
     name: currentUser?.name || '사용자',
-    avatar: currentUser?.email?.charAt(0).toUpperCase() || 'U'
+    avatar: (currentUser?.name || '사용자').charAt(0)
   };
 
   const userData = {
     name: currentUser?.name || '사용자',
     email: currentUser?.email || '',
-    avatar: currentUser?.email?.charAt(0).toUpperCase() || 'U',
+    avatar: (currentUser?.name || '사용자').charAt(0),
     averageScore: 85,
     averageSleepTime: 7.5,
     totalDays: 30
