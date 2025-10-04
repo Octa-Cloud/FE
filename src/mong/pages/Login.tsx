@@ -101,8 +101,13 @@ export default function Login() {
               required
             />
 
+            {/* 로그인 버튼 */}
+            <AuthButton type="submit" disabled={loading}>
+              {loading ? '로그인 중...' : '로그인'}
+            </AuthButton>
+
             {/* 비밀번호 찾기 링크 */}
-            <div className="forgot-password-link text-right">
+            <div className="forgot-password-link text-center">
               <button 
                 type="button" 
                 onClick={handleForgotPassword}
@@ -111,11 +116,6 @@ export default function Login() {
                 비밀번호를 잊으셨나요?
               </button>
             </div>
-
-            {/* 로그인 버튼 */}
-            <AuthButton type="submit" disabled={loading}>
-              {loading ? '로그인 중...' : '로그인'}
-            </AuthButton>
 
             {/* 에러 메시지 */}
             {error && (

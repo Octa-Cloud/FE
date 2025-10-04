@@ -69,7 +69,7 @@ export default function SignupCard() {
       const duplicateEmail = existingUsers.find(user => user.email === formData.email);
       
       if (duplicateEmail) {
-        setErrorMessage('이미 등록된 이메일입니다. 다른 이메일을 사용해주세요.');
+        alert('이미 등록된 이메일입니다. 다른 이메일을 사용해주세요.');
         return;
       }
       
@@ -171,12 +171,12 @@ export default function SignupCard() {
     const { duplicateEmail, duplicatePassword } = checkDuplicateCredentials(formData.email, formData.password);
     
     if (duplicateEmail) {
-      setErrorMessage('이미 등록된 이메일입니다. 다른 이메일을 사용해주세요.');
+      alert('이미 등록된 이메일입니다. 다른 이메일을 사용해주세요.');
       return;
     }
     
     if (duplicatePassword) {
-      setErrorMessage('이미 사용 중인 비밀번호입니다. 다른 비밀번호를 사용해주세요.');
+      alert('이미 사용 중인 비밀번호입니다. 다른 비밀번호를 사용해주세요.');
       // 비밀번호와 비밀번호 확인을 모두 빈 값으로 초기화
       setFormData(prev => ({
         ...prev,
