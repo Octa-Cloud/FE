@@ -32,3 +32,16 @@ export interface UpdateProfileData {
   email?: string;
   password?: string;
 }
+
+// 수면 목표 설정 관련 타입
+export interface SleepGoalData {
+  targetBedtime: string;
+  targetWakeTime: string;
+  targetSleepHours: number;
+}
+
+export interface SleepGoalFormData {
+  targetBedtime: string;
+  targetWakeTime: string;
+  targetSleepHours: string;
+}

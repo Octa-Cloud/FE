@@ -117,3 +117,15 @@ export interface BasicInfoFormProps {
   onCancel: () => void;
   onFormDataChange?: (formData: any) => void;
 }
+
+export interface ProfileFooterProps {
+  isEditing: boolean;
+  isLoading?: boolean;
+  onEdit: () => void;
+  onSave: () => void;
+  onCancel: () => void;
+  editText?: string;
+  saveText?: string;
+  cancelText?: string;
+  loadingText?: string;
+}

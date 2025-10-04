@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../styles/profile.css';
 import { ProfileHeaderProps } from '../types';
 
 const ProfileHeader = ({ onBack, onStartSleepRecord, userProfile, onLogout }: ProfileHeaderProps) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   // 드롭다운 외부 클릭 시 닫기
   useEffect(() => {
@@ -26,10 +28,13 @@ const ProfileHeader = ({ onBack, onStartSleepRecord, userProfile, onLogout }: Pr
 
   const handleMenuClick = (action: string) => {
     setIsDropdownOpen(false);
-    if (action === 'logout' && onLogout) {
+    if (action === 'profile') {
+      navigate('/profile');
+    } else if (action === 'sleep-goal') {
+      navigate('/sleep-goal');
+    } else if (action === 'logout' && onLogout) {
       onLogout();
     }
-    // 다른 메뉴 액션들은 추후 구현
   };
   
   return (

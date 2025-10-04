@@ -745,3 +745,90 @@
     font-size: 13px;
   }
 }
+
+/* 수면 목표 설정 페이지 스타일 */
+.sleep-goal-setting-page {
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+  min-height: 100vh;
+}
+
+.sleep-goal-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.sleep-goal-header h2 {
+  color: var(--color-text-primary);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.sleep-goal-header p {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  margin: 0.5rem 0 0 0;
+}
+
+.sleep-goal-form label {
+  color: var(--color-text-primary);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.sleep-goal-form select,
+.sleep-goal-form input[type="time"] {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--color-text-primary);
+  transition: all 0.2s ease;
+}
+
+.sleep-goal-form select:focus,
+.sleep-goal-form input[type="time"]:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+}
+
+.sleep-goal-form select:disabled,
+.sleep-goal-form input[type="time"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sleep-goal-form button {
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.sleep-goal-form button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 수면 목표 설정 반응형 스타일 */
+@media (max-width: 768px) {
+  .sleep-goal-form .grid-cols-3 {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .sleep-goal-card {
+    margin: 0.5rem;
+    padding: 1rem;
+  }
+  
+  .sleep-goal-header h2 {
+    font-size: 1.125rem;
+  }
+  
+  .sleep-goal-form label {
+    font-size: 0.875rem;
+  }
+}

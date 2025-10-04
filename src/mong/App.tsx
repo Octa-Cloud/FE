@@ -8,6 +8,7 @@ import SignUp from './pages/SignUp';
 import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
 import ProfileModification from './pages/ProfileModification';
+import SleepGoalSetting from './pages/SleepGoalSetting';
 import { User } from './types';
 
 // 앱 초기화 컴포넌트 - useAuth 훅 사용하지 않고 직접 dispatch 사용
@@ -121,6 +122,7 @@ function AppInitializer() {
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/profile" element={<ProfileModification />} />
+        <Route path="/sleep-goal" element={<SleepGoalSetting />} />
       </Routes>
     </Router>
   );

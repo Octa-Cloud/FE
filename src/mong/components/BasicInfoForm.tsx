@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import FormField from './FormField';
 import ShortFormField from './ShortFormField';
+import ProfileFooter from './ProfileFooter';
 import '../styles/profile.css';
 import { BasicInfoFormProps } from '../types';
 
@@ -185,22 +186,12 @@ const BasicInfoForm = ({
           </div>
         </div>
         
-        <div className="form-actions">
-          {!isEditing ? (
-            <button type="button" onClick={onEdit} className="edit-button">
-              수정
-            </button>
-          ) : (
-            <>
-              <button type="button" onClick={handleSubmit} className="save-button">
-                저장
-              </button>
-              <button type="button" onClick={handleCancel} className="cancel-button">
-                취소
-              </button>
-            </>
-          )}
-        </div>
+        <ProfileFooter
+          isEditing={isEditing}
+          onEdit={onEdit}
+          onSave={handleSubmit}
+          onCancel={handleCancel}
+        />
       </form>
     </div>
   );
