@@ -14,3 +14,6 @@ export * from './redux';
 
 // 유틸리티 타입
 export * from './utils';
+
+// 테스트 데이터 타입
+export * from './testData';

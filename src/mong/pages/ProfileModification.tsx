@@ -6,6 +6,7 @@ import ProfileStatsCard from '../components/ProfileStatsCard';
 import BasicInfoForm from '../components/BasicInfoForm';
 import '../styles/profile.css';
 import { User } from '../types';
+import { getTestUserProfile } from '../testData';
 
 const ProfileModification = () => {
   const navigate = useNavigate();
@@ -23,17 +24,28 @@ const ProfileModification = () => {
     clearTempProfile 
   } = useUserProfile();
 
-  // 기본 사용자 데이터 (실제 앱에서는 API에서 가져옴)
-  const defaultUserData = {
-    name: '김수면',
-    email: 'a@a.a',
-    avatar: '김',
-    averageScore: 85,
-    averageSleepTime: 7.2,
-    totalDays: 45,
-    birthDate: '1990-01-15',
-    gender: '여'
+  // 현재 로그인한 사용자의 프로필 데이터 가져오기
+  const getCurrentUserProfile = () => {
+    if (user?.id) {
+      const testUserProfile = getTestUserProfile(user.id);
+      if (testUserProfile) {
+        return testUserProfile;
+      }
+    }
+    // 기본값 (로그인하지 않았거나 테스트 사용자가 아닌 경우)
+    return {
+      name: '김수면',
+      email: 'a@a.a',
+      avatar: '김',
+      averageScore: 85,
+      averageSleepTime: 7.2,
+      totalDays: 45,
+      birthDate: '1990-01-15',
+      gender: '여'
+    };
   };
+
+  const defaultUserData = getCurrentUserProfile();
 
   // 현재 표시할 사용자 데이터 (localStorage > profile > user > defaultUserData 순으로 우선순위)
   const currentUserData = useMemo(() => {
@@ -96,9 +108,9 @@ const ProfileModification = () => {
         ...user,
         avatar: user.name ? user.name.charAt(0) : 'U'
       };
-      setProfile(userData);
+      setProfile(userData as any);
     } else {
-      setProfile(defaultUserData);
+      setProfile(defaultUserData as any);
     }
   }, [user]); // profile과 setProfile을 의존성 배열에서 제거
 
@@ -117,7 +129,7 @@ const ProfileModification = () => {
   };
 
   const handleEdit = () => {
-    setTempProfile({ ...currentUserData }); // 깊은 복사로 현재 데이터를 임시 데이터에 설정
+    setTempProfile({ ...currentUserData } as any); // 깊은 복사로 현재 데이터를 임시 데이터에 설정
     setEditing(true);
   };
 
@@ -179,7 +191,7 @@ const ProfileModification = () => {
         onLogout={handleLogout}
         userProfile={{
           name: currentUserData?.name || '사용자',
-          avatar: currentUserData?.avatar || 'U'
+          avatar: (currentUserData?.name || '사용자').charAt(0)
         }}
       />
       
@@ -187,9 +199,21 @@ const ProfileModification = () => {
         <div className="profile-container max-w-4xl mx-auto">
           <div className="profile-content space-y-6">
             {/* 항상 데이터가 있도록 보장 */}
-            <ProfileStatsCard userData={currentUserData} />
+            <ProfileStatsCard userData={{
+              name: currentUserData?.name || '사용자',
+              email: currentUserData?.email || '',
+              avatar: (currentUserData?.name || '사용자').charAt(0),
+              averageScore: (currentUserData as any)?.averageScore || 85,
+              averageSleepTime: (currentUserData as any)?.averageSleepTime || 7.5,
+              totalDays: (currentUserData as any)?.totalDays || 30
+            }} />
             <BasicInfoForm 
-              userData={currentUserData}
+              userData={{
+                name: currentUserData?.name || '사용자',
+                email: currentUserData?.email || '',
+                birthDate: currentUserData?.birthDate || '1990-01-01',
+                gender: (currentUserData?.gender as '남' | '여') || '남'
+              }}
               tempFormData={tempProfile}
               isEditing={isEditing}
               onEdit={handleEdit}

@@ -5,6 +5,7 @@ import ProfileStatsCard from '../components/ProfileStatsCard';
 import ProfileFooter from '../components/ProfileFooter';
 import { useAuth, useUserProfile } from '../store/hooks';
 import { SleepGoalFormData, SleepGoalData } from '../types';
+import { getTestUserSleepGoal } from '../testData';
 import '../styles/profile.css';
 
 const SleepGoalSetting = () => {
@@ -26,6 +27,26 @@ const SleepGoalSetting = () => {
 
   // 사용자 데이터 가져오기
   const currentUser = user || profile;
+  
+  // 현재 사용자의 수면 목표 데이터 가져오기
+  const getCurrentUserSleepGoal = () => {
+    if (currentUser?.id) {
+      const testUserSleepGoal = getTestUserSleepGoal(currentUser.id);
+      if (testUserSleepGoal) {
+        return testUserSleepGoal;
+      }
+    }
+    // 기본값
+    return {
+      targetBedtime: '23:00',
+      targetWakeTime: '07:00',
+      targetSleepHours: 8.0,
+      name: '사용자'
+    };
+  };
+
+  const sleepGoalData = getCurrentUserSleepGoal();
+  
   const userProfile = {
     name: currentUser?.name || '사용자',
     avatar: (currentUser?.name || '사용자').charAt(0)

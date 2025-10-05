@@ -377,6 +377,69 @@ bun web:build
 - Implement proper prop typing
 - Use semantic HTML elements
 
+## 🧪 Test Data
+
+The project includes comprehensive test data for development and testing purposes.
+
+### Test Users
+
+Three predefined test users are automatically initialized when the application starts:
+
+| User | Email | Password | Name | Gender | Profile Score | Sleep Time |
+|------|-------|----------|------|--------|---------------|------------|
+| **추민기** | `test1@gmail.com` | `password1!` | 추민기 | 남 | 85 | 7.5h |
+| **김수면** | `sleepy@mong.com` | `sleep123!` | 김수면 | 여 | 92 | 8.2h |
+| **박불면** | `insomnia@test.com` | `test123!` | 박불면 | 남 | 65 | 5.8h |
+
+### Sleep Goals
+
+Each test user has different sleep goal patterns:
+
+- **추민기**: Bedtime 23:00, Wake 07:00, Target 8.0h
+- **김수면**: Bedtime 22:30, Wake 06:30, Target 8.0h  
+- **박불면**: Bedtime 01:00, Wake 07:00, Target 6.0h
+
+### Developer Console Commands
+
+In development mode, you can access test data utilities via the browser console:
+
+```javascript
+// Initialize test data
+window.testData.initialize()
+
+// Reset test data
+window.testData.reset()
+
+// Get specific user data
+window.testData.getUser('test-user-001')
+window.testData.getUserProfile('test-user-002')
+window.testData.getUserSleepGoal('test-user-003')
+
+// Get user by email
+window.testData.getUserByEmail('test1@gmail.com')
+```
+
+### Data Structure
+
+Test data is organized in a unified structure where each user contains:
+
+```typescript
+interface TestUser {
+  // Basic user info
+  id, email, password, name, birthDate, gender, createdAt
+  
+  // Profile statistics
+  profile: {
+    avatar, averageScore, averageSleepTime, totalDays
+  }
+  
+  // Sleep goals
+  sleepGoal: {
+    targetBedtime, targetWakeTime, targetSleepHours
+  }
+}
+```
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.

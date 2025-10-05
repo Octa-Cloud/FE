@@ -10,6 +10,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ProfileModification from './pages/ProfileModification';
 import SleepGoalSetting from './pages/SleepGoalSetting';
 import { User } from './types';
+import { initializeTestData } from './testData';
 
 // 앱 초기화 컴포넌트 - useAuth 훅 사용하지 않고 직접 dispatch 사용
 function AppInitializer() {
@@ -101,8 +102,8 @@ function AppInitializer() {
       }
     };
 
-    // 기본 사용자 등록
-    initializeDefaultUser();
+    // 통합 테스트 데이터 초기화
+    initializeTestData();
     
     // 특정 사용자 제거
     removeSpecificUsers();

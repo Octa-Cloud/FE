@@ -377,6 +377,69 @@ bun web:build
 - 적절한 prop 타이핑 구현
 - 의미 있는 HTML 요소 사용
 
+## 🧪 테스트 데이터
+
+프로젝트에는 개발 및 테스트 목적으로 포괄적인 테스트 데이터가 포함되어 있습니다.
+
+### 테스트 사용자
+
+애플리케이션이 시작될 때 자동으로 초기화되는 3명의 사전 정의된 테스트 사용자:
+
+| 사용자 | 이메일 | 비밀번호 | 이름 | 성별 | 프로필 점수 | 수면 시간 |
+|--------|--------|----------|------|------|-------------|-----------|
+| **추민기** | `test1@gmail.com` | `password1!` | 추민기 | 남 | 85 | 7.5시간 |
+| **김수면** | `sleepy@mong.com` | `sleep123!` | 김수면 | 여 | 92 | 8.2시간 |
+| **박불면** | `insomnia@test.com` | `test123!` | 박불면 | 남 | 65 | 5.8시간 |
+
+### 수면 목표
+
+각 테스트 사용자는 서로 다른 수면 목표 패턴을 가지고 있습니다:
+
+- **추민기**: 취침 23:00, 기상 07:00, 목표 8.0시간
+- **김수면**: 취침 22:30, 기상 06:30, 목표 8.0시간
+- **박불면**: 취침 01:00, 기상 07:00, 목표 6.0시간
+
+### 개발자 콘솔 명령어
+
+개발 모드에서는 브라우저 콘솔을 통해 테스트 데이터 유틸리티에 접근할 수 있습니다:
+
+```javascript
+// 테스트 데이터 초기화
+window.testData.initialize()
+
+// 테스트 데이터 리셋
+window.testData.reset()
+
+// 특정 사용자 데이터 가져오기
+window.testData.getUser('test-user-001')
+window.testData.getUserProfile('test-user-002')
+window.testData.getUserSleepGoal('test-user-003')
+
+// 이메일로 사용자 찾기
+window.testData.getUserByEmail('test1@gmail.com')
+```
+
+### 데이터 구조
+
+테스트 데이터는 각 사용자가 다음을 포함하는 통합 구조로 구성되어 있습니다:
+
+```typescript
+interface TestUser {
+  // 기본 사용자 정보
+  id, email, password, name, birthDate, gender, createdAt
+  
+  // 프로필 통계
+  profile: {
+    avatar, averageScore, averageSleepTime, totalDays
+  }
+  
+  // 수면 목표
+  sleepGoal: {
+    targetBedtime, targetWakeTime, targetSleepHours
+  }
+}
+```
+
 ## 📄 라이선스
 
 이 프로젝트는 MIT 라이선스 하에 있습니다. 자세한 내용은 LICENSE 파일을 참조하세요.
