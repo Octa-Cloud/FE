@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import FormField from './FormField';
-import ShortFormField from './ShortFormField';
+import BaseInput from './BaseInput';
+import SelectInput from './SelectInput';
 import ProfileFooter from './ProfileFooter';
 import '../styles/profile.css';
 import { BasicInfoFormProps } from '../types';
@@ -17,7 +17,9 @@ const BasicInfoForm = ({
   const [formData, setFormData] = useState({
     name: userData.name || '',
     email: userData.email || '',
-    birthDate: userData.birthDate || '',
+    birthMonth: userData.birthDate ? userData.birthDate.split('-')[1] || '' : '',
+    birthDay: userData.birthDate ? userData.birthDate.split('-')[2] || '' : '',
+    birthYear: userData.birthDate ? userData.birthDate.split('-')[0] || '' : '',
     gender: userData.gender || ''
   });
 
@@ -30,7 +32,9 @@ const BasicInfoForm = ({
       setFormData({
         name: userData.name || '',
         email: userData.email || '',
-        birthDate: userData.birthDate || '',
+        birthMonth: userData.birthDate ? userData.birthDate.split('-')[1] || '' : '',
+        birthDay: userData.birthDate ? userData.birthDate.split('-')[2] || '' : '',
+        birthYear: userData.birthDate ? userData.birthDate.split('-')[0] || '' : '',
         gender: userData.gender || ''
       });
     }
@@ -44,7 +48,9 @@ const BasicInfoForm = ({
       setFormData({
         name: tempFormData.name || '',
         email: tempFormData.email || '',
-        birthDate: tempFormData.birthDate || '',
+        birthMonth: tempFormData.birthDate ? tempFormData.birthDate.split('-')[1] || '' : '',
+        birthDay: tempFormData.birthDate ? tempFormData.birthDate.split('-')[2] || '' : '',
+        birthYear: tempFormData.birthDate ? tempFormData.birthDate.split('-')[0] || '' : '',
         gender: tempFormData.gender || ''
       });
     } else if (!isEditing) {
@@ -52,7 +58,9 @@ const BasicInfoForm = ({
       setFormData({
         name: userData.name || '',
         email: userData.email || '',
-        birthDate: userData.birthDate || '',
+        birthMonth: userData.birthDate ? userData.birthDate.split('-')[1] || '' : '',
+        birthDay: userData.birthDate ? userData.birthDate.split('-')[2] || '' : '',
+        birthYear: userData.birthDate ? userData.birthDate.split('-')[0] || '' : '',
         gender: userData.gender || ''
       });
     }
@@ -94,17 +102,39 @@ const BasicInfoForm = ({
     }
   };
 
+  // 생년월일 입력 핸들러
+  const handleBirthDateChange = (field: 'birthMonth' | 'birthDay' | 'birthYear', value: string) => {
+    console.log(`Birth date changed: ${field} = ${value}`);
+    const newFormData = {
+      ...formData,
+      [field]: value
+    };
+    setFormData(newFormData);
+    if (onFormDataChange) {
+      onFormDataChange(newFormData);
+    }
+  };
+
   const handleSubmit = () => {
     console.log('Save button clicked, formData:', formData);
     console.log('Current formData state:', {
       name: formData.name,
       email: formData.email,
-      birthDate: formData.birthDate,
+      birthMonth: formData.birthMonth,
+      birthDay: formData.birthDay,
+      birthYear: formData.birthYear,
       gender: formData.gender
     });
     
+    // 생년월일을 YYYY-MM-DD 형식으로 변환
+    const birthDate = `${formData.birthYear}-${formData.birthMonth.padStart(2, '0')}-${formData.birthDay.padStart(2, '0')}`;
+    const formattedFormData = {
+      ...formData,
+      birthDate: birthDate
+    };
+    
     // 모든 필드 수정 허용 - 이름 필드 수정 불필요
-    onSave(formData);
+    onSave(formattedFormData);
   };
 
   const handleCancel = () => {
@@ -113,28 +143,32 @@ const BasicInfoForm = ({
     setFormData({
       name: userData.name || '',
       email: userData.email || '',
-      birthDate: userData.birthDate || '',
+      birthMonth: userData.birthDate ? userData.birthDate.split('-')[1] || '' : '',
+      birthDay: userData.birthDate ? userData.birthDate.split('-')[2] || '' : '',
+      birthYear: userData.birthDate ? userData.birthDate.split('-')[0] || '' : '',
       gender: userData.gender || ''
     });
     onCancel();
   };
 
   return (
-    <div className={`basic-info-form ${isEditing ? 'editing' : ''}`}>
-      <div className="basic-info-header">
-        <div className="header-icon">
+    <div className="basic-info-card">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400/20 to-primary-600/20 flex items-center justify-center text-primary-400">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
             <circle cx="12" cy="7" r="4"></circle>
           </svg>
         </div>
-        <h4 className="basic-info-title">기본 정보</h4>
-        <p className="basic-info-description">개인정보를 수정할 수 있습니다</p>
+        <div>
+          <h4 className="text-xl font-semibold text-white m-0">기본 정보</h4>
+          <p className="text-sm text-gray-400 mt-1 mb-0">개인정보를 수정할 수 있습니다</p>
+        </div>
       </div>
       
-      <form onSubmit={(e) => e.preventDefault()} className="basic-info-content">
-        <div className="form-fields">
-          <FormField
+      <form onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4">
+          <BaseInput
             ref={nameInputRef}
             label="이름"
             id="name"
@@ -143,10 +177,9 @@ const BasicInfoForm = ({
             value={formData.name}
             onChange={handleInputChange}
             disabled={!isEditing}
-            className="profile-form-field"
           />
           
-          <FormField
+          <BaseInput
             label="이메일"
             id="email"
             type="email"
@@ -154,24 +187,92 @@ const BasicInfoForm = ({
             value={formData.email}
             onChange={handleInputChange}
             disabled={!isEditing}
-            className="profile-form-field"
           />
           
-          <div className="form-row">
-            <FormField
-              label="생년월일"
-              id="birthDate"
-              type="date"
-              value={formData.birthDate}
-              onChange={handleInputChange}
-              disabled={!isEditing}
-              className="profile-form-field"
-            />
+          <div className="grid grid-cols-2 sm:grid-cols-1 gap-4 items-start w-full">
+            <div className="form-field">
+              <label className="form-label" htmlFor="birthDate">
+                생년월일
+              </label>
+              <div className="flex items-center gap-2 w-full max-w-full overflow-hidden">
+                <input
+                  type="text"
+                  className="profile-date-input"
+                  placeholder="MM"
+                  maxLength={2}
+                  value={formData.birthMonth || ''}
+                  onChange={(e) => {
+                    const numericValue = e.target.value.replace(/[^0-9]/g, '');
+                    if (numericValue === '' || (parseInt(numericValue) >= 1 && parseInt(numericValue) <= 12)) {
+                      handleBirthDateChange('birthMonth', numericValue);
+                    }
+                  }}
+                  onBlur={(e) => {
+                    const val = e.target.value;
+                    if (val && parseInt(val) < 10) {
+                      handleBirthDateChange('birthMonth', val.padStart(2, '0'));
+                    }
+                  }}
+                  disabled={!isEditing}
+                  required
+                />
+                <span className="text-zinc-400 text-base font-medium">/</span>
+                <input
+                  type="text"
+                  className="profile-date-input"
+                  placeholder="DD"
+                  maxLength={2}
+                  value={formData.birthDay || ''}
+                  onChange={(e) => {
+                    const numericValue = e.target.value.replace(/[^0-9]/g, '');
+                    if (numericValue === '' || (parseInt(numericValue) >= 1 && parseInt(numericValue) <= 31)) {
+                      handleBirthDateChange('birthDay', numericValue);
+                    }
+                  }}
+                  onBlur={(e) => {
+                    const val = e.target.value;
+                    if (val && parseInt(val) < 10) {
+                      handleBirthDateChange('birthDay', val.padStart(2, '0'));
+                    }
+                  }}
+                  disabled={!isEditing}
+                  required
+                />
+                <span className="text-zinc-400 text-base font-medium">/</span>
+                <input
+                  type="text"
+                  className="profile-date-input profile-date-input-year"
+                  placeholder="YYYY"
+                  maxLength={4}
+                  value={formData.birthYear || ''}
+                  onChange={(e) => {
+                    const numericValue = e.target.value.replace(/[^0-9]/g, '');
+                    if (numericValue.length <= 4) {
+                      handleBirthDateChange('birthYear', numericValue);
+                    }
+                  }}
+                  onBlur={(e) => {
+                    const val = e.target.value;
+                    if (val && val.length === 4) {
+                      const year = parseInt(val);
+                      if (year >= 1900 && year <= 2024) {
+                        handleBirthDateChange('birthYear', val);
+                      } else {
+                        handleBirthDateChange('birthYear', '');
+                      }
+                    } else if (val && val.length < 4) {
+                      handleBirthDateChange('birthYear', '');
+                    }
+                  }}
+                  disabled={!isEditing}
+                  required
+                />
+              </div>
+            </div>
             
-            <ShortFormField
+            <SelectInput
               label="성별"
               id="gender"
-              name="gender"
               value={formData.gender}
               onChange={handleShortFormChange('gender')}
               disabled={!isEditing}
@@ -180,7 +281,6 @@ const BasicInfoForm = ({
                 { value: '남', label: '남자' },
                 { value: '여', label: '여자' }
               ]}
-              className="profile-form-field"
             />
           </div>
         </div>

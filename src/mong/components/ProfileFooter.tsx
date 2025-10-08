@@ -13,9 +13,9 @@ const ProfileFooter = React.memo<ProfileFooterProps>(({
   loadingText = '저장 중...'
 }) => {
   return (
-    <div className="form-actions">
+    <div className="flex gap-3 pt-4 border-t border-gray-700">
       {!isEditing ? (
-        <button type="button" onClick={onEdit} className="edit-button">
+        <button type="button" onClick={onEdit} className="profile-edit-button">
           {editText}
         </button>
       ) : (
@@ -24,11 +24,11 @@ const ProfileFooter = React.memo<ProfileFooterProps>(({
             type="button" 
             onClick={onSave} 
             disabled={isLoading}
-            className="save-button"
+            className="profile-edit-button"
           >
             {isLoading ? loadingText : saveText}
           </button>
-          <button type="button" onClick={onCancel} className="cancel-button">
+          <button type="button" onClick={onCancel} className="profile-cancel-button">
             {cancelText}
           </button>
         </>

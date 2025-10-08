@@ -3,8 +3,9 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../store/hooks";
 import AuthHeader from "../components/AuthHeader";
-import FormField from "../components/FormField";
+import BaseInput from "../components/BaseInput";
 import AuthButton from "../components/AuthButton";
+import Container from "../components/Container";
 import moonIcon from "../assets/moonIcon.svg";
 import "../styles/login.css";
 import "../styles/common.css";
@@ -47,27 +48,21 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="login-container min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100 p-4">
-      <div className="login-card w-full max-w-md glass rounded-2xl shadow-xl p-8">
+    <Container centered backgroundColor="#000000">
+      <div className="login-card">
         {/* Header */}
         <AuthHeader 
-          title="로그인"
-          description="계정에 로그인하여 수면 여행을 계속하세요"
+          title="비밀번호 재설정"
+          description="이메일로 비밀번호 재설정 링크를 받아보세요"
         />
 
         {/* Content */}
-        <div className="login-content mt-8">
+        <div className="flex flex-col">
           {!isEmailSent ? (
-            <form className="login-form space-y-6" onSubmit={onSubmit}>
-              <div className="forgot-password-title text-center mb-6">
-                <h3 className="forgot-password-heading text-2xl font-bold text-gray-800 mb-2">비밀번호 찾기</h3>
-                <p className="forgot-password-description text-gray-600">
-                  가입할 때 사용한 이메일 주소를 입력해주세요
-                </p>
-              </div>
+            <form className="flex flex-col gap-5 mt-[54px]" onSubmit={onSubmit}>
 
               {/* 이메일 */}
-              <FormField
+              <BaseInput
                 label="이메일"
                 id="forgot-email"
                 type="email"
@@ -79,7 +74,7 @@ export default function ForgotPassword() {
               />
 
               {/* 버튼들 */}
-              <div className="forgot-password-buttons space-y-3">
+              <div className="forgot-password-buttons">
                 <AuthButton type="submit">
                   비밀번호 재설정 링크 받기
                 </AuthButton>
@@ -93,23 +88,23 @@ export default function ForgotPassword() {
               </div>
             </form>
           ) : (
-            <div className="email-sent-container text-center space-y-6">
-              <div className="email-sent-icon flex justify-center">
-                <img src={moonIcon} alt="moon icon" className="w-16 h-16 animate-float" />
+            <div className="flex flex-col items-center text-center py-10">
+              <div className="w-16 h-16 rounded-full bg-[rgba(0,212,170,0.1)] flex items-center justify-center mb-6">
+                <img src={moonIcon} alt="moon icon" className="w-8 h-8" />
               </div>
-              <div className="email-sent-content space-y-4">
-                <h3 className="email-sent-title text-2xl font-bold text-gray-800">이메일 발송 완료</h3>
-                <p className="email-sent-description text-gray-600">
-                  <strong className="text-primary-600">{email}</strong>로 비밀번호 재설정 링크를 보내드렸습니다.
+              <div className="mb-8">
+                <h3 className="email-sent-title">이메일 발송 완료</h3>
+                <p className="email-sent-description">
+                  <strong>{email}</strong>로 비밀번호 재설정 링크를 보내드렸습니다.
                 </p>
-                <p className="email-sent-note text-sm text-gray-500">
+                <p className="email-sent-note">
                   이메일이 보이지 않는다면 스팸 폴더를 확인해주세요.
                 </p>
               </div>
-              <div className="email-sent-button">
+              <div className="w-full">
                 <button 
                   type="button" 
-                  className="email-sent-link text-primary-600 hover:text-primary-700 font-medium transition-colors"
+                  className="auth-button"
                   onClick={handleBackToLogin}
                 >
                   로그인으로 돌아가기
@@ -119,6 +114,6 @@ export default function ForgotPassword() {
           )}
         </div>
       </div>
-    </div>
+    </Container>
   );
 }

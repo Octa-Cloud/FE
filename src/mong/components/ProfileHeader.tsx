@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import moonIcon from '../assets/moonIcon.svg';
 import '../styles/profile.css';
 import { ProfileHeaderProps } from '../types';
 
@@ -40,16 +41,16 @@ const ProfileHeader = ({ onBack, onStartSleepRecord, userProfile, onLogout }: Pr
   return (
     <header className="profile-header">
       <div className="profile-header-content">
-        <div className="header-left">
-          <div className="logo-container">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="moon-icon">
-              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
-            </svg>
-            <span className="app-name">mong</span>
+        <div className="flex items-center">
+          <div className="flex items-center gap-3">
+            <div className="profile-header-logo">
+              <img src={moonIcon} alt="moon icon" className="profile-header-logo-icon" />
+            </div>
+            <span className="profile-header-brand">mong</span>
           </div>
         </div>
         
-        <div className="header-center">
+        <div className="flex items-center">
           <button className="start-sleep-button" onClick={onStartSleepRecord}>
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"></path>
@@ -58,13 +59,13 @@ const ProfileHeader = ({ onBack, onStartSleepRecord, userProfile, onLogout }: Pr
           </button>
         </div>
         
-        <div className="header-right">
-          <div className="user-profile-container" ref={dropdownRef}>
-            <div className="user-profile" onClick={handleUserProfileClick}>
-              <div className="user-avatar">
-                <span className="avatar-fallback">{userProfile.name.charAt(0)}</span>
+        <div className="flex items-center">
+          <div className="relative" ref={dropdownRef}>
+            <button className="user-dropdown-trigger" onClick={handleUserProfileClick}>
+              <div className="profile-header-avatar">
+                <span>{userProfile.name.charAt(0)}</span>
               </div>
-              <span className="user-name">{userProfile.name}</span>
+              <span className="profile-header-username">{userProfile.name}</span>
               <svg 
                 xmlns="http://www.w3.org/2000/svg" 
                 width="16" 
@@ -75,37 +76,37 @@ const ProfileHeader = ({ onBack, onStartSleepRecord, userProfile, onLogout }: Pr
                 strokeWidth="2" 
                 strokeLinecap="round" 
                 strokeLinejoin="round"
-                className={`dropdown-arrow ${isDropdownOpen ? 'open' : ''}`}
+                className={`profile-header-arrow ${isDropdownOpen ? 'rotate-180' : ''}`}
               >
                 <path d="m6 9 6 6 6-6"></path>
               </svg>
-            </div>
+            </button>
             
             {/* 드롭다운 메뉴 */}
             {isDropdownOpen && (
               <div className="user-dropdown-menu">
-                <div className="dropdown-menu-item" onClick={() => handleMenuClick('profile')}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <button className="user-dropdown-item" onClick={() => handleMenuClick('profile')}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                     <circle cx="12" cy="7" r="4"></circle>
                   </svg>
                   내 정보 수정
-                </div>
-                <div className="dropdown-menu-item" onClick={() => handleMenuClick('sleep-goal')}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                </button>
+                <button className="user-dropdown-item" onClick={() => handleMenuClick('sleep-goal')}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
                     <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
                   </svg>
                   수면 목표 설정
-                </div>
-                <div className="dropdown-divider"></div>
-                <div className="dropdown-menu-item logout" onClick={() => handleMenuClick('logout')}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                </button>
+                <div className="user-dropdown-divider"></div>
+                <button className="user-dropdown-item text-red-400" onClick={() => handleMenuClick('logout')}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                     <polyline points="16,17 21,12 16,7"></polyline>
                     <line x1="21" y1="12" x2="9" y2="12"></line>
                   </svg>
                   로그아웃
-                </div>
+                </button>
               </div>
             )}
           </div>

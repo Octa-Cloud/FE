@@ -75,6 +75,10 @@ export interface ContainerProps {
   children: React.ReactNode;
   width?: number;
   className?: string;
+  backgroundColor?: string;
+  minHeight?: string;
+  textColor?: string;
+  centered?: boolean; // 중앙 정렬 여부
 }
 
 export interface ProfileHeaderProps {

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import ProfileHeader from '../components/ProfileHeader';
 import ProfileStatsCard from '../components/ProfileStatsCard';
 import ProfileFooter from '../components/ProfileFooter';
+import Container from '../components/Container';
 import { useAuth, useUserProfile } from '../store/hooks';
 import { SleepGoalFormData, SleepGoalData } from '../types';
 import { getTestUserSleepGoal } from '../testData';
@@ -225,7 +226,7 @@ const SleepGoalSetting = () => {
   };
 
   return (
-    <div className="sleep-goal-setting-page min-h-screen bg-background">
+    <Container className="sleep-goal-setting-page" backgroundColor="#000000">
       <ProfileHeader
         onBack={handleBack}
         onStartSleepRecord={handleStartSleepRecord}
@@ -233,14 +234,14 @@ const SleepGoalSetting = () => {
         onLogout={handleLogout}
       />
       
-      <main className="profile-main">
-        <div className="profile-container">
+      <main className="flex-1 flex justify-center px-8 py-6 relative">
+        <div className="w-full max-w-4xl relative">
           <div className="profile-content">
             {/* 사용자 통계 카드 */}
             <ProfileStatsCard userData={userData} />
             
             {/* 수면 목표 설정 카드 */}
-            <div className="sleep-goal-card bg-card border border-border rounded-xl p-6">
+            <div className="sleep-goal-card">
               <div className="sleep-goal-header mb-6">
                 <div className="flex items-center gap-2 mb-2">
                   <svg 
@@ -268,17 +269,17 @@ const SleepGoalSetting = () => {
               <div className="sleep-goal-form space-y-4">
                 {/* 오류 메시지 */}
                 {errorMessage && (
-                  <div className="error-message text-center p-3 text-red-500 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="profile-error-message">
                     {errorMessage}
                   </div>
                 )}
                 
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-4">
                   {/* 목표 수면시간 */}
                   <div className="space-y-2">
                     <label 
                       htmlFor="targetSleepHours" 
-                      className="block text-sm font-medium text-white"
+                      className="form-label"
                     >
                       목표 수면시간
                     </label>
@@ -294,7 +295,7 @@ const SleepGoalSetting = () => {
                         max="24"
                         step="0.1"
                         placeholder="8"
-                        className="w-full h-9 pl-3 pr-10 py-2 text-sm bg-input-background border border-input rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="form-input"
                       />
                       <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-400 pointer-events-none">
                         시간
@@ -306,7 +307,7 @@ const SleepGoalSetting = () => {
                   <div className="space-y-2">
                     <label 
                       htmlFor="targetBedtime" 
-                      className="block text-sm font-medium text-white"
+                      className="form-label"
                     >
                       목표 취침시간
                     </label>
@@ -317,7 +318,7 @@ const SleepGoalSetting = () => {
                       value={formData.targetBedtime}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className="w-full h-9 px-3 py-2 text-sm bg-input-background border border-input rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="form-input"
                     />
                   </div>
 
@@ -325,7 +326,7 @@ const SleepGoalSetting = () => {
                   <div className="space-y-2">
                     <label 
                       htmlFor="targetWakeTime" 
-                      className="block text-sm font-medium text-white"
+                      className="form-label"
                     >
                       목표 기상시간
                     </label>
@@ -336,7 +337,7 @@ const SleepGoalSetting = () => {
                       value={formData.targetWakeTime}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className="w-full h-9 px-3 py-2 text-sm bg-input-background border border-input rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="form-input"
                     />
                   </div>
                 </div>
@@ -355,7 +356,7 @@ const SleepGoalSetting = () => {
           </div>
         </div>
       </main>
-    </div>
+    </Container>
   );
 };
 

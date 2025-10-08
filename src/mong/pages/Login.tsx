@@ -4,9 +4,11 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../store/hooks";
 import { loginUser } from "../store/slices/authSlice";
 import AuthHeader from "../components/AuthHeader";
-import FormField from "../components/FormField";
+import BaseInput from "../components/BaseInput";
+import PasswordInput from "../components/PasswordInput";
 import AuthButton from "../components/AuthButton";
 import AuthFooter from "../components/AuthFooter";
+import Container from "../components/Container";
 import "../styles/login.css";
 import "../styles/common.css";
 
@@ -40,7 +42,7 @@ export default function Login() {
       navigate('/profile');
     } else if (loginUser.rejected.match(result)) {
       // 로그인 실패 시 사용자 친화적인 alert 메시지 표시
-      const errorMessage = result.payload || '로그인에 실패했습니다.';
+      const errorMessage: string = (result.payload as string) || '로그인에 실패했습니다.';
       
       // 보안을 위해 일반적인 메시지만 표시
       let userMessage = errorMessage;
@@ -66,8 +68,8 @@ export default function Login() {
   };
 
   return (
-    <div className="login-container min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100 p-4">
-      <div className="login-card w-full max-w-md glass rounded-2xl shadow-xl p-8">
+    <Container centered backgroundColor="#000000">
+      <div className="login-card">
         {/* Header */}
         <AuthHeader 
           title="로그인"
@@ -75,10 +77,10 @@ export default function Login() {
         />
 
         {/* Content */}
-        <div className="login-content mt-8">
-          <form className="login-form space-y-6" onSubmit={onSubmit}>
+        <div className="flex flex-col">
+          <form className="flex flex-col gap-5 mt-[54px]" onSubmit={onSubmit}>
             {/* 이메일 */}
-            <FormField
+            <BaseInput
               label="이메일"
               id="email"
               type="email"
@@ -90,10 +92,9 @@ export default function Login() {
             />
 
             {/* 비밀번호 */}
-            <FormField
+            <PasswordInput
               label="비밀번호"
               id="password"
-              type="password"
               placeholder="비밀번호를 입력하세요"
               value={pw}
               onChange={(e) => setPw(e.target.value)}
@@ -102,16 +103,20 @@ export default function Login() {
             />
 
             {/* 로그인 버튼 */}
-            <AuthButton type="submit" disabled={loading}>
+            <AuthButton
+              type="submit"
+              disabled={loading}
+              variant="primary"
+            >
               {loading ? '로그인 중...' : '로그인'}
             </AuthButton>
 
             {/* 비밀번호 찾기 링크 */}
-            <div className="forgot-password-link text-center">
+            <div className="text-center">
               <button 
                 type="button" 
                 onClick={handleForgotPassword}
-                className="text-primary-600 hover:text-primary-700 text-sm font-medium transition-colors"
+                className="login-forgot-password-btn"
               >
                 비밀번호를 잊으셨나요?
               </button>
@@ -119,7 +124,7 @@ export default function Login() {
 
             {/* 에러 메시지 */}
             {error && (
-              <div className="error-message text-center p-4 text-error-600 bg-error-50 border border-error-200 rounded-lg mb-4">
+              <div className="login-error-message">
                 {error}
               </div>
             )}
@@ -127,13 +132,12 @@ export default function Login() {
 
           {/* Footer */}
           <AuthFooter 
-            text="계정이 없으신가요?"
+            text="아직 계정이 없으신가요?"
             linkText="회원가입"
             onLinkClick={handleSignUp}
-            className="mt-6"
           />
         </div>
       </div>
-    </div>
+    </Container>
   );
 }

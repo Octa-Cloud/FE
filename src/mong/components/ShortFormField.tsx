@@ -48,25 +48,25 @@ const ShortFormField = React.memo<ShortFormFieldProps>(({
 
 
   return (
-    <div className={`short-form-field ${className}`}>
-      <label className="short-form-label" htmlFor={id}>
+    <div className={`flex flex-col gap-2 ${className}`}>
+      <label className="flex items-center gap-2 font-medium text-base select-none form-label" htmlFor={id}>
         {label}
       </label>
       
       {/* 드롭다운 필드 */}
       {isDropdownField ? (
-        <div className="short-form-select-container">
+        <div className="relative">
           <button
             type="button"
-            className="short-form-select-trigger"
+            className="short-form-select-trigger w-full h-12 px-3 flex items-center justify-between cursor-pointer outline-none"
             onClick={() => setShowDropdown(!showDropdown)}
             disabled={disabled}
           >
             <span>{value || placeholder}</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
+              width="16"
+              height="16"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -74,17 +74,18 @@ const ShortFormField = React.memo<ShortFormFieldProps>(({
               strokeLinecap="round"
               strokeLinejoin="round"
               aria-hidden="true"
+              className="w-4 h-4 opacity-50"
             >
               <path d="m6 9 6 6 6-6"></path>
             </svg>
           </button>
           {showDropdown && (
-            <div className="short-form-dropdown-menu">
+            <div className="short-form-dropdown-menu absolute top-full left-0 right-0 z-10 mt-1">
               {options.map((option, index) => (
                 <button
                   key={index}
                   type="button"
-                  className="short-form-dropdown-item"
+                  className="short-form-dropdown-item w-full py-3 px-4 bg-transparent border-0 text-left cursor-pointer"
                   onClick={() => {
                     onChange({
                       target: {
@@ -102,10 +103,10 @@ const ShortFormField = React.memo<ShortFormFieldProps>(({
         </div>
       ) : (
         // 일반 입력 필드 (비밀번호 포함)
-        <div className={isPasswordField ? 'short-form-password-container' : ''}>
+        <div className={isPasswordField ? 'relative' : ''}>
           <input
             type={isPasswordField && showPassword ? "text" : type}
-            className={isPasswordField ? 'short-form-password-input' : 'short-form-input'}
+            className={isPasswordField ? 'short-form-password-input w-full h-12 py-3 pr-12 pl-3 rounded-md text-base outline-none' : 'short-form-input w-full h-12 p-3 rounded-md text-base outline-none'}
             id={id}
             placeholder={placeholder}
             value={value}
@@ -118,7 +119,7 @@ const ShortFormField = React.memo<ShortFormFieldProps>(({
           />
           {isPasswordField && (
             <button
-              className="short-form-password-toggle"
+              className="short-form-password-toggle absolute right-0 top-0 h-12 px-3 bg-transparent border-0 cursor-pointer flex items-center justify-center rounded-md"
               type="button"
               onClick={() => setShowPassword((v) => !v)}
               aria-label={showPassword ? "비밀번호 숨기기" : "비밀번호 보기"}
@@ -131,7 +132,7 @@ const ShortFormField = React.memo<ShortFormFieldProps>(({
       
       
       {helperText && (
-        <p className="short-form-helper-text">{helperText}</p>
+        <p className="text-sm text-gray-400 m-0">{helperText}</p>
       )}
     </div>
   );

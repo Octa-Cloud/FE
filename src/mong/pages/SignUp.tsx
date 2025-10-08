@@ -3,10 +3,14 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../store/hooks";
 import AuthHeader from "../components/AuthHeader";
-import FormField from "../components/FormField";
-import ShortFormField from "../components/ShortFormField";
+import BaseInput from "../components/BaseInput";
+import InputWithButtons from "../components/InputWithButtons";
+import VerifiedInput from "../components/VerifiedInput";
+import PasswordInput from "../components/PasswordInput";
+import SelectInput from "../components/SelectInput";
 import AuthButton from "../components/AuthButton";
 import AuthFooter from "../components/AuthFooter";
+import Container from "../components/Container";
 import CheckIcon from "../assets/checkIcon.svg";
 import "../styles/signup.css";
 import "../styles/common.css";
@@ -309,8 +313,8 @@ export default function SignupCard() {
   ];
 
   return (
-    <div className="signup-container min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100 p-4">
-      <div className="signup-card w-full max-w-md glass rounded-2xl shadow-xl p-8">
+    <Container centered backgroundColor="#000000">
+      <div className="signup-card">
         {/* Header */}
         <AuthHeader 
           title="회원가입"
@@ -322,17 +326,17 @@ export default function SignupCard() {
 
         {/* Error Message */}
         {errorMessage && (
-          <div className="error-message text-center p-4 text-error-600 bg-error-50 border border-error-200 rounded-lg mb-4">
+          <div className="signup-error-message">
             {errorMessage}
           </div>
         )}
 
         {/* Content */}
-        <div className="signup-content mt-8">
+        <div className="signup-content">
           {/* 1단계: 이메일 입력 */}
           {currentStep === 1 && (
-            <form className="signup-form space-y-6" onSubmit={handleEmailSubmit}>
-              <FormField
+            <form className="signup-form" onSubmit={handleEmailSubmit}>
+              <InputWithButtons
                 label="이메일"
                 id="email"
                 type="email"
@@ -340,11 +344,10 @@ export default function SignupCard() {
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
                 required
-                className="signup-field"
                 buttons={
                   <AuthButton
                     type="submit"
-                    className="signup-verify-button"
+className="h-12 px-6 bg-[#00d4aa] text-black text-base font-medium leading-6 border-none rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap min-w-[120px] flex items-center justify-center"
                     disabled={!formData.email}
                   >
                     인증번호 받기
@@ -356,22 +359,18 @@ export default function SignupCard() {
 
           {/* 2단계: 인증번호 입력 */}
           {currentStep === 2 && (
-            <form className="signup-form space-y-6" onSubmit={handleVerificationSubmit}>
+            <form className="signup-form" onSubmit={handleVerificationSubmit}>
               {/* 이메일 상태 표시 */}
-              <FormField
+              <VerifiedInput
                 label="이메일"
                 id="email"
                 type="email"
                 value={formData.email}
-                disabled={true}
-                readOnly={true}
-                className="signup-field"
                 helperText={`${formData.email}로 인증번호를 전송했습니다.\n이메일을 확인해주세요.`}
-                showStatusIndicator={true}
               />
 
               {/* 인증번호 입력 */}
-              <FormField
+              <InputWithButtons
                 label="인증번호 (6자리)"
                 id="verification"
                 type="text"
@@ -380,21 +379,20 @@ export default function SignupCard() {
                 value={formData.verificationCode}
                 onChange={(e) => handleInputChange('verificationCode', e.target.value)}
                 required
-                className="signup-field"
                 helperText={showResendMessage ? "인증번호를 다시 전송했습니다." : undefined}
                 buttons={
                   <>
                     <AuthButton
                       type="button"
                       variant="secondary"
-                      className="signup-resend-button"
+className="h-12 px-6 bg-[#2a2a2a] text-white border border-[#2a2a2a] rounded-lg text-base font-medium leading-6 cursor-pointer transition-all duration-200 whitespace-nowrap min-w-[80px] flex items-center justify-center"
                       onClick={handleResendClick}
                     >
                       재전송
                     </AuthButton>
                     <AuthButton
                       type="submit"
-                      className="signup-verify-button"
+  className="h-12 px-6 bg-[#00d4aa] text-black text-base font-medium leading-6 border-none rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap min-w-[120px] flex items-center justify-center"
                       disabled={formData.verificationCode.length !== 6}
                     >
                       인증하기
@@ -407,35 +405,27 @@ export default function SignupCard() {
 
           {/* 3단계: 모든 정보 입력 */}
           {currentStep === 3 && (
-            <form className="signup-form space-y-6" onSubmit={onSubmit}>
+            <form className="signup-form" onSubmit={onSubmit}>
               {/* 이메일 (읽기 전용) */}
-              <FormField
+              <VerifiedInput
                 label="이메일"
                 id="email"
                 type="email"
                 value={formData.email}
-                disabled={true}
-                readOnly={true}
-                className="signup-field"
                 helperText="이메일 인증이 완료되었습니다"
-                showStatusIndicator={true}
               />
 
               {/* 인증번호 (읽기 전용) */}
-              <FormField
+              <VerifiedInput
                 label="인증번호 (6자리)"
                 id="verification"
                 type="text"
                 value={formData.verificationCode}
-                disabled={true}
-                readOnly={true}
-                className="signup-field"
                 helperText="이메일 인증이 완료되었습니다"
-                showStatusIndicator={true}
               />
 
               {/* 이름 */}
-              <FormField
+              <BaseInput
                 label="이름"
                 id="name"
                 type="text"
@@ -443,20 +433,19 @@ export default function SignupCard() {
                 value={formData.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
                 required
-                className="signup-field"
                 helperText="서비스에서 사용할 이름입니다"
               />
 
               {/* 생년월일/성별 */}
-              <div className="signup-grid">
-                <div className="signup-field">
+              <div className="grid grid-cols-2 gap-4 items-start w-full">
+                <div className="form-field">
                   <label className="form-label" htmlFor="birthDate">
                     생년월일
                   </label>
-                  <div className="short-form-date-container">
+                  <div className="flex items-center gap-2 w-full max-w-full overflow-hidden">
                     <input
                       type="text"
-                      className="short-form-date-input"
+                      className="signup-date-input"
                       placeholder="MM"
                       maxLength={2}
                       value={formData.birthMonth || ''}
@@ -474,10 +463,10 @@ export default function SignupCard() {
                       }}
                       required
                     />
-                    <span className="short-form-date-separator">/</span>
+                    <span className="text-zinc-400 text-base font-medium">/</span>
                     <input
                       type="text"
-                      className="short-form-date-input"
+                      className="signup-date-input"
                       placeholder="DD"
                       maxLength={2}
                       value={formData.birthDay || ''}
@@ -495,10 +484,10 @@ export default function SignupCard() {
                       }}
                       required
                     />
-                    <span className="short-form-date-separator">/</span>
+                    <span className="text-zinc-400 text-base font-medium">/</span>
                     <input
                       type="text"
-                      className="short-form-date-input"
+                      className="signup-date-input signup-date-input-year"
                       placeholder="YYYY"
                       maxLength={4}
                       value={formData.birthYear || ''}
@@ -526,15 +515,13 @@ export default function SignupCard() {
                   </div>
                 </div>
 
-                <ShortFormField
+                <SelectInput
                   label="성별"
                   id="gender"
-                  type="text"
                   placeholder="성별을 선택하세요"
                   value={formData.gender}
                   onChange={(e) => handleInputChange('gender', e.target.value)}
                   required
-                  className="signup-field"
                   options={[
                     { label: '남자', value: '남' },
                     { label: '여자', value: '여' }
@@ -543,35 +530,29 @@ export default function SignupCard() {
               </div>
 
               {/* 비밀번호 / 확인 */}
-              <div className="signup-grid">
-                <ShortFormField
+              <div className="grid grid-cols-2 gap-4 items-start">
+                <PasswordInput
                   label="비밀번호"
                   id="password"
-                  type="password"
                   placeholder="비밀번호 (8자 이상)"
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
                   required
-                  className="signup-field"
-                  showPasswordToggle={true}
                 />
 
-                <ShortFormField
+                <PasswordInput
                   label="비밀번호 확인"
                   id="confirmPassword"
-                  type="password"
                   placeholder="비밀번호 다시 입력"
                   value={formData.confirmPassword}
                   onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                   required
-                  className="signup-field"
-                  showPasswordToggle={true}
                 />
               </div>
 
               {/* 에러 메시지 */}
               {error && (
-                <div className="error-message" style={{ color: '#ef4444', marginBottom: '1rem' }}>
+                <div className="signup-error-message">
                   {error}
                 </div>
               )}
@@ -592,10 +573,9 @@ export default function SignupCard() {
             text="이미 계정이 있으신가요?"
             linkText="로그인"
             onLinkClick={() => navigate('/login')}
-            className="signup-footer"
           />
         </div>
       </div>
-    </div>
+    </Container>
   );
 }

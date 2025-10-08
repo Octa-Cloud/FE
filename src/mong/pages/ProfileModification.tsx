@@ -4,6 +4,7 @@ import { useAuth, useUserProfile } from '../store/hooks';
 import ProfileHeader from '../components/ProfileHeader';
 import ProfileStatsCard from '../components/ProfileStatsCard';
 import BasicInfoForm from '../components/BasicInfoForm';
+import Container from '../components/Container';
 import '../styles/profile.css';
 import { User } from '../types';
 import { getTestUserProfile } from '../testData';
@@ -174,17 +175,17 @@ const ProfileModification = () => {
   // 컴포넌트가 마운트되지 않았거나 로딩 중일 때
   if (!isMounted || loading) {
     return (
-      <div className="profile-modification-page">
+      <Container className="profile-modification-page">
         <div style={{ padding: '2rem', textAlign: 'center' }}>
           {!isMounted ? '초기화 중...' : '로딩 중...'}
         </div>
-      </div>
+      </Container>
     );
   }
 
 
   return (
-    <div className="profile-modification-page min-h-screen bg-gradient-to-br from-primary-50 to-primary-100">
+    <Container className="profile-modification-page">
       <ProfileHeader 
         onBack={handleBack}
         onStartSleepRecord={handleStartSleepRecord}
@@ -195,9 +196,9 @@ const ProfileModification = () => {
         }}
       />
       
-      <main className="profile-main p-4">
-        <div className="profile-container max-w-4xl mx-auto">
-          <div className="profile-content space-y-6">
+      <main className="flex-1 flex justify-center p-4 relative">
+        <div className="w-full max-w-4xl relative">
+          <div className="profile-content">
             {/* 항상 데이터가 있도록 보장 */}
             <ProfileStatsCard userData={{
               name: currentUserData?.name || '사용자',
@@ -214,7 +215,7 @@ const ProfileModification = () => {
                 birthDate: currentUserData?.birthDate || '1990-01-01',
                 gender: (currentUserData?.gender as '남' | '여') || '남'
               }}
-              tempFormData={tempProfile}
+              tempFormData={tempProfile || undefined}
               isEditing={isEditing}
               onEdit={handleEdit}
               onSave={handleSave}
@@ -222,14 +223,14 @@ const ProfileModification = () => {
               onFormDataChange={handleFormDataChange}
             />
             {error && (
-              <div className="error-message text-center p-4 text-error-600 bg-error-50 border border-error-200 rounded-lg mt-4">
+              <div className="profile-error-message">
                 {error}
               </div>
             )}
           </div>
         </div>
       </main>
-    </div>
+    </Container>
   );
 };
 

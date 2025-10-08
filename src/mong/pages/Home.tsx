@@ -6,9 +6,8 @@ export default function Home() {
   const navigate = useNavigate();
 
   return (
-    <div style={{ backgroundColor: '#000', minHeight: '100vh', color: '#fff' }}>
-      <Container>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, paddingTop: 48, paddingBottom: 48 }}>
+    <Container backgroundColor="#000" minHeight="100vh" textColor="#fff">
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, paddingTop: 48, paddingBottom: 48 }}>
           <div style={{ width: 80, height: 80, borderRadius: 9999, backgroundColor: 'rgba(0, 212, 170, 0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ width: 40, height: 40, backgroundColor: '#00d4aa', borderRadius: 8 }} />
           </div>
@@ -62,7 +61,6 @@ export default function Home() {
             </p>
           </div>
         </div>
-      </Container>
-    </div>
+    </Container>
   )
 }

@@ -1,92 +1,67 @@
 /* Common Auth Components Styles */
+/* 복잡한 스타일만 유지 - CSS variables, gradients, animations, backdrop-filter 등 */
 
-/* Enhanced Auth Header */
+/* Auth Header - Figma Design Match */
 .auth-header {
-  padding: var(--space-xl) var(--space-xl) 0 var(--space-xl);
+  padding: 0;
+  background: transparent;
+  border: none;
   text-align: center;
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
-  background: linear-gradient(135deg, var(--color-bg-card) 0%, rgba(255, 255, 255, 0.02) 100%);
-  border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
-  border-bottom: 1px solid var(--color-border);
   position: relative;
   overflow: hidden;
 }
 
-.auth-logo-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-}
 
 .auth-logo {
-  width: 4rem;
-  height: 4rem;
-  border-radius: var(--radius-full);
-  background: linear-gradient(135deg, var(--color-primary-light) 0%, rgba(0, 212, 170, 0.05) 100%);
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(0, 212, 170, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow-primary);
-  transition: var(--transition-normal);
 }
 
-.auth-logo:hover {
-  transform: scale(1.05);
-  box-shadow: var(--shadow-primary), var(--shadow-lg);
-}
 
-.auth-logo img {
-  height: 2rem;
-  width: 2rem;
-  color: var(--color-primary);
-}
-
-.auth-title {
-  font-size: 3rem;
-  font-weight: 800;
-  color: var(--color-text-primary);
+.auth-brand-name {
   margin: 0;
+  font-size: 30px;
+  font-weight: 400;
+  font-family: 'Righteous', sans-serif;
+  color: #ffffff;
+  line-height: 36px;
 }
 
-.auth-subtitle {
-  font-size: 1.5rem;
-  color: var(--color-text-primary);
+
+.auth-header-title {
   margin: 0;
+  font-size: 24px;
+  font-weight: 400;
+  font-family: 'Apple SD Gothic Neo', -apple-system, sans-serif;
+  color: #ffffff;
+  line-height: 32px;
 }
 
-.auth-description {
-  color: var(--color-text-secondary);
-  font-size: 1rem;
-  margin: 0.5rem 0 0 0;
+.auth-header-description {
+  margin: 0;
+  margin-top: 8px;
+  font-size: 16px;
+  font-weight: 400;
+  font-family: 'Apple SD Gothic Neo', -apple-system, sans-serif;
+  color: #a1a1aa;
+  line-height: 24px;
 }
 
-/* Enhanced Stepper */
+/* Stepper - gradient, backdrop-filter, CSS variables */
 .auth-stepper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   gap: var(--space-md);
-  padding-top: var(--space-md);
+  padding: var(--space-md);
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
   border-radius: var(--radius-lg);
-  padding: var(--space-md);
   backdrop-filter: blur(10px);
   border: 1px solid var(--color-border);
-}
-
-.stepper-step {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-shrink: 0;
-  min-width: fit-content;
-}
-
-.stepper-step.completed {
-  color: #10b981;
 }
 
 .stepper-step.current {
@@ -94,13 +69,7 @@
 }
 
 .stepper-step-icon {
-  width: 2.5rem;
-  height: 2.5rem;
   border-radius: var(--radius-full);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid;
   transition: var(--transition-normal);
   box-shadow: var(--shadow-sm);
 }
@@ -119,75 +88,72 @@
   animation: float 3s ease-in-out infinite;
 }
 
-.stepper-step-icon svg {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-.stepper-step-label {
-  font-size: 0.875rem;
-  font-weight: 500;
-  white-space: nowrap;
-  text-align: center;
-}
-
 .stepper-connector {
-  width: 2rem;
-  height: 0.25rem;
   background: linear-gradient(90deg, var(--color-success) 0%, var(--color-primary) 100%);
   border-radius: var(--radius-full);
   box-shadow: var(--shadow-sm);
   animation: pulse 2s ease-in-out infinite;
 }
 
-/* Form Field */
+/* Form Field Container */
 .form-field {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 8px;
 }
 
+/* Form Label - Figma Design Match */
 .form-label {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 8px;
+  color: #ffffff;
+  font-size: 16px;
   font-weight: 500;
-  color: var(--color-text-primary);
-  font-size: 1rem;
+  line-height: 24px;
+  font-family: 'Apple SD Gothic Neo', -apple-system, sans-serif;
   user-select: none;
 }
 
+/* Form Helper Text */
+.form-helper-text {
+  margin: 0;
+  font-size: 14px;
+  color: #a1a1aa;
+  white-space: pre-line;
+}
+
+/* Form Input - Figma Design Match */
 .form-input {
   width: 100%;
-  height: 3rem;
-  padding: 0 1rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
-  color: var(--color-text-primary);
-  font-size: 1rem;
+  height: 48px;
+  padding: 0 13px;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  background: rgba(42, 42, 42, 0.3);
+  color: #ffffff;
+  font-size: 16px;
   font-weight: 400;
+  font-family: 'Apple SD Gothic Neo', -apple-system, sans-serif;
   transition: var(--transition-normal);
+  box-shadow: none;
   outline: none;
-  backdrop-filter: blur(10px);
-  box-shadow: var(--shadow-sm);
 }
 
 .form-input::placeholder {
-  color: var(--color-text-secondary);
+  color: #a1a1aa;
+  font-size: 14px;
+  font-weight: 400;
 }
 
 .form-input:focus {
-  border-color: var(--color-primary);
-  box-shadow: var(--shadow-primary), var(--shadow-md);
-  background: linear-gradient(135deg, rgba(0, 212, 170, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
-  transform: translateY(-1px);
+  border-color: #00d4aa;
+  background: rgba(42, 42, 42, 0.3);
+  box-shadow: none;
 }
 
 .form-input:invalid {
   border-color: var(--color-error);
-  box-shadow: 0 0 0 3px var(--color-error-light);
-  background: linear-gradient(135deg, var(--color-error-light) 0%, rgba(255, 255, 255, 0.02) 100%);
 }
 
 .form-input:disabled {
@@ -195,74 +161,24 @@
   cursor: not-allowed;
 }
 
-.form-helper-text {
-  font-size: 0.875rem;
-  color: var(--color-text-secondary);
-  margin: 0;
-  white-space: pre-line;
-}
-
-/* Form Field Buttons */
-.form-field-buttons {
-  display: flex;
-  gap: 0.75rem;
-  margin-top: 0.75rem;
-}
-
-/* Form Input Group with Status */
-.form-input-group {
-  display: flex;
-  gap: 0.75rem;
-}
-
-.form-input-with-status {
-  flex: 1;
-}
-
+/* Form Status Indicator - rgba background */
 .form-status-indicator {
-  display: flex;
-  align-items: center;
-  padding: 0 1rem;
-  height: 3rem;
   background-color: rgba(16, 185, 129, 0.1);
   border: 1px solid rgba(16, 185, 129, 0.2);
   border-radius: 0.375rem;
 }
 
-.form-status-indicator svg {
-  width: 1.25rem;
-  height: 1.25rem;
+.form-status-indicator svg,
+.form-status-indicator img {
   color: #10b981;
 }
 
-/* Short Form Field */
-.short-form-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.short-form-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 500;
-  color: var(--color-text-primary);
-  font-size: 1rem;
-  user-select: none;
-}
-
+/* Short Form Input - CSS variables, transitions */
 .short-form-input {
-  width: 100%;
-  height: 3rem;
-  padding: 0.75rem;
   border: 1px solid var(--color-border);
-  border-radius: 0.375rem;
   background-color: rgba(255, 255, 255, 0.05);
   color: var(--color-text-primary);
-  font-size: 1rem;
   transition: all 0.2s ease;
-  outline: none;
 }
 
 .short-form-input::placeholder {
@@ -284,22 +200,12 @@
   cursor: not-allowed;
 }
 
-/* Short Form Password Field */
-.short-form-password-container {
-  position: relative;
-}
-
+/* Short Form Password Input - CSS variables */
 .short-form-password-input {
-  width: 100%;
-  height: 3rem;
-  padding: 0.75rem 3rem 0.75rem 0.75rem;
   border: 1px solid var(--color-border);
-  border-radius: 0.375rem;
   background-color: rgba(255, 255, 255, 0.05);
   color: var(--color-text-primary);
-  font-size: 1rem;
   transition: all 0.2s ease;
-  outline: none;
 }
 
 .short-form-password-input::placeholder {
@@ -317,19 +223,7 @@
 }
 
 .short-form-password-toggle {
-  position: absolute;
-  right: 0;
-  top: 0;
-  height: 3rem;
-  padding: 0 0.75rem;
-  background: none;
-  border: none;
   color: var(--color-text-secondary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0.375rem;
   transition: all 0.2s ease;
 }
 
@@ -338,31 +232,12 @@
   background-color: rgba(255, 255, 255, 0.05);
 }
 
-.short-form-password-toggle svg {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-/* Short Form Select Field */
-.short-form-select-container {
-  position: relative;
-}
-
+/* Short Form Select Trigger - CSS variables */
 .short-form-select-trigger {
-  width: 100%;
-  height: 3rem;
-  padding: 0 0.75rem;
   border: 1px solid var(--color-border);
-  border-radius: 0.375rem;
   background-color: rgba(255, 255, 255, 0.05);
   color: var(--color-text-primary);
-  font-size: 1rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   transition: all 0.2s ease;
-  outline: none;
 }
 
 .short-form-select-trigger:hover {
@@ -374,33 +249,16 @@
   box-shadow: 0 0 0 3px rgba(19, 225, 201, 0.1);
 }
 
-.short-form-select-trigger svg {
-  width: 1rem;
-  height: 1rem;
-  opacity: 0.5;
-}
-
+/* Short Form Dropdown Menu - CSS variables, shadow */
 .short-form-dropdown-menu {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
   background-color: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: 0.375rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  z-index: 10;
-  margin-top: 0.25rem;
 }
 
 .short-form-dropdown-item {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  background: none;
-  border: none;
   color: var(--color-text-primary);
-  text-align: left;
-  cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
@@ -416,187 +274,107 @@
   border-radius: 0 0 0.375rem 0.375rem;
 }
 
-/* Short Form Date Field */
-.short-form-date-container {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  position: relative;
-}
-
-.short-form-date-input {
-  width: 100%;
-  height: 3rem;
-  padding: 0.75rem;
-  border: 1px solid var(--color-border);
-  border-radius: 0.375rem;
-  background-color: rgba(255, 255, 255, 0.05);
-  color: var(--color-text-primary);
-  font-size: 1rem;
-  text-align: center;
-  transition: all 0.2s ease;
-  outline: none;
-}
-
-/* 월/일 입력 필드는 작게, 연도는 더 넓게 */
-.short-form-date-input[placeholder="MM"],
-.short-form-date-input[placeholder="DD"] {
-  flex: 1;
-  min-width: 0;
-}
-
-.short-form-date-input[placeholder="YYYY"] {
-  flex: 2;
-  min-width: 0;
-}
-
-.short-form-date-input:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(19, 225, 201, 0.1);
-}
-
-.short-form-date-input:invalid {
-  border-color: #ef4444;
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
-}
-
-.short-form-date-separator {
-  color: var(--color-text-secondary);
-  font-weight: 500;
-}
 
 
-.short-form-helper-text {
-  font-size: 0.875rem;
-  color: var(--color-text-secondary);
-  margin: 0;
-}
-
-/* Password Field */
-.password-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.password-container {
-  position: relative;
-}
-
+/* Password Input - Figma Design Match */
 .password-input {
   width: 100%;
-  height: 3rem;
-  padding: 0.75rem 3rem 0.75rem 0.75rem;
-  border: 1px solid var(--color-border);
-  border-radius: 0.375rem;
-  background-color: rgba(255, 255, 255, 0.05);
-  color: var(--color-text-primary);
-  font-size: 1rem;
+  height: 48px;
+  padding: 0 48px 0 13px;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  background: rgba(42, 42, 42, 0.3);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 400;
+  font-family: 'Apple SD Gothic Neo', -apple-system, sans-serif;
   transition: all 0.2s ease;
   outline: none;
 }
 
 .password-input::placeholder {
-  color: var(--color-text-secondary);
+  color: #a1a1aa;
+  font-size: 14px;
+  font-weight: 400;
 }
 
 .password-input:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(19, 225, 201, 0.1);
+  border-color: #00d4aa;
+  background: rgba(42, 42, 42, 0.3);
+  box-shadow: none;
 }
 
 .password-input:invalid {
   border-color: #ef4444;
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }
 
 .password-toggle {
   position: absolute;
   right: 0;
   top: 0;
-  height: 3rem;
-  padding: 0 0.75rem;
-  background: none;
+  height: 48px;
+  padding: 0 12px;
+  background: transparent;
   border: none;
-  color: var(--color-text-secondary);
+  color: #a1a1aa;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 0.375rem;
+  border-radius: 8px;
   transition: all 0.2s ease;
 }
 
 .password-toggle:hover {
-  color: var(--color-text-primary);
-  background-color: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  background-color: transparent;
 }
 
-.password-toggle svg {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-/* Enhanced Auth Button */
+/* Auth Button - Figma Design Match */
 .auth-button {
   width: 100%;
-  height: 3rem;
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
-  color: var(--color-text-inverse);
+  height: 48px;
+  padding: 12px 24px;
+  background: #00d4aa;
+  color: #000000;
+  font-size: 16px;
+  font-weight: 500;
+  font-family: 'Apple SD Gothic Neo', -apple-system, sans-serif;
+  line-height: 24px;
   border: none;
-  border-radius: var(--radius-lg);
-  font-size: 1rem;
-  font-weight: 600;
+  border-radius: 8px;
   cursor: pointer;
   transition: var(--transition-normal);
+  box-shadow: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  box-shadow: var(--shadow-md);
-  position: relative;
-  overflow: hidden;
 }
 
 .auth-button:hover:not(:disabled) {
-  background: linear-gradient(135deg, var(--color-primary-hover) 0%, var(--color-primary-dark) 100%);
-  box-shadow: var(--shadow-primary), var(--shadow-lg);
-  transform: translateY(-2px);
+  background: #00b894;
 }
 
 .auth-button:active:not(:disabled) {
-  transform: translateY(0);
-  box-shadow: var(--shadow-md);
+  background: #00a085;
 }
 
 .auth-button:focus {
   outline: none;
-  box-shadow: var(--shadow-primary), var(--shadow-lg);
 }
 
 .auth-button:disabled {
-  background: linear-gradient(135deg, var(--color-border) 0%, var(--color-border-dark) 100%);
-  color: var(--color-text-muted);
+  background: #2a2a2a;
+  color: #666666;
   cursor: not-allowed;
-  transform: none;
-  box-shadow: var(--shadow-sm);
 }
 
 .auth-button-secondary {
-  width: 100%;
-  height: 3rem;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
   color: var(--color-text-primary);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
   transition: var(--transition-normal);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
   backdrop-filter: blur(10px);
   box-shadow: var(--shadow-sm);
 }
@@ -624,48 +402,69 @@
   transform: none;
 }
 
-/* Enhanced Auth Footer */
+/* Auth Footer - Figma Design Match */
 .auth-footer {
+  padding: 16px 0;
+  border-top: 1px solid #2a2a2a;
+  background: transparent;
+  border-radius: 0;
   text-align: center;
-  padding: var(--space-lg) var(--space-xl);
-  border-top: 1px solid var(--color-border);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, transparent 100%);
-  border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
+  margin-top: 24px;
 }
 
 .auth-footer p {
-  color: var(--color-text-secondary);
   margin: 0;
-  font-size: 0.875rem;
-  line-height: 1.6;
+  font-size: 16px;
+  font-weight: 400;
+  font-family: 'Apple SD Gothic Neo', -apple-system, sans-serif;
+  line-height: 24px;
+  color: #a1a1aa;
 }
 
 .auth-footer-link {
+  color: #00d4aa;
+  font-size: 16px;
+  font-weight: 500;
+  font-family: 'Apple SD Gothic Neo', -apple-system, sans-serif;
+  line-height: 24px;
+  transition: var(--transition-normal);
+  padding: 0;
+  border-radius: 0;
   background: none;
   border: none;
-  color: var(--color-primary);
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
   text-decoration: none;
-  transition: var(--transition-normal);
-  padding: var(--space-xs) var(--space-sm);
-  border-radius: var(--radius-md);
-  position: relative;
 }
 
 .auth-footer-link:hover {
-  color: var(--color-primary-hover);
-  background: var(--color-primary-light);
-  text-decoration: none;
-  transform: translateY(-1px);
+  color: #00b894;
+  background: transparent;
+  transform: none;
+  text-decoration: underline;
 }
 
 .auth-footer-link:focus {
   outline: none;
-  box-shadow: 0 0 0 2px var(--color-primary-light);
+  box-shadow: none;
 }
 
+/* Animations */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
 
 /* Responsive Design */
 @media (max-width: 640px) {
@@ -677,27 +476,11 @@
     font-size: 2.5rem;
   }
   
-  .auth-subtitle {
-    font-size: 1.25rem;
-  }
-  
   .auth-stepper {
     flex-wrap: nowrap;
     gap: 0.25rem;
     overflow-x: auto;
     padding: 0.5rem;
     justify-content: flex-start;
-  }
-  
-  .stepper-step {
-    gap: 0.25rem;
-  }
-  
-  .stepper-step-label {
-    font-size: 0.75rem;
-  }
-  
-  .stepper-connector {
-    display: none;
   }
 }
