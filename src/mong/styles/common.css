@@ -1,0 +1,486 @@
+/* Common Auth Components Styles */
+/* 복잡한 스타일만 유지 - CSS variables, gradients, animations, backdrop-filter 등 */
+
+/* Auth Header - Figma Design Match */
+.auth-header {
+  padding: 0;
+  background: transparent;
+  border: none;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+
+.auth-logo {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(0, 212, 170, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.auth-brand-name {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 400;
+  font-family: 'Righteous', sans-serif;
+  color: #ffffff;
+  line-height: 36px;
+}
+
+
+.auth-header-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 400;
+  font-family: 'Apple SD Gothic Neo', -apple-system, sans-serif;
+  color: #ffffff;
+  line-height: 32px;
+}
+
+.auth-header-description {
+  margin: 0;
+  margin-top: 8px;
+  font-size: 16px;
+  font-weight: 400;
+  font-family: 'Apple SD Gothic Neo', -apple-system, sans-serif;
+  color: #a1a1aa;
+  line-height: 24px;
+}
+
+/* Stepper - gradient, backdrop-filter, CSS variables */
+.auth-stepper {
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--color-border);
+}
+
+.stepper-step.current {
+  color: var(--color-primary);
+}
+
+.stepper-step-icon {
+  border-radius: var(--radius-full);
+  transition: var(--transition-normal);
+  box-shadow: var(--shadow-sm);
+}
+
+.stepper-step.completed .stepper-step-icon {
+  background: linear-gradient(135deg, var(--color-success-light) 0%, rgba(0, 212, 170, 0.1) 100%);
+  border-color: var(--color-success);
+  box-shadow: var(--shadow-primary);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.stepper-step.current .stepper-step-icon {
+  background: linear-gradient(135deg, var(--color-primary-light) 0%, rgba(0, 212, 170, 0.1) 100%);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-primary);
+  animation: float 3s ease-in-out infinite;
+}
+
+.stepper-connector {
+  background: linear-gradient(90deg, var(--color-success) 0%, var(--color-primary) 100%);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Form Field Container */
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Form Label - Figma Design Match */
+.form-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  font-family: 'Apple SD Gothic Neo', -apple-system, sans-serif;
+  user-select: none;
+}
+
+/* Form Helper Text */
+.form-helper-text {
+  margin: 0;
+  font-size: 14px;
+  color: #a1a1aa;
+  white-space: pre-line;
+}
+
+/* Form Input - Figma Design Match */
+.form-input {
+  width: 100%;
+  height: 48px;
+  padding: 0 13px;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  background: rgba(42, 42, 42, 0.3);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 400;
+  font-family: 'Apple SD Gothic Neo', -apple-system, sans-serif;
+  transition: var(--transition-normal);
+  box-shadow: none;
+  outline: none;
+}
+
+.form-input::placeholder {
+  color: #a1a1aa;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.form-input:focus {
+  border-color: #00d4aa;
+  background: rgba(42, 42, 42, 0.3);
+  box-shadow: none;
+}
+
+.form-input:invalid {
+  border-color: var(--color-error);
+}
+
+.form-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Form Status Indicator - rgba background */
+.form-status-indicator {
+  background-color: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 0.375rem;
+}
+
+.form-status-indicator svg,
+.form-status-indicator img {
+  color: #10b981;
+}
+
+/* Short Form Input - CSS variables, transitions */
+.short-form-input {
+  border: 1px solid var(--color-border);
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-primary);
+  transition: all 0.2s ease;
+}
+
+.short-form-input::placeholder {
+  color: var(--color-text-secondary);
+}
+
+.short-form-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(19, 225, 201, 0.1);
+}
+
+.short-form-input:invalid {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.short-form-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Short Form Password Input - CSS variables */
+.short-form-password-input {
+  border: 1px solid var(--color-border);
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-primary);
+  transition: all 0.2s ease;
+}
+
+.short-form-password-input::placeholder {
+  color: var(--color-text-secondary);
+}
+
+.short-form-password-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(19, 225, 201, 0.1);
+}
+
+.short-form-password-input:invalid {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.short-form-password-toggle {
+  color: var(--color-text-secondary);
+  transition: all 0.2s ease;
+}
+
+.short-form-password-toggle:hover {
+  color: var(--color-text-primary);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Short Form Select Trigger - CSS variables */
+.short-form-select-trigger {
+  border: 1px solid var(--color-border);
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-primary);
+  transition: all 0.2s ease;
+}
+
+.short-form-select-trigger:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.short-form-select-trigger:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(19, 225, 201, 0.1);
+}
+
+/* Short Form Dropdown Menu - CSS variables, shadow */
+.short-form-dropdown-menu {
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.short-form-dropdown-item {
+  color: var(--color-text-primary);
+  transition: background-color 0.2s ease;
+}
+
+.short-form-dropdown-item:hover {
+  background-color: var(--color-border);
+}
+
+.short-form-dropdown-item:first-child {
+  border-radius: 0.375rem 0.375rem 0 0;
+}
+
+.short-form-dropdown-item:last-child {
+  border-radius: 0 0 0.375rem 0.375rem;
+}
+
+
+
+/* Password Input - Figma Design Match */
+.password-input {
+  width: 100%;
+  height: 48px;
+  padding: 0 48px 0 13px;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  background: rgba(42, 42, 42, 0.3);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 400;
+  font-family: 'Apple SD Gothic Neo', -apple-system, sans-serif;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.password-input::placeholder {
+  color: #a1a1aa;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.password-input:focus {
+  border-color: #00d4aa;
+  background: rgba(42, 42, 42, 0.3);
+  box-shadow: none;
+}
+
+.password-input:invalid {
+  border-color: #ef4444;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 48px;
+  padding: 0 12px;
+  background: transparent;
+  border: none;
+  color: #a1a1aa;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.password-toggle:hover {
+  color: #ffffff;
+  background-color: transparent;
+}
+
+/* Auth Button - Figma Design Match */
+.auth-button {
+  width: 100%;
+  height: 48px;
+  padding: 12px 24px;
+  background: #00d4aa;
+  color: #000000;
+  font-size: 16px;
+  font-weight: 500;
+  font-family: 'Apple SD Gothic Neo', -apple-system, sans-serif;
+  line-height: 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: var(--transition-normal);
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-button:hover:not(:disabled) {
+  background: #00b894;
+}
+
+.auth-button:active:not(:disabled) {
+  background: #00a085;
+}
+
+.auth-button:focus {
+  outline: none;
+}
+
+.auth-button:disabled {
+  background: #2a2a2a;
+  color: #666666;
+  cursor: not-allowed;
+}
+
+.auth-button-secondary {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  transition: var(--transition-normal);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-sm);
+}
+
+.auth-button-secondary:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(0, 212, 170, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-primary), var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.auth-button-secondary:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+.auth-button-secondary:focus {
+  outline: none;
+  box-shadow: var(--shadow-primary), var(--shadow-md);
+}
+
+.auth-button-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Auth Footer - Figma Design Match */
+.auth-footer {
+  padding: 16px 0;
+  border-top: 1px solid #2a2a2a;
+  background: transparent;
+  border-radius: 0;
+  text-align: center;
+  margin-top: 24px;
+}
+
+.auth-footer p {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 400;
+  font-family: 'Apple SD Gothic Neo', -apple-system, sans-serif;
+  line-height: 24px;
+  color: #a1a1aa;
+}
+
+.auth-footer-link {
+  color: #00d4aa;
+  font-size: 16px;
+  font-weight: 500;
+  font-family: 'Apple SD Gothic Neo', -apple-system, sans-serif;
+  line-height: 24px;
+  transition: var(--transition-normal);
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  border: none;
+  text-decoration: none;
+}
+
+.auth-footer-link:hover {
+  color: #00b894;
+  background: transparent;
+  transform: none;
+  text-decoration: underline;
+}
+
+.auth-footer-link:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Animations */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .auth-header {
+    padding: 1rem 1rem 0 1rem;
+  }
+  
+  .auth-title {
+    font-size: 2.5rem;
+  }
+  
+  .auth-stepper {
+    flex-wrap: nowrap;
+    gap: 0.25rem;
+    overflow-x: auto;
+    padding: 0.5rem;
+    justify-content: flex-start;
+  }
+}

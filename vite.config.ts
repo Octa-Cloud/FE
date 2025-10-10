@@ -7,6 +7,10 @@ export default defineConfig({
   root: 'src/mong',
   server: {
     port: 5173
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: true
   }
 })
 
