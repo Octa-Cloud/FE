@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, useUserProfile } from '../store/hooks';
-import ProfileHeader from '../components/ProfileHeader';
+import NavBar from '../components/NavBar';
 import ProfileStatsCard from '../components/ProfileStatsCard';
 import BasicInfoForm from '../components/BasicInfoForm';
 import Container from '../components/Container';
@@ -186,8 +186,7 @@ const ProfileModification = () => {
 
   return (
     <Container className="profile-modification-page">
-      <ProfileHeader 
-        onBack={handleBack}
+      <NavBar 
         onStartSleepRecord={handleStartSleepRecord}
         onLogout={handleLogout}
         userProfile={{

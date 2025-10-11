@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Container from '../components/Container';
-import ProfileHeader from '../components/ProfileHeader';
+import NavBar from '../components/NavBar';
+import { useAuth, useUserProfile } from '../store/hooks';
 import '../styles/statistics.css';
 import '../styles/profile.css';
 
 const StatisticsAnalysis: React.FC = () => {
   const navigate = useNavigate();
   const [analysisType, setAnalysisType] = useState<'weekly' | 'monthly'>('weekly');
+  const { user } = useAuth();
+  const { profile } = useUserProfile();
 
   const handleStartSleepRecord = () => {
     // 수면 기록 시작 로직
@@ -21,14 +24,14 @@ const StatisticsAnalysis: React.FC = () => {
   };
 
   const handleDateClick = (date: string) => {
-    navigate(`/statistics/daily-report/${date}`);
+    navigate(`/daily-report/${date}`);
   };
 
-  // 샘플 사용자 프로필
-  const userProfile = {
-    name: '김수면',
+  // 실제 사용자 프로필 정보 사용
+  const currentUserProfile = {
+    name: profile?.name || user?.name || '사용자',
     avatar: '',
-    email: 'sleeper@example.com'
+    email: profile?.email || user?.email || ''
   };
 
   // 주간 데이터
@@ -141,9 +144,9 @@ const StatisticsAnalysis: React.FC = () => {
 
   return (
     <div className="statistics-page">
-      <ProfileHeader 
+      <NavBar 
         onStartSleepRecord={handleStartSleepRecord}
-        userProfile={userProfile}
+        userProfile={currentUserProfile}
         onLogout={handleLogout}
       />
       

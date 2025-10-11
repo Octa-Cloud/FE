@@ -127,7 +127,7 @@ function AppInitializer() {
         <Route path="/profile" element={<ProfileModification />} />
         <Route path="/sleep-goal" element={<SleepGoalSetting />} />
         <Route path="/statistics" element={<StatisticsAnalysis />} />
-        <Route path="/statistics/daily-report/:date" element={<DailyReport />} />
+        <Route path="/daily-report/:date" element={<DailyReport />} />
       </Routes>
     </Router>
   );

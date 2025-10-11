@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Container from '../components/Container';
-import ProfileHeader from '../components/ProfileHeader';
+import NavBar from '../components/NavBar';
+import { useAuth, useUserProfile } from '../store/hooks';
 import '../styles/statistics.css';
 import '../styles/profile.css';
 
@@ -9,6 +10,8 @@ const DailyReport: React.FC = () => {
   const { date } = useParams<{ date: string }>();
   const navigate = useNavigate();
   const [showRecommendations, setShowRecommendations] = useState(false);
+  const { user } = useAuth();
+  const { profile } = useUserProfile();
 
   const handleStartSleepRecord = () => {
     console.log('수면 기록 시작');
@@ -21,13 +24,14 @@ const DailyReport: React.FC = () => {
 
   const handleDateClick = (day: number) => {
     const newDate = `2024-09-${day.toString().padStart(2, '0')}`;
-    navigate(`/statistics/daily-report/${newDate}`);
+    navigate(`/daily-report/${newDate}`);
   };
 
-  const userProfile = {
-    name: '김수면',
+  // 실제 사용자 프로필 정보 사용
+  const currentUserProfile = {
+    name: profile?.name || user?.name || '사용자',
     avatar: '',
-    email: 'sleeper@example.com'
+    email: profile?.email || user?.email || ''
   };
 
   // 샘플 데이터
@@ -93,9 +97,9 @@ const DailyReport: React.FC = () => {
 
   return (
     <div className="daily-report-page">
-      <ProfileHeader 
+      <NavBar 
         onStartSleepRecord={handleStartSleepRecord}
-        userProfile={userProfile}
+        userProfile={currentUserProfile}
         onLogout={handleLogout}
       />
       

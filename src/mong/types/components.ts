@@ -81,14 +81,14 @@ export interface ContainerProps {
   centered?: boolean; // 중앙 정렬 여부
 }
 
-export interface ProfileHeaderProps {
-  onBack?: () => void;
+export interface NavBarProps {
   onStartSleepRecord?: () => void;
   userProfile: {
     name: string;
-    avatar: string;
+    avatar?: string;
+    email?: string;
   };
-  onLogout: () => void;
+  onLogout?: () => void;
 }
 
 export interface ProfileStatsCardProps {

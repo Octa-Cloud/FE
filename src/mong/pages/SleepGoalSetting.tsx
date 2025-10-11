@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import ProfileHeader from '../components/ProfileHeader';
+import NavBar from '../components/NavBar';
 import ProfileStatsCard from '../components/ProfileStatsCard';
 import ProfileFooter from '../components/ProfileFooter';
 import Container from '../components/Container';
@@ -227,8 +227,7 @@ const SleepGoalSetting = () => {
 
   return (
     <Container className="sleep-goal-setting-page" backgroundColor="#000000">
-      <ProfileHeader
-        onBack={handleBack}
+      <NavBar
         onStartSleepRecord={handleStartSleepRecord}
         userProfile={userProfile}
         onLogout={handleLogout}
