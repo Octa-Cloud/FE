@@ -9,6 +9,8 @@ import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
 import ProfileModification from './pages/ProfileModification';
 import SleepGoalSetting from './pages/SleepGoalSetting';
+import StatisticsAnalysis from './pages/StatisticsAnalysis';
+import DailyReport from './pages/DailyReport';
 import { User } from './types';
 import { initializeTestData } from './testData';
 
@@ -124,6 +126,8 @@ function AppInitializer() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/profile" element={<ProfileModification />} />
         <Route path="/sleep-goal" element={<SleepGoalSetting />} />
+        <Route path="/statistics" element={<StatisticsAnalysis />} />
+        <Route path="/statistics/daily-report/:date" element={<DailyReport />} />
       </Routes>
     </Router>
   );
