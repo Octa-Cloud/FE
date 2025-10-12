@@ -17,43 +17,6 @@
   padding: 24px;
 }
 
-.statistics-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24px;
-}
-
-.analysis-toggle {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px;
-  background: #2a2a2a;
-  border-radius: 8px;
-}
-
-.toggle-btn {
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  background: transparent;
-  color: #a1a1aa;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.toggle-btn:hover {
-  background: rgba(161, 161, 170, 0.1);
-  color: #ffffff;
-}
-
-.toggle-btn.active {
-  background: #a1a1aa;
-  color: #000000;
-}
 
 .statistics-content {
   display: flex;
@@ -69,42 +32,11 @@
   padding: 24px;
 }
 
-.period-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24px;
-}
-
 .period-title h2 {
   font-size: 24px;
   font-weight: 700;
   color: #ffffff;
   margin: 0;
-}
-
-.period-nav {
-  display: flex;
-  gap: 8px;
-}
-
-.nav-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  background: #2a2a2a;
-  border: none;
-  color: #a1a1aa;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.nav-btn:hover {
-  background: rgba(42, 42, 42, 0.5);
-  color: #ffffff;
 }
 
 .charts-grid {
@@ -553,15 +485,6 @@
   padding: 20px 24px;
 }
 
-/* Navigation Controls (최상단) */
-.calendar-nav-controls {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 4px;
-  margin-bottom: 16px;
-}
-
 .calendar-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -576,57 +499,6 @@
   color: #a1a1aa;
   padding: 4px 0;
   line-height: 1.4;
-}
-
-.calendar-month-nav {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.calendar-month-nav span {
-  font-size: 12px;
-  font-weight: 500;
-  color: #ffffff;
-  letter-spacing: 0;
-  white-space: nowrap;
-}
-
-.calendar-nav-btn {
-  background: transparent;
-  border: none;
-  color: #a1a1aa;
-  font-size: 20px;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-  line-height: 1;
-}
-
-.calendar-nav-btn:hover {
-  color: #ffffff;
-}
-
-/* Toggle Button */
-.calendar-toggle-btn {
-  width: 24px;
-  height: 24px;
-  border-radius: 4px;
-  background: transparent;
-  border: none;
-  color: #a1a1aa;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: color 0.2s ease;
-  flex-shrink: 0;
-  padding: 0;
-}
-
-.calendar-toggle-btn:hover {
-  color: #ffffff;
 }
 
 /* Week View Days (주간 보기 날짜) */
@@ -1135,12 +1007,6 @@
 }
 
 
-/* Recommendation Styles */
-.recommendations-content {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
 
 .recommendation-item {
   padding: 20px;
@@ -1165,9 +1031,6 @@
   color: #ffffff;
 }
 
-.recommendation-icon {
-  font-size: 18px;
-}
 
 .recommendation-badges {
   display: flex;
@@ -1208,12 +1071,6 @@
   margin-bottom: 12px;
 }
 
-.recommendation-duration {
-  color: #00d4aa;
-  font-size: 14px;
-  font-weight: 500;
-  margin-bottom: 16px;
-}
 
 .recommendation-steps {
   background: #0f0f0f;
@@ -1222,23 +1079,6 @@
   border: 1px solid #2a2a2a;
 }
 
-.steps-title {
-  color: #ffffff;
-  font-weight: 600;
-  margin-bottom: 12px;
-  font-size: 14px;
-}
-
-.steps-list {
-  color: #d1d5db;
-  padding-left: 16px;
-  margin: 0;
-}
-
-.steps-list li {
-  margin-bottom: 8px;
-  line-height: 1.5;
-}
 
 /* Responsive Design */
 @media (max-width: 768px) {
@@ -1284,49 +1124,6 @@
   margin-bottom: 16px;
 }
 
-.brainwave-legend .flex {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-}
-
-.brainwave-legend .flex .flex {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.brainwave-legend .w-8 {
-  width: 32px;
-}
-
-.brainwave-legend .h-3 {
-  height: 12px;
-}
-
-.brainwave-legend .rounded-full {
-  border-radius: 9999px;
-}
-
-.brainwave-legend .bg-gradient-to-r {
-  background-image: linear-gradient(to right, var(--tw-gradient-stops));
-}
-
-.brainwave-legend .from-blue-800 {
-  --tw-gradient-from: #1e40af;
-  --tw-gradient-to: rgba(30, 64, 175, 0);
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-}
-
-.brainwave-legend .via-blue-400 {
-  --tw-gradient-to: rgba(96, 165, 250, 0);
-  --tw-gradient-stops: var(--tw-gradient-from), #60a5fa, var(--tw-gradient-to);
-}
-
-.brainwave-legend .to-blue-100 {
-  --tw-gradient-to: #dbeafe;
-}
-
 /* Noise Events Styles */
 .noise-events-card {
   margin-top: 16px;
@@ -1352,41 +1149,7 @@
   margin: 0;
 }
 
-.expand-btn {
-  background: none;
-  border: none;
-  color: #a1a1aa;
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-}
 
-.expand-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-}
-
-.noise-events-grid .grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-}
-
-.noise-events-grid .flex {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 16px;
-}
-
-.noise-events-grid .text-primary {
-  color: #00d4aa;
-}
-
-.noise-events-grid .flex-1 {
-  flex: 1;
-}
 
 /* Recharts Custom Styles */
 .recharts-wrapper {

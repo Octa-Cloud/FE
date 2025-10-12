@@ -115,16 +115,24 @@ const StatisticsAnalysis: React.FC = () => {
       <Container width={800} backgroundColor="#000000">
         <main className="statistics-main">
           <div className="statistics-container">
-            <div className="statistics-header">
-              <div className="analysis-toggle">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-1 p-1 bg-[#2a2a2a] rounded-lg">
                 <button 
-                  className={`toggle-btn ${analysisType === 'weekly' ? 'active' : ''}`}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                    analysisType === 'weekly' 
+                      ? 'bg-[#a1a1aa] text-black' 
+                      : 'bg-transparent text-[#a1a1aa] hover:bg-[#a1a1aa]/10 hover:text-white'
+                  }`}
                   onClick={() => setAnalysisType('weekly')}
                 >
                   주간 분석
                 </button>
                 <button 
-                  className={`toggle-btn ${analysisType === 'monthly' ? 'active' : ''}`}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                    analysisType === 'monthly' 
+                      ? 'bg-[#a1a1aa] text-black' 
+                      : 'bg-transparent text-[#a1a1aa] hover:bg-[#a1a1aa]/10 hover:text-white'
+                  }`}
                   onClick={() => setAnalysisType('monthly')}
                 >
                   월간 분석
@@ -135,17 +143,23 @@ const StatisticsAnalysis: React.FC = () => {
             <div className="statistics-content">
               {/* 기간 표시 및 차트 */}
               <div className="period-card">
-                <div className="period-header">
+                <div className="flex items-center justify-between mb-6">
                   <div className="period-title">
                     <h2>{currentData.period}</h2>
                   </div>
-                  <div className="period-nav">
-                    <button className="nav-btn" onClick={handlePrevPeriod}>
+                  <div className="flex gap-2">
+                    <button 
+                      className="w-8 h-8 rounded-md bg-[#2a2a2a] border-none text-[#a1a1aa] flex items-center justify-center cursor-pointer transition-all hover:bg-[#3a3a3a] hover:text-white" 
+                      onClick={handlePrevPeriod}
+                    >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="m15 18-6-6 6-6"/>
                       </svg>
                     </button>
-                    <button className="nav-btn" onClick={handleNextPeriod}>
+                    <button 
+                      className="w-8 h-8 rounded-md bg-[#2a2a2a] border-none text-[#a1a1aa] flex items-center justify-center cursor-pointer transition-all hover:bg-[#3a3a3a] hover:text-white" 
+                      onClick={handleNextPeriod}
+                    >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="m9 18 6-6-6-6"/>
                       </svg>

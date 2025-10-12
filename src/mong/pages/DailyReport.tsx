@@ -236,15 +236,15 @@ const DailyReport: React.FC = () => {
             <div className="daily-report-content">
               {/* 캘린더 미니뷰 */}
               <div className="calendar-mini">
-                <div className="calendar-nav-controls">
+                <div className="flex items-center justify-end mb-2">
                   {showCalendar && (
-                    <div className="calendar-month-nav">
-                      <button className="calendar-nav-btn" onClick={handlePrevMonth}>‹</button>
+                    <div className="flex items-center gap-4 mr-2">
+                      <button className="w-6 h-6 flex items-center justify-center text-white hover:bg-gray-800 rounded transition-colors" onClick={handlePrevMonth}>‹</button>
                       <span>{currentMonth.getFullYear()}.{currentMonth.getMonth() + 1}</span>
-                      <button className="calendar-nav-btn" onClick={handleNextMonth}>›</button>
+                      <button className="w-6 h-6 flex items-center justify-center text-white hover:bg-gray-800 rounded transition-colors" onClick={handleNextMonth}>›</button>
                     </div>
                   )}
-                  <button className="calendar-toggle-btn" onClick={handleCalendarToggle}>
+                  <button className="flex items-center gap-2 text-white hover:bg-gray-800 rounded transition-colors" onClick={handleCalendarToggle}>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       {showCalendar ? (
                         <path d="m18 15-6-6-6 6"/>
@@ -549,7 +549,7 @@ const DailyReport: React.FC = () => {
                     <div className="noise-header">
                       <h4>감지된 소음 이벤트</h4>
                       <button 
-                        className="expand-btn"
+                        className="bg-transparent border-none text-[#a1a1aa] cursor-pointer p-1 rounded transition-all hover:bg-white/10 hover:text-white"
                         onClick={() => setShowRecommendations(!showRecommendations)}
                       >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -624,11 +624,11 @@ const DailyReport: React.FC = () => {
                     <h4>개선 권장사항</h4>
                     <p>현재 수면 패턴을 기반으로 한 맞춤형 개선 방법</p>
                   </div>
-                  <div className="recommendations-content">
+                  <div className="flex flex-col gap-6">
                     <div className="recommendation-item">
                       <div className="recommendation-header">
                         <div className="recommendation-title">
-                          <span className="recommendation-icon">💡</span>
+                          <span className="text-2xl mr-2">💡</span>
                           일정한 취침 시간 유지
                         </div>
                         <div className="recommendation-badges">
@@ -639,10 +639,10 @@ const DailyReport: React.FC = () => {
                       <p className="recommendation-description">
                         현재 수면 패턴을 분석한 결과, 수면 환경 개선이 필요합니다. 뇌파 분석에서 깊은 수면 비율이 {reportData.brainwaveAnalysis.deepSleepRatio}%로 나타났으며, 소음 이벤트가 {reportData.noiseEvents.length}회 감지되었습니다. 규칙적인 취침 시간과 최적화된 수면 환경을 통해 수면의 질을 크게 향상시킬 수 있습니다.
                       </p>
-                      <div className="recommendation-duration">예상 기간: 2-3주</div>
+                      <div className="text-[#00d4aa] text-sm font-medium mt-3">예상 기간: 2-3주</div>
                       <div className="recommendation-steps">
-                        <div className="steps-title">실행 단계:</div>
-                        <ol className="steps-list">
+                        <div className="text-white font-semibold mb-3 text-sm">실행 단계:</div>
+                        <ol className="text-[#d1d5db] pl-4 m-0 [&>li]:mb-2 [&>li]:leading-relaxed">
                           <li>목표 취침 시간을 정하세요 (예: 23:00)</li>
                           <li>주말에도 같은 시간을 유지하세요</li>
                           <li>취침 1시간 전부터 준비를 시작하세요</li>
@@ -653,7 +653,7 @@ const DailyReport: React.FC = () => {
                     <div className="recommendation-item">
                       <div className="recommendation-header">
                         <div className="recommendation-title">
-                          <span className="recommendation-icon">💡</span>
+                          <span className="text-2xl mr-2">💡</span>
                           수면 환경 최적화
                         </div>
                         <div className="recommendation-badges">
@@ -664,10 +664,10 @@ const DailyReport: React.FC = () => {
                       <p className="recommendation-description">
                         수면 환경은 깊은 수면에 직접적인 영향을 미칩니다. 현재 깊은 수면 비율이 {reportData.brainwaveAnalysis.deepSleepRatio}%로 나타났으며, 각성 상태가 {reportData.brainwaveAnalysis.awakeRatio}% 감지되었습니다. 적절한 온도(18-20°C)는 체온 조절을 돕고, 완전한 암흑 상태는 멜라토닌 분비를 촉진합니다. 조용한 환경은 수면 중 각성을 방지해 연속적인 깊은 수면을 가능하게 합니다.
                       </p>
-                      <div className="recommendation-duration">예상 기간: 1주</div>
+                      <div className="text-[#00d4aa] text-sm font-medium mt-3">예상 기간: 1주</div>
                       <div className="recommendation-steps">
-                        <div className="steps-title">실행 단계:</div>
-                        <ol className="steps-list">
+                        <div className="text-white font-semibold mb-3 text-sm">실행 단계:</div>
+                        <ol className="text-[#d1d5db] pl-4 m-0 [&>li]:mb-2 [&>li]:leading-relaxed">
                           <li>방 온도를 18-20도로 유지하세요</li>
                           <li>완전히 어둡게 만들거나 수면 안대를 사용하세요</li>
                           <li>소음을 차단하거나 백색소음을 활용하세요</li>
@@ -678,7 +678,7 @@ const DailyReport: React.FC = () => {
                     <div className="recommendation-item">
                       <div className="recommendation-header">
                         <div className="recommendation-title">
-                          <span className="recommendation-icon">💡</span>
+                          <span className="text-2xl mr-2">💡</span>
                           수면 전 루틴 개선
                         </div>
                         <div className="recommendation-badges">
@@ -689,10 +689,10 @@ const DailyReport: React.FC = () => {
                       <p className="recommendation-description">
                         현재 수면 시간은 {reportData.sleepTimeHours}시간으로 나타났으며, 수면 효율은 {reportData.sleepEfficiency}%입니다. 뇌파 분석에서 REM 수면 비율이 {reportData.brainwaveAnalysis.remSleepRatio}%로 측정되었습니다. 카페인은 6-8시간 동안 체내에 머물며 잠들기 어렵게 만들고, 블루라이트는 멜라토닌 분비를 억제합니다. 취침 전 차분한 활동은 교감신경을 진정시켜 자연스러운 수면 유도에 도움이 됩니다.
                       </p>
-                      <div className="recommendation-duration">예상 기간: 1-2주</div>
+                      <div className="text-[#00d4aa] text-sm font-medium mt-3">예상 기간: 1-2주</div>
                       <div className="recommendation-steps">
-                        <div className="steps-title">실행 단계:</div>
-                        <ol className="steps-list">
+                        <div className="text-white font-semibold mb-3 text-sm">실행 단계:</div>
+                        <ol className="text-[#d1d5db] pl-4 m-0 [&>li]:mb-2 [&>li]:leading-relaxed">
                           <li>취침 2시간 전 카페인 섭취 중단</li>
                           <li>취침 1시간 전 스크린 타임 줄이기</li>
                           <li>가벼운 독서나 명상으로 마음 진정하기</li>

@@ -13,3 +13,6 @@ export * from './timeCalculation';
 
 // 통계 계산 관련
 export * from './statisticsCalculations';
+
+// 수면 데이터 계산 관련
+export * from './sleepDataCalculations';
