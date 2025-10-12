@@ -499,16 +499,66 @@
   background: #1a1a1a;
   border: 1px solid #2a2a2a;
   border-radius: 14px;
-  padding: 16px;
+  padding: 20px 24px;
 }
 
-.calendar-header {
+/* Navigation Controls (최상단) */
+.calendar-nav-controls {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
   margin-bottom: 8px;
 }
 
-.calendar-nav {
+.calendar-weekdays > div {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 400;
+  color: #a1a1aa;
+  padding: 4px 0;
+  line-height: 1.4;
+}
+
+.calendar-month-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.calendar-month-nav span {
+  font-size: 12px;
+  font-weight: 500;
+  color: #ffffff;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.calendar-nav-btn {
+  background: transparent;
+  border: none;
+  color: #a1a1aa;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.calendar-nav-btn:hover {
+  color: #ffffff;
+}
+
+/* Toggle Button */
+.calendar-toggle-btn {
   width: 24px;
   height: 24px;
   border-radius: 4px;
@@ -519,51 +569,136 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: color 0.2s ease;
+  flex-shrink: 0;
+  padding: 0;
 }
 
-.calendar-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.calendar-toggle-btn:hover {
+  color: #ffffff;
 }
 
-.calendar-weekdays {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-}
-
-.calendar-weekdays > div {
-  text-align: center;
-  font-size: 12px;
-  color: #a1a1aa;
-  padding: 4px;
-}
-
+/* Week View Days (주간 보기 날짜) */
 .calendar-days {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .calendar-day {
+  min-height: 32px;
   height: 32px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 14px;
+  font-weight: 400;
   color: #ffffff;
   cursor: pointer;
   transition: all 0.2s ease;
+  position: relative;
+  padding: 2px;
 }
 
-.calendar-day:hover {
-  background: rgba(42, 42, 42, 0.2);
+.calendar-day .day-number {
+  line-height: 1.4;
+}
+
+.calendar-day.has-data {
+  font-weight: 500;
+}
+
+.calendar-day:hover:not(.selected) {
+  background: rgba(42, 42, 42, 0.3);
 }
 
 .calendar-day.selected {
-  border: 1px solid #00d4aa;
+  background: #00d4aa;
+  color: #000000;
+  font-weight: 500;
+  border-radius: 4px;
+}
+
+.calendar-day.other-month {
+  color: #a1a1aa;
+}
+
+/* Calendar Days Grid (월간 보기) */
+.calendar-days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+  grid-auto-rows: 32px;
+}
+
+.calendar-day-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #ffffff;
+  position: relative;
+  padding: 2px;
+}
+
+.calendar-day-cell .day-number {
+  line-height: 1.4;
+}
+
+.calendar-day-cell.has-data {
+  font-weight: 500;
+}
+
+.calendar-day-cell:not(.empty):not(.selected):hover {
+  background: rgba(42, 42, 42, 0.3);
+}
+
+.calendar-day-cell.selected {
+  background: #00d4aa;
+  color: #000000;
+  font-weight: 500;
+  border-radius: 4px;
+}
+
+.calendar-day-cell.empty {
+  cursor: default;
+}
+
+.calendar-day-cell.other-month {
+  color: #a1a1aa;
+}
+
+/* Sleep Indicator Dots */
+.sleep-indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: block;
+  margin-top: 2px;
+}
+
+.sleep-indicator.good {
+  background: #00c950;
+}
+
+.sleep-indicator.normal {
+  background: #f0b100;
+}
+
+/* Selected day hides indicator if it has one */
+.calendar-day.selected .sleep-indicator,
+.calendar-day-cell.selected .sleep-indicator {
+  display: none;
 }
 
 /* Report Grid */
@@ -948,6 +1083,112 @@
   margin-bottom: 4px;
 }
 
+
+/* Recommendation Styles */
+.recommendations-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.recommendation-item {
+  padding: 20px;
+  background: #1a1a1a;
+  border-radius: 12px;
+  border: 1px solid #333;
+}
+
+.recommendation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.recommendation-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.recommendation-icon {
+  font-size: 18px;
+}
+
+.recommendation-badges {
+  display: flex;
+  gap: 8px;
+}
+
+.badge {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.badge-easy {
+  background: #d4f4dd;
+  color: #166534;
+}
+
+.badge-normal {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.badge-high-effect {
+  background: #1e40af;
+  color: #ffffff;
+}
+
+.badge-normal-effect {
+  background: #374151;
+  color: #d1d5db;
+}
+
+.recommendation-description {
+  color: #d1d5db;
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.recommendation-duration {
+  color: #00d4aa;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.recommendation-steps {
+  background: #0f0f0f;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #2a2a2a;
+}
+
+.steps-title {
+  color: #ffffff;
+  font-weight: 600;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.steps-list {
+  color: #d1d5db;
+  padding-left: 16px;
+  margin: 0;
+}
+
+.steps-list li {
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .charts-grid,
@@ -965,6 +1206,16 @@
   .statistics-container,
   .daily-report-container {
     padding: 16px;
+  }
+  
+  .recommendation-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .recommendation-badges {
+    align-self: flex-start;
   }
 }
 

@@ -10,8 +10,17 @@ const DailyReport: React.FC = () => {
   const { date } = useParams<{ date: string }>();
   const navigate = useNavigate();
   const [showRecommendations, setShowRecommendations] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
   const { user } = useAuth();
   const { profile } = useUserProfile();
+  
+  // 현재 보고 있는 월 상태 (기본값: URL 파라미터의 date 또는 오늘)
+  const [currentMonth, setCurrentMonth] = useState(() => {
+    if (date) {
+      return new Date(date);
+    }
+    return new Date();
+  });
 
   const handleStartSleepRecord = () => {
     console.log('수면 기록 시작');
@@ -22,9 +31,116 @@ const DailyReport: React.FC = () => {
     navigate('/login');
   };
 
-  const handleDateClick = (day: number) => {
-    const newDate = `2024-09-${day.toString().padStart(2, '0')}`;
-    navigate(`/daily-report/${newDate}`);
+
+  const handleCalendarToggle = () => {
+    setShowCalendar(!showCalendar);
+  };
+
+  const handleCalendarDateSelect = (selectedDate: string) => {
+    navigate(`/daily-report/${selectedDate}`);
+    setShowCalendar(false);
+  };
+
+  const handlePrevMonth = () => {
+    setCurrentMonth(prev => {
+      const newDate = new Date(prev);
+      newDate.setMonth(newDate.getMonth() - 1);
+      return newDate;
+    });
+  };
+
+  const handleNextMonth = () => {
+    setCurrentMonth(prev => {
+      const newDate = new Date(prev);
+      newDate.setMonth(newDate.getMonth() + 1);
+      return newDate;
+    });
+  };
+
+  // 달력 공통 함수들
+  const getCurrentDate = () => {
+    return new Date(date || new Date().toISOString().split('T')[0]);
+  };
+
+  const getWeekDates = (selectedDate: string) => {
+    const date = new Date(selectedDate);
+    const dayOfWeek = date.getDay();
+    const startOfWeek = new Date(date);
+    startOfWeek.setDate(date.getDate() - dayOfWeek);
+    
+    const weekDates = [];
+    for (let i = 0; i < 7; i++) {
+      const weekDate = new Date(startOfWeek);
+      weekDate.setDate(startOfWeek.getDate() + i);
+      weekDates.push({
+        day: weekDate.getDate(),
+        fullDate: new Date(weekDate),
+        isCurrentMonth: weekDate.getMonth() === date.getMonth()
+      });
+    }
+    return weekDates;
+  };
+
+  // 달력 생성 함수 (선택된 월 기반)
+  const generateCalendar = () => {
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth();
+    
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
+    
+    const calendar = [];
+    
+    // 이전 달의 빈 날짜들
+    for (let i = 0; i < startingDayOfWeek; i++) {
+      calendar.push(null);
+    }
+    
+    // 현재 달의 날짜들
+    for (let day = 1; day <= daysInMonth; day++) {
+      calendar.push({
+        day: day,
+        fullDate: new Date(year, month, day),
+        isCurrentMonth: true
+      });
+    }
+    
+    // 마지막 주를 완성하기 위한 빈 칸만 추가
+    const totalCells = calendar.length;
+    const lastWeekRemainingCells = (7 - (totalCells % 7)) % 7;
+    for (let i = 0; i < lastWeekRemainingCells; i++) {
+      calendar.push(null);
+    }
+    
+    return calendar;
+  };
+
+  const isSelectedDate = (day: number | null, fullDate?: Date) => {
+    if (!day || !fullDate) return false;
+    const currentDate = getCurrentDate();
+    return fullDate.toDateString() === currentDate.toDateString();
+  };
+
+  // 날짜별 수면 데이터 상태 (예시 데이터)
+  const getSleepStatus = (day: number, isCurrentMonth: boolean) => {
+    if (!isCurrentMonth) return null;
+    
+    // 실제로는 API에서 가져온 데이터를 사용
+    // 예시: 특정 날짜에 수면 데이터가 있는 경우
+    const hasGoodSleep = [9, 11].includes(day); // 초록색 점
+    const hasNormalSleep = [7, 8, 10, 12, 13, 14].includes(day); // 노란색 점
+    
+    if (hasGoodSleep) return 'good';
+    if (hasNormalSleep) return 'normal';
+    return null;
+  };
+
+  const hasSleepData = (day: number, isCurrentMonth: boolean) => {
+    if (!isCurrentMonth) return false;
+    // 수면 기록이 있는 날짜 (7~14일에 데이터가 있다고 가정)
+    return day >= 7 && day <= 14;
   };
 
   // 실제 사용자 프로필 정보 사용
@@ -109,33 +225,102 @@ const DailyReport: React.FC = () => {
             <div className="daily-report-content">
               {/* 캘린더 미니뷰 */}
               <div className="calendar-mini">
-                <div className="calendar-header">
-                  <button className="calendar-nav">
+                <div className="calendar-nav-controls">
+                  {showCalendar && (
+                    <div className="calendar-month-nav">
+                      <button className="calendar-nav-btn" onClick={handlePrevMonth}>‹</button>
+                      <span>{currentMonth.getFullYear()}.{currentMonth.getMonth() + 1}</span>
+                      <button className="calendar-nav-btn" onClick={handleNextMonth}>›</button>
+                    </div>
+                  )}
+                  <button className="calendar-toggle-btn" onClick={handleCalendarToggle}>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="m6 9 6 6 6-6"/>
+                      {showCalendar ? (
+                        <path d="m18 15-6-6-6 6"/>
+                      ) : (
+                        <path d="m6 9 6 6 6-6"/>
+                      )}
                     </svg>
                   </button>
                 </div>
-                <div className="calendar-grid">
-                  <div className="calendar-weekdays">
-                    <div>일</div>
-                    <div>월</div>
-                    <div>화</div>
-                    <div>수</div>
-                    <div>목</div>
-                    <div>금</div>
-                    <div>토</div>
-                  </div>
-                  <div className="calendar-days">
-                    <div className="calendar-day" onClick={() => handleDateClick(5)}>5</div>
-                    <div className="calendar-day" onClick={() => handleDateClick(6)}>6</div>
-                    <div className="calendar-day" onClick={() => handleDateClick(7)}>7</div>
-                    <div className="calendar-day" onClick={() => handleDateClick(8)}>8</div>
-                    <div className="calendar-day" onClick={() => handleDateClick(9)}>9</div>
-                    <div className="calendar-day selected" onClick={() => handleDateClick(10)}>10</div>
-                    <div className="calendar-day" onClick={() => handleDateClick(11)}>11</div>
-                  </div>
+
+                <div className="calendar-weekdays">
+                  <div>일</div>
+                  <div>월</div>
+                  <div>화</div>
+                  <div>수</div>
+                  <div>목</div>
+                  <div>금</div>
+                  <div>토</div>
                 </div>
+
+                {showCalendar ? (
+                  <div className="calendar-days-grid">
+                    {generateCalendar().map((dayData, index) => {
+                      if (!dayData) {
+                        return (
+                          <div key={index} className="calendar-day-cell empty">
+                          </div>
+                        );
+                      }
+                      
+                      const { day, fullDate, isCurrentMonth } = dayData;
+                      
+                      // 현재 달이 아닌 날짜는 렌더링하지 않음
+                      if (!isCurrentMonth) {
+                        return (
+                          <div key={index} className="calendar-day-cell empty">
+                          </div>
+                        );
+                      }
+                      
+                      const isSelected = isSelectedDate(day, fullDate);
+                      const sleepStatus = getSleepStatus(day, isCurrentMonth);
+                      const hasData = hasSleepData(day, isCurrentMonth);
+                      
+                      return (
+                        <div
+                          key={index}
+                          className={`calendar-day-cell ${isSelected ? 'selected' : ''} ${hasData ? 'has-data' : ''}`}
+                          onClick={() => {
+                            const selectedDate = fullDate.toISOString().split('T')[0];
+                            handleCalendarDateSelect(selectedDate);
+                          }}
+                        >
+                          <span className="day-number">{day}</span>
+                          {sleepStatus && (
+                            <span className={`sleep-indicator ${sleepStatus}`} />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="calendar-days">
+                    {getWeekDates(date || new Date().toISOString().split('T')[0]).map((dayData, index) => {
+                      const { day, fullDate, isCurrentMonth } = dayData;
+                      const isSelected = isSelectedDate(day, fullDate);
+                      const sleepStatus = getSleepStatus(day, isCurrentMonth);
+                      const hasData = hasSleepData(day, isCurrentMonth);
+                      
+                      return (
+                        <div 
+                          key={index}
+                          className={`calendar-day ${isSelected ? 'selected' : ''} ${!isCurrentMonth ? 'other-month' : ''} ${hasData ? 'has-data' : ''}`} 
+                          onClick={() => {
+                            const selectedDate = fullDate.toISOString().split('T')[0];
+                            handleCalendarDateSelect(selectedDate);
+                          }}
+                        >
+                          <span className="day-number">{day}</span>
+                          {sleepStatus && (
+                            <span className={`sleep-indicator ${sleepStatus}`} />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               <div className="report-grid">
@@ -157,7 +342,11 @@ const DailyReport: React.FC = () => {
                 <div className="sleep-info-card">
                   <div className="card-header">
                     <h4>수면 시간 정보</h4>
-                    <p>2024년 9월 12일 수면 시간 요약</p>
+                    <p>{date ? new Date(date).toLocaleDateString('ko-KR', { 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric'
+                    }) : '2024년 9월 12일'} 수면 시간 요약</p>
                   </div>
                   <div className="sleep-info-list">
                     <div className="sleep-info-item">
@@ -342,6 +531,90 @@ const DailyReport: React.FC = () => {
                   </div>
                 </div>
 
+                {/* AI 분석 리포트 */}
+                <div className="ai-analysis-card">
+                  <div className="card-header">
+                    <h4>개선 권장사항</h4>
+                    <p>현재 수면 패턴을 기반으로 한 맞춤형 개선 방법</p>
+                  </div>
+                  <div className="recommendations-content">
+                    <div className="recommendation-item">
+                      <div className="recommendation-header">
+                        <div className="recommendation-title">
+                          <span className="recommendation-icon">💡</span>
+                          일정한 취침 시간 유지
+                        </div>
+                        <div className="recommendation-badges">
+                          <span className="badge badge-easy">쉬움</span>
+                          <span className="badge badge-high-effect">높은 효과</span>
+                        </div>
+                      </div>
+                      <p className="recommendation-description">
+                        현재 취침 시간이 ±45분으로 불규칙합니다. 매일 같은 시간에 잠자리에 들면 멜라토닌 분비가 규칙적이 되어 자연스럽게 잠이 들 수 있습니다. 생체시계가 안정되면 수면의 질이 크게 향상되고, 아침에 일어나기도 쉬워집니다.
+                      </p>
+                      <div className="recommendation-duration">예상 기간: 2-3주</div>
+                      <div className="recommendation-steps">
+                        <div className="steps-title">실행 단계:</div>
+                        <ol className="steps-list">
+                          <li>목표 취침 시간을 정하세요 (예: 23:00)</li>
+                          <li>주말에도 같은 시간을 유지하세요</li>
+                          <li>취침 1시간 전부터 준비를 시작하세요</li>
+                        </ol>
+                      </div>
+                    </div>
+
+                    <div className="recommendation-item">
+                      <div className="recommendation-header">
+                        <div className="recommendation-title">
+                          <span className="recommendation-icon">💡</span>
+                          수면 환경 최적화
+                        </div>
+                        <div className="recommendation-badges">
+                          <span className="badge badge-normal">보통</span>
+                          <span className="badge badge-high-effect">높은 효과</span>
+                        </div>
+                      </div>
+                      <p className="recommendation-description">
+                        수면 환경은 깊은 수면에 직접적인 영향을 미칩니다. 현재 깊은 수면 비율이 28%로 목표치보다 낮습니다. 적절한 온도(18-20°C)는 체온 조절을 돕고, 완전한 암흑 상태는 멜라토닌 분비를 촉진합니다. 조용한 환경은 수면 중 각성을 방지해 연속적인 깊은 수면을 가능하게 합니다.
+                      </p>
+                      <div className="recommendation-duration">예상 기간: 1주</div>
+                      <div className="recommendation-steps">
+                        <div className="steps-title">실행 단계:</div>
+                        <ol className="steps-list">
+                          <li>방 온도를 18-20도로 유지하세요</li>
+                          <li>완전히 어둡게 만들거나 수면 안대를 사용하세요</li>
+                          <li>소음을 차단하거나 백색소음을 활용하세요</li>
+                        </ol>
+                      </div>
+                    </div>
+
+                    <div className="recommendation-item">
+                      <div className="recommendation-header">
+                        <div className="recommendation-title">
+                          <span className="recommendation-icon">💡</span>
+                          수면 전 루틴 개선
+                        </div>
+                        <div className="recommendation-badges">
+                          <span className="badge badge-normal">보통</span>
+                          <span className="badge badge-normal-effect">보통 효과</span>
+                        </div>
+                      </div>
+                      <p className="recommendation-description">
+                        현재 수면 시간은 7.2시간으로 목표치에 근접하지만, 수면의 질 개선이 필요합니다. 카페인은 6-8시간 동안 체내에 머물며 잠들기 어렵게 만들고, 블루라이트는 멜라토닌 분비를 억제합니다. 취침 전 차분한 활동은 교감신경을 진정시켜 자연스러운 수면 유도에 도움이 됩니다.
+                      </p>
+                      <div className="recommendation-duration">예상 기간: 1-2주</div>
+                      <div className="recommendation-steps">
+                        <div className="steps-title">실행 단계:</div>
+                        <ol className="steps-list">
+                          <li>취침 2시간 전 카페인 섭취 중단</li>
+                          <li>취침 1시간 전 스크린 타임 줄이기</li>
+                          <li>가벼운 독서나 명상으로 마음 진정하기</li>
+                        </ol>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 {/* 수면 기록 메모 */}
                 <div className="sleep-memo-card">
                   <div className="card-header">
@@ -355,28 +628,6 @@ const DailyReport: React.FC = () => {
                   </div>
                   <div className="memo-content">
                     <p>{reportData.sleepMemo}</p>
-                  </div>
-                </div>
-
-                {/* AI 분석 리포트 */}
-                <div className="ai-analysis-card">
-                  <div className="card-header">
-                    <h4>AI 분석 리포트</h4>
-                    <p>수면 메모를 바탕으로 한 개인화된 분석</p>
-                  </div>
-                  <div className="ai-analysis-content">
-                    <p className="analysis-summary">{reportData.aiAnalysis.summary}</p>
-                    
-                    {showRecommendations && (
-                      <div className="recommendations-section">
-                        <p className="recommendations-title">💡 개선 제안</p>
-                        <ul className="recommendations-list">
-                          {reportData.aiAnalysis.recommendations.map((rec, index) => (
-                            <li key={index}>• {rec}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>

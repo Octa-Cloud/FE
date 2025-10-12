@@ -50,7 +50,7 @@ export default function Home() {
               style={{ backgroundColor: 'transparent', color: '#00d4aa', border: '1px solid #00d4aa', borderRadius: 8, height: 48, padding: '0 24px', cursor: 'pointer', fontSize: 18, fontWeight: 500 }}
               onClick={() => navigate('/daily-report/' + new Date().toISOString().split('T')[0])}
             >
-              통계 보기
+              일별 보고서
             </button>
           </div>
 
