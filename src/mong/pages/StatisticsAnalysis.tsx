@@ -1,14 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Container from '../components/Container';
 import NavBar from '../components/NavBar';
 import { useAuth, useUserProfile } from '../store/hooks';
+import { getSleepRecordsByMonth } from '../sleepData';
+import { analyzeWeeklyData, analyzeMonthlyData } from '../utils/statisticsCalculations';
+import { DailySleepRecord } from '../types/sleepData';
 import '../styles/statistics.css';
 import '../styles/profile.css';
 
 const StatisticsAnalysis: React.FC = () => {
   const navigate = useNavigate();
   const [analysisType, setAnalysisType] = useState<'weekly' | 'monthly'>('weekly');
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [sleepRecords, setSleepRecords] = useState<DailySleepRecord[]>([]);
   const { user } = useAuth();
   const { profile } = useUserProfile();
 
@@ -27,6 +33,16 @@ const StatisticsAnalysis: React.FC = () => {
     navigate(`/daily-report/${date}`);
   };
 
+  // 데이터 로드
+  useEffect(() => {
+    if (user?.id) {
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth() + 1;
+      const records = getSleepRecordsByMonth(user.id, year, month);
+      setSleepRecords(records);
+    }
+  }, [user?.id, currentDate]);
+
   // 실제 사용자 프로필 정보 사용
   const currentUserProfile = {
     name: profile?.name || user?.name || '사용자',
@@ -34,113 +50,59 @@ const StatisticsAnalysis: React.FC = () => {
     email: profile?.email || user?.email || ''
   };
 
-  // 주간 데이터
-  const weeklyData = {
-    period: '이번 주 10/6 - 10/12',
-    sleepTimeChart: [
-      { day: '월', hours: 7.5 },
-      { day: '화', hours: 6.5 },
-      { day: '수', hours: 8.5 },
-      { day: '목', hours: 7.0 },
-      { day: '금', hours: 6.5 },
-      { day: '토', hours: 9.0 },
-      { day: '일', hours: 9.0 }
-    ],
-    sleepScoreChart: [
-      { day: '월', score: 75 },
-      { day: '화', score: 70 },
-      { day: '수', score: 95 },
-      { day: '목', score: 82 },
-      { day: '금', score: 70 },
-      { day: '토', score: 95 },
-      { day: '일', score: 90 }
-    ],
-    summary: {
-      avgScore: 77,
-      avgHours: 7.3,
-      avgBedtime: '23:20',
-      scoreChange: '+3점',
-      hoursStatus: '목표 달성',
-      bedtimeStatus: '목표보다 20분 늦음'
-    },
-    patterns: {
-      deepSleep: '25%',
-      lightSleep: '55%',
-      remSleep: '20%',
-      avgBedtime: '23:25'
-    },
-    analysis: [
-      {
-        type: 'improvement',
-        title: '취침 시간 일관성 향상',
-        description: '이번 주 취침 시간 편차가 지난 주보다 15분 줄어들었습니다.'
-      },
-      {
-        type: 'warning',
-        title: '금요일 수면 부족',
-        description: '금요일 수면 시간이 6.5시간으로 권장량보다 부족합니다.'
-      },
-      {
-        type: 'recommendation',
-        title: '주말 수면 패턴 우수',
-        description: '주말 수면 시간과 점수가 매우 좋습니다. 평일에도 유지해보세요.'
-      }
-    ],
-    goals: [
-      { name: '수면 시간 목표 (8시간)', progress: 75, color: 'primary' },
-      { name: '수면 점수 목표 (90점)', progress: 85, color: 'blue' },
-      { name: '취침 시간 일관성', progress: 92, color: 'green' }
-    ]
-  };
-
-  // 월간 데이터
-  const monthlyData = {
-    period: '2025년 10월',
-    weeklyAvgChart: [
-      { week: '1주차', hours: 7.2, score: 82 },
-      { week: '2주차', hours: 6.9, score: 78 },
-      { week: '3주차', hours: 7.5, score: 85 },
-      { week: '4주차', hours: 7.0, score: 80 }
-    ],
-    summary: {
-      avgScore: 83,
-      avgHours: 7.4,
-      avgBedtime: '23:15',
-      scoreChange: '+5점',
-      hoursStatus: '목표 달성',
-      bedtimeStatus: '목표보다 15분 늦음'
-    },
-    patterns: {
-      deepSleep: '24%',
-      lightSleep: '54%',
-      remSleep: '20%',
-      avgBedtime: '23:30'
-    },
-    analysis: [
-      {
-        type: 'improvement',
-        title: '월간 수면 점수 상승 추세',
-        description: '이번 달 평균 수면 점수가 전월 대비 5점 상승했습니다.'
-      },
-      {
-        type: 'analysis',
-        title: '3주차 일시적 하락',
-        description: '3주차에 수면 점수가 일시적으로 하락했지만 4주차에 회복했습니다.'
-      },
-      {
-        type: 'improvement',
-        title: '다음 달 목표 설정',
-        description: '현재 추세를 유지하면 다음 달 평균 85점 달성이 가능합니다.'
-      }
-    ],
-    goals: [
-      { name: '수면 시간 목표 (8시간)', progress: 78, color: 'primary' },
-      { name: '수면 점수 목표 (90점)', progress: 82, color: 'blue' },
-      { name: '취침 시간 일관성', progress: 88, color: 'green' }
-    ]
-  };
+  // 실제 데이터로 계산된 주간/월간 데이터
+  const weeklyData = analyzeWeeklyData(sleepRecords, currentDate);
+  const monthlyData = analyzeMonthlyData(sleepRecords, currentDate.getFullYear(), currentDate.getMonth() + 1);
 
   const currentData = analysisType === 'weekly' ? weeklyData : monthlyData;
+
+  // 수면 점수 차트의 Y축 설정을 동적으로 계산
+  const getSleepScoreYAxisConfig = () => {
+    const scores = weeklyData.sleepScoreChart.map(item => item.score).filter(score => score > 0);
+    
+    if (scores.length === 0) {
+      return { domain: [0, 100], ticks: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100] };
+    }
+
+    const minScore = Math.min(...scores);
+    const maxScore = Math.max(...scores);
+
+    // 최솟값이 50 이상인 경우: 50~100
+    if (minScore >= 50) {
+      return { domain: [50, 100], ticks: [50, 60, 70, 80, 90, 100] };
+    }
+    
+    // 최댓값이 50 미만인 경우: 0~50
+    if (maxScore < 50) {
+      return { domain: [0, 50], ticks: [0, 10, 20, 30, 40, 50] };
+    }
+    
+    // 이외의 경우: 0~100
+    return { domain: [0, 100], ticks: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100] };
+  };
+
+  const sleepScoreYAxis = getSleepScoreYAxisConfig();
+
+  // 날짜 네비게이션 핸들러
+  const handlePrevPeriod = () => {
+    const newDate = new Date(currentDate);
+    if (analysisType === 'weekly') {
+      newDate.setDate(newDate.getDate() - 7);
+    } else {
+      newDate.setMonth(newDate.getMonth() - 1);
+    }
+    setCurrentDate(newDate);
+  };
+
+  const handleNextPeriod = () => {
+    const newDate = new Date(currentDate);
+    if (analysisType === 'weekly') {
+      newDate.setDate(newDate.getDate() + 7);
+    } else {
+      newDate.setMonth(newDate.getMonth() + 1);
+    }
+    setCurrentDate(newDate);
+  };
 
   return (
     <div className="statistics-page">
@@ -178,12 +140,12 @@ const StatisticsAnalysis: React.FC = () => {
                     <h2>{currentData.period}</h2>
                   </div>
                   <div className="period-nav">
-                    <button className="nav-btn">
+                    <button className="nav-btn" onClick={handlePrevPeriod}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="m15 18-6-6 6-6"/>
                       </svg>
                     </button>
-                    <button className="nav-btn">
+                    <button className="nav-btn" onClick={handleNextPeriod}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="m9 18 6-6-6-6"/>
                       </svg>
@@ -197,33 +159,90 @@ const StatisticsAnalysis: React.FC = () => {
                       <div className="chart-section">
                         <h4>수면 시간 (시간)</h4>
                         <div className="chart-container">
-                          <div className="chart-bars">
-                            {weeklyData.sleepTimeChart.map((item, index) => (
-                              <div key={index} className="bar-container">
-                                <div 
-                                  className="bar sleep-time-bar"
-                                  style={{ height: `${(item.hours / 9) * 100}%` }}
-                                ></div>
-                                <span className="bar-label">{item.day}</span>
-                              </div>
-                            ))}
-                          </div>
+                          <ResponsiveContainer width="100%" height={200}>
+                            <BarChart data={weeklyData.sleepTimeChart} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" />
+                              <XAxis 
+                                dataKey="day" 
+                                axisLine={false}
+                                tickLine={false}
+                                tick={{ fontSize: 12, fill: '#a1a1aa' }}
+                              />
+                              <YAxis 
+                                domain={[6, 9]}
+                                tickCount={5}
+                                axisLine={false}
+                                tickLine={false}
+                                tick={{ fontSize: 12, fill: '#a1a1aa' }}
+                              />
+                              <Tooltip 
+                                contentStyle={{
+                                  backgroundColor: '#1a1a1a',
+                                  border: '1px solid #2a2a2a',
+                                  borderRadius: '8px',
+                                  color: '#ffffff'
+                                }}
+                                labelStyle={{ color: '#ffffff' }}
+                                formatter={(value: number) => [`${value}시간`, '수면 시간']}
+                              />
+                              <Bar 
+                                dataKey="hours" 
+                                fill="url(#sleepTimeGradient)"
+                                radius={[4, 4, 0, 0]}
+                              />
+                              <defs>
+                                <linearGradient id="sleepTimeGradient" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="0%" stopColor="#00d4aa" />
+                                  <stop offset="100%" stopColor="#00b894" />
+                                </linearGradient>
+                              </defs>
+                            </BarChart>
+                          </ResponsiveContainer>
                         </div>
                       </div>
                       <div className="chart-section">
                         <h4>수면 점수</h4>
                         <div className="chart-container">
-                          <div className="chart-bars">
-                            {weeklyData.sleepScoreChart.map((item, index) => (
-                              <div key={index} className="bar-container">
-                                <div 
-                                  className="bar sleep-score-bar"
-                                  style={{ height: `${(item.score / 100) * 100}%` }}
-                                ></div>
-                                <span className="bar-label">{item.day}</span>
-                              </div>
-                            ))}
-                          </div>
+                          <ResponsiveContainer width="100%" height={200}>
+                            <BarChart data={weeklyData.sleepScoreChart} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" />
+                              <XAxis 
+                                dataKey="day" 
+                                axisLine={false}
+                                tickLine={false}
+                                tick={{ fontSize: 12, fill: '#a1a1aa' }}
+                              />
+                              <YAxis 
+                                domain={sleepScoreYAxis.domain}
+                                ticks={sleepScoreYAxis.ticks}
+                                axisLine={false}
+                                tickLine={false}
+                                tick={{ fontSize: 12, fill: '#a1a1aa' }}
+                              />
+                              <Tooltip 
+                                contentStyle={{
+                                  backgroundColor: '#1a1a1a',
+                                  border: '1px solid #2a2a2a',
+                                  borderRadius: '8px',
+                                  color: '#ffffff'
+                                }}
+                                labelStyle={{ color: '#ffffff' }}
+                                formatter={(value: number) => [`${value}점`, '수면 점수']}
+                              />
+                              <Bar 
+                                dataKey="score" 
+                                fill="url(#sleepScoreGradient)"
+                                radius={[4, 4, 0, 0]}
+                                maxBarSize={40}
+                              />
+                              <defs>
+                                <linearGradient id="sleepScoreGradient" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="0%" stopColor="#3b82f6" />
+                                  <stop offset="100%" stopColor="#2563eb" />
+                                </linearGradient>
+                              </defs>
+                            </BarChart>
+                          </ResponsiveContainer>
                         </div>
                       </div>
                     </>
@@ -232,33 +251,83 @@ const StatisticsAnalysis: React.FC = () => {
                       <div className="chart-section">
                         <h4>주간 평균 수면 시간 (시간)</h4>
                         <div className="chart-container">
-                          <div className="line-chart">
-                            {monthlyData.weeklyAvgChart.map((item, index) => (
-                              <div key={index} className="line-point">
-                                <div 
-                                  className="point"
-                                  style={{ bottom: `${(item.hours / 8) * 100}%` }}
-                                ></div>
-                                <span className="point-label">{item.week}</span>
-                              </div>
-                            ))}
-                          </div>
+                          <ResponsiveContainer width="100%" height={200}>
+                            <LineChart data={monthlyData.weeklyAvgChart} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" />
+                              <XAxis 
+                                dataKey="week" 
+                                axisLine={false}
+                                tickLine={false}
+                                tick={{ fontSize: 12, fill: '#a1a1aa' }}
+                              />
+                              <YAxis 
+                                domain={[6.5, 8]}
+                                tickCount={5}
+                                axisLine={false}
+                                tickLine={false}
+                                tick={{ fontSize: 12, fill: '#a1a1aa' }}
+                              />
+                              <Tooltip 
+                                contentStyle={{
+                                  backgroundColor: '#1a1a1a',
+                                  border: '1px solid #2a2a2a',
+                                  borderRadius: '8px',
+                                  color: '#ffffff'
+                                }}
+                                labelStyle={{ color: '#ffffff' }}
+                                formatter={(value: number) => [`${value}시간`, '수면 시간']}
+                              />
+                              <Line 
+                                type="monotone" 
+                                dataKey="hours" 
+                                stroke="#00d4aa" 
+                                strokeWidth={3}
+                                dot={{ fill: '#00d4aa', strokeWidth: 2, r: 4 }}
+                                activeDot={{ r: 6, stroke: '#00d4aa', strokeWidth: 2, fill: '#00d4aa' }}
+                              />
+                            </LineChart>
+                          </ResponsiveContainer>
                         </div>
                       </div>
                       <div className="chart-section">
                         <h4>주간 평균 수면 점수</h4>
                         <div className="chart-container">
-                          <div className="line-chart">
-                            {monthlyData.weeklyAvgChart.map((item, index) => (
-                              <div key={index} className="line-point">
-                                <div 
-                                  className="point"
-                                  style={{ bottom: `${(item.score / 100) * 100}%` }}
-                                ></div>
-                                <span className="point-label">{item.week}</span>
-                              </div>
-                            ))}
-                          </div>
+                          <ResponsiveContainer width="100%" height={200}>
+                            <LineChart data={monthlyData.weeklyAvgChart} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" />
+                              <XAxis 
+                                dataKey="week" 
+                                axisLine={false}
+                                tickLine={false}
+                                tick={{ fontSize: 12, fill: '#a1a1aa' }}
+                              />
+                              <YAxis 
+                                domain={[75, 90]}
+                                tickCount={4}
+                                axisLine={false}
+                                tickLine={false}
+                                tick={{ fontSize: 12, fill: '#a1a1aa' }}
+                              />
+                              <Tooltip 
+                                contentStyle={{
+                                  backgroundColor: '#1a1a1a',
+                                  border: '1px solid #2a2a2a',
+                                  borderRadius: '8px',
+                                  color: '#ffffff'
+                                }}
+                                labelStyle={{ color: '#ffffff' }}
+                                formatter={(value: number) => [`${value}점`, '수면 점수']}
+                              />
+                              <Line 
+                                type="monotone" 
+                                dataKey="score" 
+                                stroke="#3b82f6" 
+                                strokeWidth={3}
+                                dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                                activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2, fill: '#3b82f6' }}
+                              />
+                            </LineChart>
+                          </ResponsiveContainer>
                         </div>
                       </div>
                     </>

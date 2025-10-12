@@ -110,7 +110,8 @@
 .charts-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24px;
+  gap: 32px;
+  min-height: 360px;
 }
 
 .chart-section h4 {
@@ -122,9 +123,11 @@
 
 .chart-container {
   height: 200px;
-  display: flex;
-  align-items: end;
-  justify-content: center;
+  padding: 20px;
+  border-radius: 14px;
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  position: relative;
 }
 
 /* Bar Chart */
@@ -147,18 +150,43 @@
 
 .bar {
   width: 100%;
-  border-radius: 4px 4px 0 0;
-  transition: all 0.2s ease;
+  border-radius: 6px 6px 0 0;
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  cursor: pointer;
+  padding-bottom: 8px;
+}
+
+.bar:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
 .sleep-time-bar {
-  background: #00d4aa;
-  min-height: 20px;
+  background: linear-gradient(180deg, #00d4aa, #00b894);
+  min-height: 24px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .sleep-score-bar {
-  background: #3b82f6;
-  min-height: 20px;
+  background: linear-gradient(180deg, #3b82f6, #2563eb);
+  min-height: 24px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.bar-value {
+  font-size: 11px;
+  font-weight: 600;
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  white-space: nowrap;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-bottom: 4px;
 }
 
 .bar-label {
@@ -197,23 +225,46 @@
 }
 
 .point {
-  width: 8px;
-  height: 8px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background: #00d4aa;
-  border: 2px solid #00d4aa;
+  border: 3px solid #ffffff;
+  box-shadow: 0 3px 12px rgba(0, 212, 170, 0.4), 0 0 0 2px rgba(0, 212, 170, 0.1);
+  transition: all 0.3s ease;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 
-.point::before {
-  content: '';
+.point:hover {
+  transform: scale(1.3);
+  box-shadow: 0 6px 20px rgba(0, 212, 170, 0.6), 0 0 0 4px rgba(0, 212, 170, 0.2);
+}
+
+.point-value {
   position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  border-radius: 50%;
-  background: rgba(0, 212, 170, 0.2);
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: #ffffff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  margin-bottom: 10px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.point:hover .point-value {
+  opacity: 1;
 }
 
 .point-label {
@@ -1217,5 +1268,78 @@
   .recommendation-badges {
     align-self: flex-start;
   }
+}
+
+/* Recharts Custom Styles */
+.recharts-wrapper {
+  font-family: inherit;
+}
+
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: #2a2a2a;
+  stroke-dasharray: 3 3;
+}
+
+.recharts-xAxis .recharts-cartesian-axis-tick-value,
+.recharts-yAxis .recharts-cartesian-axis-tick-value {
+  fill: #a1a1aa;
+  font-size: 12px;
+}
+
+.recharts-tooltip-wrapper {
+  outline: none;
+}
+
+.recharts-default-tooltip {
+  background-color: #1a1a1a !important;
+  border: 1px solid #2a2a2a !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+.recharts-tooltip-label {
+  color: #ffffff !important;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.recharts-tooltip-item-list {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.recharts-tooltip-item {
+  color: #ffffff !important;
+  display: block;
+  padding: 2px 0;
+}
+
+.recharts-tooltip-item-name {
+  color: #a1a1aa !important;
+}
+
+.recharts-tooltip-item-value {
+  color: #00d4aa !important;
+  font-weight: 600;
+}
+
+.recharts-bar-rectangle {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.recharts-bar-rectangle:hover {
+  filter: brightness(1.1);
+}
+
+.recharts-line .recharts-line-dot {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.recharts-line .recharts-line-dot:hover {
+  r: 6;
+  filter: brightness(1.2);
 }
 

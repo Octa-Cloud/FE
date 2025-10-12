@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Container from '../components/Container';
 import NavBar from '../components/NavBar';
 import { useAuth, useUserProfile } from '../store/hooks';
+import { getSleepRecordByDate, getSleepRecordsByMonth, getSleepStatus as getSleepStatusByScore } from '../sleepData';
+import { DailySleepRecord } from '../types/sleepData';
 import '../styles/statistics.css';
 import '../styles/profile.css';
 
@@ -21,6 +23,32 @@ const DailyReport: React.FC = () => {
     }
     return new Date();
   });
+
+  // 현재 날짜의 수면 데이터
+  const [reportData, setReportData] = useState<DailySleepRecord | null>(null);
+
+  // 현재 월의 수면 데이터 (캘린더 표시용)
+  const [monthlyData, setMonthlyData] = useState<DailySleepRecord[]>([]);
+
+  // 데이터 로드
+  useEffect(() => {
+    if (user?.id && date) {
+      const record = getSleepRecordByDate(user.id, date);
+      setReportData(record);
+    }
+  }, [user?.id, date]);
+
+  // 월별 데이터 로드 (캘린더용)
+  useEffect(() => {
+    if (user?.id) {
+      const records = getSleepRecordsByMonth(
+        user.id,
+        currentMonth.getFullYear(),
+        currentMonth.getMonth() + 1
+      );
+      setMonthlyData(records);
+    }
+  }, [user?.id, currentMonth]);
 
   const handleStartSleepRecord = () => {
     console.log('수면 기록 시작');
@@ -123,24 +151,28 @@ const DailyReport: React.FC = () => {
     return fullDate.toDateString() === currentDate.toDateString();
   };
 
-  // 날짜별 수면 데이터 상태 (예시 데이터)
+  // 날짜별 수면 데이터 상태 (실제 데이터 사용)
   const getSleepStatus = (day: number, isCurrentMonth: boolean) => {
-    if (!isCurrentMonth) return null;
+    if (!isCurrentMonth || !monthlyData.length) return null;
     
-    // 실제로는 API에서 가져온 데이터를 사용
-    // 예시: 특정 날짜에 수면 데이터가 있는 경우
-    const hasGoodSleep = [9, 11].includes(day); // 초록색 점
-    const hasNormalSleep = [7, 8, 10, 12, 13, 14].includes(day); // 노란색 점
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth() + 1;
+    const dateStr = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
     
-    if (hasGoodSleep) return 'good';
-    if (hasNormalSleep) return 'normal';
-    return null;
+    const record = monthlyData.find(r => r.date === dateStr);
+    if (!record) return null;
+    
+    return getSleepStatusByScore(record.sleepScore);
   };
 
   const hasSleepData = (day: number, isCurrentMonth: boolean) => {
-    if (!isCurrentMonth) return false;
-    // 수면 기록이 있는 날짜 (7~14일에 데이터가 있다고 가정)
-    return day >= 7 && day <= 14;
+    if (!isCurrentMonth || !monthlyData.length) return false;
+    
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth() + 1;
+    const dateStr = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+    
+    return monthlyData.some(r => r.date === dateStr);
   };
 
   // 실제 사용자 프로필 정보 사용
@@ -150,52 +182,30 @@ const DailyReport: React.FC = () => {
     email: profile?.email || user?.email || ''
   };
 
-  // 샘플 데이터
-  const reportData = {
-    date: date || '2024-09-12',
-    sleepScore: 85,
-    sleepTime: '7시간 30분',
-    bedtime: '23:15',
-    wakeTime: '06:45',
-    sleepEfficiency: 89,
-    sleepStages: {
-      deep: '2시간 15분',
-      light: '3시간 45분',
-      rem: '1시간 30분'
-    },
-    sleepRatios: {
-      deep: 30,
-      light: 50,
-      rem: 20
-    },
-    brainwaveData: [
-      { time: '23:15', level: 'B' },
-      { time: '23:45', level: 'B' },
-      { time: '00:30', level: 'C' },
-      { time: '01:00', level: 'D' },
-      { time: '02:00', level: 'D' },
-      { time: '03:15', level: 'C' },
-      { time: '04:30', level: 'D' },
-      { time: '05:45', level: 'C' },
-      { time: '06:30', level: 'B' },
-      { time: '06:45', level: 'B' }
-    ],
-    noiseEvents: [
-      { type: '코골이', icon: 'user' },
-      { type: '에어컨 소음', icon: 'air-vent' },
-      { type: '외부 소음', icon: 'car' }
-    ],
-    sleepMemo: '"스트레스가 많아서 잠들기까지 오래 걸렸어요. 그래도 중간에 깨지 않고 푹 잘 수 있어서 다행이었습니다."',
-    aiAnalysis: {
-      summary: '조용한 환경에서 양질의 수면을 취했습니다. 깊은 수면 비율이 이상적입니다.',
-      recommendations: [
-        '취침 시간을 15분 앞당겨 목표 수면시간을 달성해보세요',
-        '현재 깊은 수면 비율이 이상적입니다. 이 패턴을 유지해보세요',
-        '스트레스 관리를 위한 취침 전 명상이나 독서를 추천드립니다 (수면 메모 반영)',
-        '수면 환경이 매우 좋습니다. 현재 설정을 계속 사용하세요'
-      ]
-    }
-  };
+  // 데이터가 없을 경우 기본 메시지
+  if (!reportData) {
+    return (
+      <div className="daily-report-page">
+        <NavBar 
+          onStartSleepRecord={handleStartSleepRecord}
+          userProfile={currentUserProfile}
+          onLogout={handleLogout}
+        />
+        <Container width={800} backgroundColor="#000000">
+          <main className="daily-report-main">
+            <div className="daily-report-container">
+              <div className="daily-report-content">
+                <div style={{ textAlign: 'center', padding: '100px 0', color: '#a1a1aa' }}>
+                  <h2>해당 날짜의 수면 기록이 없습니다.</h2>
+                  <p>다른 날짜를 선택해주세요.</p>
+                </div>
+              </div>
+            </div>
+          </main>
+        </Container>
+      </div>
+    );
+  }
 
   const getScoreLabel = (score: number) => {
     if (score >= 90) return '우수';
@@ -342,11 +352,11 @@ const DailyReport: React.FC = () => {
                 <div className="sleep-info-card">
                   <div className="card-header">
                     <h4>수면 시간 정보</h4>
-                    <p>{date ? new Date(date).toLocaleDateString('ko-KR', { 
+                    <p>{reportData.date ? new Date(reportData.date).toLocaleDateString('ko-KR', { 
                       year: 'numeric', 
                       month: 'long', 
                       day: 'numeric'
-                    }) : '2024년 9월 12일'} 수면 시간 요약</p>
+                    }) : '날짜 정보 없음'} 수면 시간 요약</p>
                   </div>
                   <div className="sleep-info-list">
                     <div className="sleep-info-item">
@@ -358,7 +368,7 @@ const DailyReport: React.FC = () => {
                       </div>
                       <div className="sleep-info-value">
                         <div className="value">{reportData.bedtime}</div>
-                        <p>목표보다 15분 늦음</p>
+                        <p>{reportData.sleepScore >= 85 ? '목표 시간 달성' : '목표보다 늦음'}</p>
                       </div>
                     </div>
                     <div className="sleep-info-item">
@@ -371,7 +381,7 @@ const DailyReport: React.FC = () => {
                       </div>
                       <div className="sleep-info-value">
                         <div className="value">{reportData.sleepTime}</div>
-                        <p>목표 대비 -30분</p>
+                        <p>{reportData.sleepTimeHours >= 7 ? '충분한 수면' : '수면 부족'}</p>
                       </div>
                     </div>
                     <div className="sleep-info-item">
@@ -391,7 +401,7 @@ const DailyReport: React.FC = () => {
                       </div>
                       <div className="sleep-info-value">
                         <div className="value">{reportData.wakeTime}</div>
-                        <p>알람 시간과 동일</p>
+                        <p>기상 완료</p>
                       </div>
                     </div>
                   </div>
@@ -502,31 +512,35 @@ const DailyReport: React.FC = () => {
                       </button>
                     </div>
                     <div className="noise-events-grid">
-                      <div className="noise-event">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
-                          <circle cx="12" cy="7" r="4"/>
-                        </svg>
-                        <span>코골이</span>
-                      </div>
-                      <div className="noise-event">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M18 17.5a2.5 2.5 0 1 1-4 2.03V12"/>
-                          <path d="M6 12H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-                          <path d="M6 8h12"/>
-                          <path d="M6.6 15.572A2 2 0 1 0 10 17v-5"/>
-                        </svg>
-                        <span>에어컨 소음</span>
-                      </div>
-                      <div className="noise-event">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
-                          <circle cx="7" cy="17" r="2"/>
-                          <path d="M9 17h6"/>
-                          <circle cx="17" cy="17" r="2"/>
-                        </svg>
-                        <span>외부 소음</span>
-                      </div>
+                      {reportData.noiseEvents.map((event, index) => (
+                        <div key={index} className="noise-event">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            {event.icon === 'user' && (
+                              <>
+                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                              </>
+                            )}
+                            {event.icon === 'air-vent' && (
+                              <>
+                                <path d="M18 17.5a2.5 2.5 0 1 1-4 2.03V12"/>
+                                <path d="M6 12H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                                <path d="M6 8h12"/>
+                                <path d="M6.6 15.572A2 2 0 1 0 10 17v-5"/>
+                              </>
+                            )}
+                            {event.icon === 'car' && (
+                              <>
+                                <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
+                                <circle cx="7" cy="17" r="2"/>
+                                <path d="M9 17h6"/>
+                                <circle cx="17" cy="17" r="2"/>
+                              </>
+                            )}
+                          </svg>
+                          <span>{event.type}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -616,20 +630,22 @@ const DailyReport: React.FC = () => {
                 </div>
 
                 {/* 수면 기록 메모 */}
-                <div className="sleep-memo-card">
-                  <div className="card-header">
-                    <h4>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/>
-                      </svg>
-                      수면 기록 메모
-                    </h4>
-                    <p>이날 밤 수면에 대한 개인 기록</p>
+                {reportData.sleepMemo && (
+                  <div className="sleep-memo-card">
+                    <div className="card-header">
+                      <h4>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        수면 기록 메모
+                      </h4>
+                      <p>이날 밤 수면에 대한 개인 기록</p>
+                    </div>
+                    <div className="memo-content">
+                      <p>{reportData.sleepMemo}</p>
+                    </div>
                   </div>
-                  <div className="memo-content">
-                    <p>{reportData.sleepMemo}</p>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
