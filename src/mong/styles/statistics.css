@@ -1270,6 +1270,124 @@
   }
 }
 
+/* Brainwave Chart Styles */
+.brainwave-chart {
+  margin-bottom: 16px;
+}
+
+.recharts-responsive-container {
+  font-family: inherit;
+}
+
+.brainwave-legend {
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.brainwave-legend .flex {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.brainwave-legend .flex .flex {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brainwave-legend .w-8 {
+  width: 32px;
+}
+
+.brainwave-legend .h-3 {
+  height: 12px;
+}
+
+.brainwave-legend .rounded-full {
+  border-radius: 9999px;
+}
+
+.brainwave-legend .bg-gradient-to-r {
+  background-image: linear-gradient(to right, var(--tw-gradient-stops));
+}
+
+.brainwave-legend .from-blue-800 {
+  --tw-gradient-from: #1e40af;
+  --tw-gradient-to: rgba(30, 64, 175, 0);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.brainwave-legend .via-blue-400 {
+  --tw-gradient-to: rgba(96, 165, 250, 0);
+  --tw-gradient-stops: var(--tw-gradient-from), #60a5fa, var(--tw-gradient-to);
+}
+
+.brainwave-legend .to-blue-100 {
+  --tw-gradient-to: #dbeafe;
+}
+
+/* Noise Events Styles */
+.noise-events-card {
+  margin-top: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.noise-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.noise-header h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+}
+
+.expand-btn {
+  background: none;
+  border: none;
+  color: #a1a1aa;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.expand-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.noise-events-grid .grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.noise-events-grid .flex {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+}
+
+.noise-events-grid .text-primary {
+  color: #00d4aa;
+}
+
+.noise-events-grid .flex-1 {
+  flex: 1;
+}
+
 /* Recharts Custom Styles */
 .recharts-wrapper {
   font-family: inherit;

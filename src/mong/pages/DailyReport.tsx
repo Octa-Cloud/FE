@@ -5,6 +5,7 @@ import NavBar from '../components/NavBar';
 import { useAuth, useUserProfile } from '../store/hooks';
 import { getSleepRecordByDate, getSleepRecordsByMonth, getSleepStatus as getSleepStatusByScore } from '../sleepData';
 import { DailySleepRecord } from '../types/sleepData';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 import '../styles/statistics.css';
 import '../styles/profile.css';
 
@@ -488,14 +489,59 @@ const DailyReport: React.FC = () => {
                     <p>수면 중 뇌파 등급(A~E)과 소음 이벤트</p>
                   </div>
                   <div className="brainwave-chart">
-                    <div className="chart-area">
-                      <div className="brainwave-gradient"></div>
+                    <div className="recharts-responsive-container" style={{ width: '100%', height: '350px', minWidth: '0px' }}>
+                      <ResponsiveContainer width="100%" height={350}>
+                        <AreaChart 
+                          data={reportData.brainwaveAnalysis.dataPoints.map((point, index) => ({
+                            time: point.time,
+                            level: point.level,
+                            intensity: point.intensity,
+                            yValue: point.level === 'A' ? 0 : point.level === 'B' ? 1 : point.level === 'C' ? 2 : point.level === 'D' ? 3 : 4
+                          }))}
+                          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" />
+                          <XAxis
+                            dataKey="time"
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{ fontSize: 12, fill: '#a1a1aa' }}
+                          />
+                          <YAxis
+                            domain={[0, 4]}
+                            ticks={[0, 1, 2, 3, 4]}
+                            tickFormatter={(value) => ['A', 'B', 'C', 'D', 'E'][value]}
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{ fontSize: 12, fill: '#a1a1aa' }}
+                            label={{ value: '뇌파 등급', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: '#808080' } }}
+                          />
+                          <defs>
+                            <linearGradient id="brainwaveGradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="#1e40af" stopOpacity={0.8} />
+                              <stop offset="25%" stopColor="#3b82f6" stopOpacity={0.6} />
+                              <stop offset="50%" stopColor="#60a5fa" stopOpacity={0.4} />
+                              <stop offset="75%" stopColor="#93c5fd" stopOpacity={0.3} />
+                              <stop offset="100%" stopColor="#dbeafe" stopOpacity={0.1} />
+                            </linearGradient>
+                          </defs>
+                          <Area
+                            type="monotone"
+                            dataKey="yValue"
+                            stroke="#3b82f6"
+                            strokeWidth={2}
+                            fill="url(#brainwaveGradient)"
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
                     </div>
                   </div>
                   <div className="brainwave-legend">
-                    <div className="legend-item">
-                      <div className="legend-gradient"></div>
-                      <span>뇌파 등급 (A: 깊은 수면 → E: 각성)</span>
+                    <div className="flex items-center gap-6 text-sm">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-3 rounded-full bg-gradient-to-r from-blue-800 via-blue-400 to-blue-100"></div>
+                        <span>뇌파 등급 (A: 깊은 수면 → E: 각성)</span>
+                      </div>
                     </div>
                   </div>
                   
@@ -512,38 +558,65 @@ const DailyReport: React.FC = () => {
                       </button>
                     </div>
                     <div className="noise-events-grid">
-                      {reportData.noiseEvents.map((event, index) => (
-                        <div key={index} className="noise-event">
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            {event.icon === 'user' && (
-                              <>
-                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
-                                <circle cx="12" cy="7" r="4"/>
-                              </>
-                            )}
-                            {event.icon === 'air-vent' && (
-                              <>
-                                <path d="M18 17.5a2.5 2.5 0 1 1-4 2.03V12"/>
-                                <path d="M6 12H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-                                <path d="M6 8h12"/>
-                                <path d="M6.6 15.572A2 2 0 1 0 10 17v-5"/>
-                              </>
-                            )}
-                            {event.icon === 'car' && (
-                              <>
-                                <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
-                                <circle cx="7" cy="17" r="2"/>
-                                <path d="M9 17h6"/>
-                                <circle cx="17" cy="17" r="2"/>
-                              </>
-                            )}
-                          </svg>
-                          <span>{event.type}</span>
-                        </div>
-                      ))}
+                      <div className="grid grid-cols-2 gap-3">
+                        {reportData.noiseEvents.map((event, index) => (
+                          <div key={index} className="flex items-center gap-2 text-base">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary">
+                              {event.icon === 'user' && (
+                                <>
+                                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                                  <circle cx="12" cy="7" r="4"/>
+                                </>
+                              )}
+                              {event.icon === 'air-vent' && (
+                                <>
+                                  <path d="M18 17.5a2.5 2.5 0 1 1-4 2.03V12"/>
+                                  <path d="M6 12H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                                  <path d="M6 8h12"/>
+                                  <path d="M6.6 15.572A2 2 0 1 0 10 17v-5"/>
+                                </>
+                              )}
+                              {event.icon === 'car' && (
+                                <>
+                                  <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
+                                  <circle cx="7" cy="17" r="2"/>
+                                  <path d="M9 17h6"/>
+                                  <circle cx="17" cy="17" r="2"/>
+                                </>
+                              )}
+                              {event.icon === 'bird' && (
+                                <>
+                                  <path d="M16 7h.01"/>
+                                  <path d="M21.2 8c.4 0 .8.3.8.8v2.4c0 .4-.3.8-.8.8-.1 0-.2 0-.3-.1l-1.1-1.1-1.1 1.1c-.1.1-.2.1-.3.1-.4 0-.8-.3-.8-.8V8.8c0-.4.3-.8.8-.8.1 0 .2 0 .3.1l1.1 1.1L20.9 8c.1-.1.2-.1.3-.1z"/>
+                                  <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z"/>
+                                </>
+                              )}
+                            </svg>
+                            <span className="flex-1">{event.type}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
+
+                {/* 수면 기록 메모 */}
+                {reportData.sleepMemo && (
+                  <div className="sleep-memo-card">
+                    <div className="card-header">
+                      <h4>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        수면 기록 메모
+                      </h4>
+                      <p>이날 밤 수면에 대한 개인 기록</p>
+                    </div>
+                    <div className="memo-content">
+                      <p>{reportData.sleepMemo}</p>
+                    </div>
+                  </div>
+                )}
 
                 {/* AI 분석 리포트 */}
                 <div className="ai-analysis-card">
@@ -564,7 +637,7 @@ const DailyReport: React.FC = () => {
                         </div>
                       </div>
                       <p className="recommendation-description">
-                        현재 취침 시간이 ±45분으로 불규칙합니다. 매일 같은 시간에 잠자리에 들면 멜라토닌 분비가 규칙적이 되어 자연스럽게 잠이 들 수 있습니다. 생체시계가 안정되면 수면의 질이 크게 향상되고, 아침에 일어나기도 쉬워집니다.
+                        현재 수면 패턴을 분석한 결과, 수면 환경 개선이 필요합니다. 뇌파 분석에서 깊은 수면 비율이 {reportData.brainwaveAnalysis.deepSleepRatio}%로 나타났으며, 소음 이벤트가 {reportData.noiseEvents.length}회 감지되었습니다. 규칙적인 취침 시간과 최적화된 수면 환경을 통해 수면의 질을 크게 향상시킬 수 있습니다.
                       </p>
                       <div className="recommendation-duration">예상 기간: 2-3주</div>
                       <div className="recommendation-steps">
@@ -589,7 +662,7 @@ const DailyReport: React.FC = () => {
                         </div>
                       </div>
                       <p className="recommendation-description">
-                        수면 환경은 깊은 수면에 직접적인 영향을 미칩니다. 현재 깊은 수면 비율이 28%로 목표치보다 낮습니다. 적절한 온도(18-20°C)는 체온 조절을 돕고, 완전한 암흑 상태는 멜라토닌 분비를 촉진합니다. 조용한 환경은 수면 중 각성을 방지해 연속적인 깊은 수면을 가능하게 합니다.
+                        수면 환경은 깊은 수면에 직접적인 영향을 미칩니다. 현재 깊은 수면 비율이 {reportData.brainwaveAnalysis.deepSleepRatio}%로 나타났으며, 각성 상태가 {reportData.brainwaveAnalysis.awakeRatio}% 감지되었습니다. 적절한 온도(18-20°C)는 체온 조절을 돕고, 완전한 암흑 상태는 멜라토닌 분비를 촉진합니다. 조용한 환경은 수면 중 각성을 방지해 연속적인 깊은 수면을 가능하게 합니다.
                       </p>
                       <div className="recommendation-duration">예상 기간: 1주</div>
                       <div className="recommendation-steps">
@@ -614,7 +687,7 @@ const DailyReport: React.FC = () => {
                         </div>
                       </div>
                       <p className="recommendation-description">
-                        현재 수면 시간은 7.2시간으로 목표치에 근접하지만, 수면의 질 개선이 필요합니다. 카페인은 6-8시간 동안 체내에 머물며 잠들기 어렵게 만들고, 블루라이트는 멜라토닌 분비를 억제합니다. 취침 전 차분한 활동은 교감신경을 진정시켜 자연스러운 수면 유도에 도움이 됩니다.
+                        현재 수면 시간은 {reportData.sleepTimeHours}시간으로 나타났으며, 수면 효율은 {reportData.sleepEfficiency}%입니다. 뇌파 분석에서 REM 수면 비율이 {reportData.brainwaveAnalysis.remSleepRatio}%로 측정되었습니다. 카페인은 6-8시간 동안 체내에 머물며 잠들기 어렵게 만들고, 블루라이트는 멜라토닌 분비를 억제합니다. 취침 전 차분한 활동은 교감신경을 진정시켜 자연스러운 수면 유도에 도움이 됩니다.
                       </p>
                       <div className="recommendation-duration">예상 기간: 1-2주</div>
                       <div className="recommendation-steps">
@@ -628,24 +701,6 @@ const DailyReport: React.FC = () => {
                     </div>
                   </div>
                 </div>
-
-                {/* 수면 기록 메모 */}
-                {reportData.sleepMemo && (
-                  <div className="sleep-memo-card">
-                    <div className="card-header">
-                      <h4>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/>
-                        </svg>
-                        수면 기록 메모
-                      </h4>
-                      <p>이날 밤 수면에 대한 개인 기록</p>
-                    </div>
-                    <div className="memo-content">
-                      <p>{reportData.sleepMemo}</p>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>

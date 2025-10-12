@@ -20,12 +20,27 @@ export interface SleepRatios {
 export interface BrainwavePoint {
   time: string;      // 시간 (예: "23:15")
   level: 'A' | 'B' | 'C' | 'D' | 'E';  // 뇌파 등급
+  intensity: number; // 뇌파 강도 (0-100)
+}
+
+// 뇌파 분석 데이터
+export interface BrainwaveAnalysis {
+  totalDuration: string;     // 총 뇌파 측정 시간
+  averageLevel: string;      // 평균 뇌파 등급
+  deepSleepRatio: number;    // 깊은 수면 비율
+  lightSleepRatio: number;   // 얕은 수면 비율
+  remSleepRatio: number;     // REM 수면 비율
+  awakeRatio: number;        // 각성 비율
+  dataPoints: BrainwavePoint[]; // 상세 뇌파 데이터
 }
 
 // 소음 이벤트
 export interface NoiseEvent {
   type: string;      // 소음 유형 (예: "코골이", "에어컨 소음")
   icon: string;      // 아이콘 식별자
+  timestamp: string; // 발생 시간
+  duration: number;  // 지속 시간 (초)
+  intensity: number; // 소음 강도 (0-100)
 }
 
 // 일별 수면 기록
@@ -40,6 +55,7 @@ export interface DailySleepRecord {
   sleepStages: SleepStages;        // 수면 단계별 시간
   sleepRatios: SleepRatios;        // 수면 단계별 비율
   brainwaveData: BrainwavePoint[]; // 뇌파 데이터
+  brainwaveAnalysis: BrainwaveAnalysis; // 뇌파 분석 데이터
   noiseEvents: NoiseEvent[];       // 소음 이벤트
   sleepMemo?: string;              // 수면 메모 (선택)
 }

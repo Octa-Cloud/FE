@@ -54,38 +54,137 @@ const generateOctoberSleepData = (): DailySleepRecord[] => {
       return `${h}시간 ${m}분`;
     };
     
-    // 뇌파 데이터 생성 (취침부터 기상까지)
+    // 뇌파 데이터 생성 (취침부터 기상까지 - 5분 간격)
     const brainwaveData = [];
     let currentHour = bedtimeHour;
     let currentMinute = bedtimeMinute;
     
-    for (let i = 0; i < 10; i++) {
+    // 5분 간격으로 뇌파 데이터 생성
+    const totalMinutes = Math.floor(sleepTimeHours * 60);
+    const intervals = Math.floor(totalMinutes / 5);
+    
+    let deepSleepCount = 0;
+    let lightSleepCount = 0;
+    let remSleepCount = 0;
+    let awakeCount = 0;
+    
+    for (let i = 0; i < intervals; i++) {
       const time = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
       
-      // 수면 초기와 말기는 얕은 수면, 중간은 깊은 수면
+      // 수면 단계별 뇌파 패턴 (자연스러운 수면 사이클)
       let level: 'A' | 'B' | 'C' | 'D' | 'E';
-      if (i < 2 || i > 7) {
-        level = Math.random() > 0.5 ? 'B' : 'C';
-      } else if (i < 5) {
-        level = Math.random() > 0.3 ? 'D' : 'C';
-      } else {
+      let intensity: number;
+      
+      const progress = i / intervals; // 수면 진행도 (0-1)
+      
+      if (progress < 0.1 || progress > 0.9) {
+        // 수면 초기/말기: 얕은 수면 (B, C)
+        level = Math.random() > 0.3 ? 'B' : 'C';
+        intensity = 30 + Math.random() * 40;
+        lightSleepCount++;
+      } else if (progress >= 0.2 && progress <= 0.6) {
+        // 수면 중기: 깊은 수면 (D, A)
+        level = Math.random() > 0.2 ? 'D' : 'A';
+        intensity = 60 + Math.random() * 30;
+        deepSleepCount++;
+      } else if (Math.random() > 0.7) {
+        // REM 수면 (C, D)
         level = Math.random() > 0.5 ? 'C' : 'D';
+        intensity = 40 + Math.random() * 40;
+        remSleepCount++;
+      } else {
+        // 일반적인 얕은 수면
+        level = 'B';
+        intensity = 35 + Math.random() * 35;
+        lightSleepCount++;
       }
       
-      brainwaveData.push({ time, level });
+      // 각성 상태 (E) - 가끔 발생
+      if (Math.random() < 0.05) {
+        level = 'E';
+        intensity = 70 + Math.random() * 20;
+        awakeCount++;
+      }
       
-      // 다음 시간 계산
-      currentMinute += Math.floor(sleepTimeHours * 60 / 10);
+      brainwaveData.push({ time, level, intensity });
+      
+      // 다음 5분 계산
+      currentMinute += 5;
       currentHour += Math.floor(currentMinute / 60);
       currentMinute = currentMinute % 60;
       currentHour = currentHour % 24;
     }
     
-    // 소음 이벤트 (랜덤)
+    // 뇌파 분석 데이터 생성
+    const totalPoints = brainwaveData.length;
+    const brainwaveAnalysis = {
+      totalDuration: sleepTime,
+      averageLevel: deepSleepCount > lightSleepCount ? 'D' : 'B',
+      deepSleepRatio: Math.round((deepSleepCount / totalPoints) * 100),
+      lightSleepRatio: Math.round((lightSleepCount / totalPoints) * 100),
+      remSleepRatio: Math.round((remSleepCount / totalPoints) * 100),
+      awakeRatio: Math.round((awakeCount / totalPoints) * 100),
+      dataPoints: brainwaveData
+    };
+    
+    // 소음 이벤트 생성 (상세한 정보 포함)
     const noiseEvents = [];
-    if (Math.random() > 0.6) noiseEvents.push({ type: '코골이', icon: 'user' });
-    if (Math.random() > 0.7) noiseEvents.push({ type: '에어컨 소음', icon: 'air-vent' });
-    if (Math.random() > 0.8) noiseEvents.push({ type: '외부 소음', icon: 'car' });
+    
+    // 코골이 (40% 확률)
+    if (Math.random() > 0.6) {
+      const snoreTime = Math.floor(Math.random() * totalMinutes);
+      const snoreHour = Math.floor((bedtimeHour * 60 + bedtimeMinute + snoreTime) / 60) % 24;
+      const snoreMinute = (bedtimeMinute + snoreTime) % 60;
+      noiseEvents.push({
+        type: '코골이',
+        icon: 'user',
+        timestamp: `${snoreHour.toString().padStart(2, '0')}:${snoreMinute.toString().padStart(2, '0')}`,
+        duration: 120 + Math.random() * 300, // 2-7분
+        intensity: 60 + Math.random() * 30
+      });
+    }
+    
+    // 에어컨 소음 (30% 확률)
+    if (Math.random() > 0.7) {
+      const acTime = Math.floor(Math.random() * totalMinutes);
+      const acHour = Math.floor((bedtimeHour * 60 + bedtimeMinute + acTime) / 60) % 24;
+      const acMinute = (bedtimeMinute + acTime) % 60;
+      noiseEvents.push({
+        type: '에어컨 소음',
+        icon: 'air-vent',
+        timestamp: `${acHour.toString().padStart(2, '0')}:${acMinute.toString().padStart(2, '0')}`,
+        duration: 60 + Math.random() * 180, // 1-4분
+        intensity: 40 + Math.random() * 25
+      });
+    }
+    
+    // 외부 소음 (20% 확률)
+    if (Math.random() > 0.8) {
+      const externalTime = Math.floor(Math.random() * totalMinutes);
+      const externalHour = Math.floor((bedtimeHour * 60 + bedtimeMinute + externalTime) / 60) % 24;
+      const externalMinute = (bedtimeMinute + externalTime) % 60;
+      noiseEvents.push({
+        type: '외부 소음',
+        icon: 'car',
+        timestamp: `${externalHour.toString().padStart(2, '0')}:${externalMinute.toString().padStart(2, '0')}`,
+        duration: 30 + Math.random() * 120, // 30초-2.5분
+        intensity: 50 + Math.random() * 40
+      });
+    }
+    
+    // 새벽 새소리 (15% 확률)
+    if (Math.random() > 0.85) {
+      const birdTime = Math.floor(0.8 * totalMinutes + Math.random() * 0.2 * totalMinutes); // 수면 후반부
+      const birdHour = Math.floor((bedtimeHour * 60 + bedtimeMinute + birdTime) / 60) % 24;
+      const birdMinute = (bedtimeMinute + birdTime) % 60;
+      noiseEvents.push({
+        type: '새벽 새소리',
+        icon: 'bird',
+        timestamp: `${birdHour.toString().padStart(2, '0')}:${birdMinute.toString().padStart(2, '0')}`,
+        duration: 60 + Math.random() * 240, // 1-5분
+        intensity: 35 + Math.random() * 20
+      });
+    }
     
     // 수면 메모 (일부 날짜만)
     const memos = [
@@ -120,6 +219,7 @@ const generateOctoberSleepData = (): DailySleepRecord[] => {
         rem: remRatio
       },
       brainwaveData,
+      brainwaveAnalysis,
       noiseEvents,
       sleepMemo
     });
