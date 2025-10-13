@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Container from '../components/Container';
 import NavBar from '../components/NavBar';
+import BrainwaveChart from '../components/charts/BrainwaveChart';
 import { useAuth, useUserProfile } from '../store/hooks';
 import { getSleepRecordByDate, getSleepRecordsByMonth, getSleepStatus as getSleepStatusByScore } from '../sleepData';
 import { DailySleepRecord } from '../types/sleepData';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
+import { WEEKDAYS_KR } from '../constants/sleep';
 import '../styles/statistics.css';
 import '../styles/profile.css';
 
@@ -51,40 +52,39 @@ const DailyReport: React.FC = () => {
     }
   }, [user?.id, currentMonth]);
 
-  const handleStartSleepRecord = () => {
+  const handleStartSleepRecord = useCallback(() => {
     console.log('수면 기록 시작');
-  };
+  }, []);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     console.log('로그아웃');
     navigate('/login');
-  };
+  }, [navigate]);
 
+  const handleCalendarToggle = useCallback(() => {
+    setShowCalendar(prev => !prev);
+  }, []);
 
-  const handleCalendarToggle = () => {
-    setShowCalendar(!showCalendar);
-  };
-
-  const handleCalendarDateSelect = (selectedDate: string) => {
+  const handleCalendarDateSelect = useCallback((selectedDate: string) => {
     navigate(`/daily-report/${selectedDate}`);
     setShowCalendar(false);
-  };
+  }, [navigate]);
 
-  const handlePrevMonth = () => {
+  const handlePrevMonth = useCallback(() => {
     setCurrentMonth(prev => {
       const newDate = new Date(prev);
       newDate.setMonth(newDate.getMonth() - 1);
       return newDate;
     });
-  };
+  }, []);
 
-  const handleNextMonth = () => {
+  const handleNextMonth = useCallback(() => {
     setCurrentMonth(prev => {
       const newDate = new Date(prev);
       newDate.setMonth(newDate.getMonth() + 1);
       return newDate;
     });
-  };
+  }, []);
 
   // 달력 공통 함수들
   const getCurrentDate = () => {
@@ -110,8 +110,8 @@ const DailyReport: React.FC = () => {
     return weekDates;
   };
 
-  // 달력 생성 함수 (선택된 월 기반)
-  const generateCalendar = () => {
+  // 달력 생성 함수 - 메모이제이션
+  const calendar = useMemo(() => {
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
     
@@ -120,16 +120,16 @@ const DailyReport: React.FC = () => {
     const daysInMonth = lastDay.getDate();
     const startingDayOfWeek = firstDay.getDay();
     
-    const calendar = [];
+    const calendarDays = [];
     
     // 이전 달의 빈 날짜들
     for (let i = 0; i < startingDayOfWeek; i++) {
-      calendar.push(null);
+      calendarDays.push(null);
     }
     
     // 현재 달의 날짜들
     for (let day = 1; day <= daysInMonth; day++) {
-      calendar.push({
+      calendarDays.push({
         day: day,
         fullDate: new Date(year, month, day),
         isCurrentMonth: true
@@ -137,14 +137,14 @@ const DailyReport: React.FC = () => {
     }
     
     // 마지막 주를 완성하기 위한 빈 칸만 추가
-    const totalCells = calendar.length;
+    const totalCells = calendarDays.length;
     const lastWeekRemainingCells = (7 - (totalCells % 7)) % 7;
     for (let i = 0; i < lastWeekRemainingCells; i++) {
-      calendar.push(null);
+      calendarDays.push(null);
     }
     
-    return calendar;
-  };
+    return calendarDays;
+  }, [currentMonth]);
 
   const isSelectedDate = (day: number | null, fullDate?: Date) => {
     if (!day || !fullDate) return false;
@@ -176,12 +176,12 @@ const DailyReport: React.FC = () => {
     return monthlyData.some(r => r.date === dateStr);
   };
 
-  // 실제 사용자 프로필 정보 사용
-  const currentUserProfile = {
+  // 실제 사용자 프로필 정보 사용 - 메모이제이션
+  const currentUserProfile = useMemo(() => ({
     name: profile?.name || user?.name || '사용자',
     avatar: '',
     email: profile?.email || user?.email || ''
-  };
+  }), [profile?.name, profile?.email, user?.name, user?.email]);
 
   // 데이터가 없을 경우 기본 메시지
   if (!reportData) {
@@ -267,7 +267,7 @@ const DailyReport: React.FC = () => {
 
                 {showCalendar ? (
                   <div className="calendar-days-grid">
-                    {generateCalendar().map((dayData, index) => {
+                    {calendar.map((dayData, index) => {
                       if (!dayData) {
                         return (
                           <div key={index} className="calendar-day-cell empty">
@@ -489,52 +489,7 @@ const DailyReport: React.FC = () => {
                     <p>수면 중 뇌파 등급(A~E)과 소음 이벤트</p>
                   </div>
                   <div className="brainwave-chart">
-                    <div className="recharts-responsive-container" style={{ width: '100%', height: '350px', minWidth: '0px' }}>
-                      <ResponsiveContainer width="100%" height={350}>
-                        <AreaChart 
-                          data={reportData.brainwaveAnalysis.dataPoints.map((point, index) => ({
-                            time: point.time,
-                            level: point.level,
-                            intensity: point.intensity,
-                            yValue: point.level === 'A' ? 0 : point.level === 'B' ? 1 : point.level === 'C' ? 2 : point.level === 'D' ? 3 : 4
-                          }))}
-                          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" />
-                          <XAxis
-                            dataKey="time"
-                            axisLine={false}
-                            tickLine={false}
-                            tick={{ fontSize: 12, fill: '#a1a1aa' }}
-                          />
-                          <YAxis
-                            domain={[0, 4]}
-                            ticks={[0, 1, 2, 3, 4]}
-                            tickFormatter={(value) => ['A', 'B', 'C', 'D', 'E'][value]}
-                            axisLine={false}
-                            tickLine={false}
-                            tick={{ fontSize: 12, fill: '#a1a1aa' }}
-                            label={{ value: '뇌파 등급', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: '#808080' } }}
-                          />
-                          <defs>
-                            <linearGradient id="brainwaveGradient" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="0%" stopColor="#1e40af" stopOpacity={0.8} />
-                              <stop offset="25%" stopColor="#3b82f6" stopOpacity={0.6} />
-                              <stop offset="50%" stopColor="#60a5fa" stopOpacity={0.4} />
-                              <stop offset="75%" stopColor="#93c5fd" stopOpacity={0.3} />
-                              <stop offset="100%" stopColor="#dbeafe" stopOpacity={0.1} />
-                            </linearGradient>
-                          </defs>
-                          <Area
-                            type="monotone"
-                            dataKey="yValue"
-                            stroke="#3b82f6"
-                            strokeWidth={2}
-                            fill="url(#brainwaveGradient)"
-                          />
-                        </AreaChart>
-                      </ResponsiveContainer>
-                    </div>
+                    <BrainwaveChart brainwaveAnalysis={reportData.brainwaveAnalysis} />
                   </div>
                   <div className="brainwave-legend">
                     <div className="flex items-center gap-6 text-sm">
@@ -559,7 +514,7 @@ const DailyReport: React.FC = () => {
                     </div>
                     <div className="noise-events-grid">
                       <div className="grid grid-cols-2 gap-3">
-                        {reportData.noiseEvents.map((event, index) => (
+                        {reportData?.noiseEvents?.map((event, index) => (
                           <div key={index} className="flex items-center gap-2 text-base">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary">
                               {event.icon === 'user' && (
@@ -637,7 +592,7 @@ const DailyReport: React.FC = () => {
                         </div>
                       </div>
                       <p className="recommendation-description">
-                        현재 수면 패턴을 분석한 결과, 수면 환경 개선이 필요합니다. 뇌파 분석에서 깊은 수면 비율이 {reportData.brainwaveAnalysis.deepSleepRatio}%로 나타났으며, 소음 이벤트가 {reportData.noiseEvents.length}회 감지되었습니다. 규칙적인 취침 시간과 최적화된 수면 환경을 통해 수면의 질을 크게 향상시킬 수 있습니다.
+                        현재 수면 패턴을 분석한 결과, 수면 환경 개선이 필요합니다. 뇌파 분석에서 깊은 수면 비율이 {reportData?.brainwaveAnalysis?.deepSleepRatio ?? 0}%로 나타났으며, 소음 이벤트가 {reportData?.noiseEvents?.length ?? 0}회 감지되었습니다. 규칙적인 취침 시간과 최적화된 수면 환경을 통해 수면의 질을 크게 향상시킬 수 있습니다.
                       </p>
                       <div className="text-[#00d4aa] text-sm font-medium mt-3">예상 기간: 2-3주</div>
                       <div className="recommendation-steps">
@@ -662,7 +617,7 @@ const DailyReport: React.FC = () => {
                         </div>
                       </div>
                       <p className="recommendation-description">
-                        수면 환경은 깊은 수면에 직접적인 영향을 미칩니다. 현재 깊은 수면 비율이 {reportData.brainwaveAnalysis.deepSleepRatio}%로 나타났으며, 각성 상태가 {reportData.brainwaveAnalysis.awakeRatio}% 감지되었습니다. 적절한 온도(18-20°C)는 체온 조절을 돕고, 완전한 암흑 상태는 멜라토닌 분비를 촉진합니다. 조용한 환경은 수면 중 각성을 방지해 연속적인 깊은 수면을 가능하게 합니다.
+                        수면 환경은 깊은 수면에 직접적인 영향을 미칩니다. 현재 깊은 수면 비율이 {reportData?.brainwaveAnalysis?.deepSleepRatio ?? 0}%로 나타났으며, 각성 상태가 {reportData?.brainwaveAnalysis?.awakeRatio ?? 0}% 감지되었습니다. 적절한 온도(18-20°C)는 체온 조절을 돕고, 완전한 암흑 상태는 멜라토닌 분비를 촉진합니다. 조용한 환경은 수면 중 각성을 방지해 연속적인 깊은 수면을 가능하게 합니다.
                       </p>
                       <div className="text-[#00d4aa] text-sm font-medium mt-3">예상 기간: 1주</div>
                       <div className="recommendation-steps">
@@ -687,7 +642,7 @@ const DailyReport: React.FC = () => {
                         </div>
                       </div>
                       <p className="recommendation-description">
-                        현재 수면 시간은 {reportData.sleepTimeHours}시간으로 나타났으며, 수면 효율은 {reportData.sleepEfficiency}%입니다. 뇌파 분석에서 REM 수면 비율이 {reportData.brainwaveAnalysis.remSleepRatio}%로 측정되었습니다. 카페인은 6-8시간 동안 체내에 머물며 잠들기 어렵게 만들고, 블루라이트는 멜라토닌 분비를 억제합니다. 취침 전 차분한 활동은 교감신경을 진정시켜 자연스러운 수면 유도에 도움이 됩니다.
+                        현재 수면 시간은 {reportData?.sleepTimeHours ?? 0}시간으로 나타났으며, 수면 효율은 {reportData?.sleepEfficiency ?? 0}%입니다. 뇌파 분석에서 REM 수면 비율이 {reportData?.brainwaveAnalysis?.remSleepRatio ?? 0}%로 측정되었습니다. 카페인은 6-8시간 동안 체내에 머물며 잠들기 어렵게 만들고, 블루라이트는 멜라토닌 분비를 억제합니다. 취침 전 차분한 활동은 교감신경을 진정시켜 자연스러운 수면 유도에 도움이 됩니다.
                       </p>
                       <div className="text-[#00d4aa] text-sm font-medium mt-3">예상 기간: 1-2주</div>
                       <div className="recommendation-steps">
