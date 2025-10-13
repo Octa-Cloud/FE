@@ -358,6 +358,17 @@ const DailyReport: React.FC = () => {
                             const selectedDate = fullDate.toISOString().split('T')[0];
                             handleCalendarDateSelect(selectedDate);
                           }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              const selectedDate = fullDate.toISOString().split('T')[0];
+                              handleCalendarDateSelect(selectedDate);
+                            }
+                          }}
+                          role="button"
+                          tabIndex={0}
+                          aria-label={`${currentMonth.getFullYear()}년 ${currentMonth.getMonth() + 1}월 ${day}일${hasData ? ' (수면 기록 있음)' : ''}`}
+                          aria-pressed={isSelected}
                         >
                           <span className="day-number">{day}</span>
                           {sleepStatus && (
@@ -383,6 +394,17 @@ const DailyReport: React.FC = () => {
                             const selectedDate = fullDate.toISOString().split('T')[0];
                             handleCalendarDateSelect(selectedDate);
                           }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              const selectedDate = fullDate.toISOString().split('T')[0];
+                              handleCalendarDateSelect(selectedDate);
+                            }
+                          }}
+                          role="button"
+                          tabIndex={0}
+                          aria-label={`${fullDate.getMonth() + 1}월 ${day}일 ${WEEKDAYS_KR[fullDate.getDay()]}요일${hasData ? ' (수면 기록 있음)' : ''}`}
+                          aria-pressed={isSelected}
                         >
                           <span className="day-number">{day}</span>
                           {sleepStatus && (
