@@ -1,12 +1,23 @@
 import React from 'react'
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
+import Home from './pages/Home.jsx'
+import SleepDashboard from './pages/SleepDashboard.jsx'
+import SleepSetup from './pages/SleepSetup.jsx'
+import SleepMeasuring from './pages/SleepMeasuring.jsx'
+import WakeUp from './pages/WakeUp.jsx'
+import WakeUpSummary from './pages/WakeUpSummary.jsx'
 
 export default function App() {
   return (
-    <div style={{ padding: 16, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
-      <h1>React App (mong)</h1>
-      <p>여기에서 개발을 시작하세요.</p>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/dashboard" element={<SleepDashboard />} />
+        <Route path="/sleep-setup" element={<SleepSetup />} />
+        <Route path="/sleep-measuring" element={<SleepMeasuring />} />
+        <Route path="/wakeup" element={<WakeUp />} />
+        <Route path="/wake-up-summary" element={<WakeUpSummary />} />
+      </Routes>
+    </Router>
   )
 }
-
-
