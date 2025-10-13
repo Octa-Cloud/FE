@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Container from '../components/Container';
 import NavBar from '../components/NavBar';
+import LoadingSpinner from '../components/LoadingSpinner';
+import ErrorBoundary from '../components/ErrorBoundary';
 import BrainwaveChart from '../components/charts/BrainwaveChart';
 import { useAuth, useUserProfile } from '../store/hooks';
 import { getSleepRecordByDate, getSleepRecordsByMonth, getSleepStatus as getSleepStatusByScore } from '../sleepData';
@@ -15,6 +17,7 @@ const DailyReport: React.FC = () => {
   const navigate = useNavigate();
   const [showRecommendations, setShowRecommendations] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const { profile } = useUserProfile();
   
@@ -34,10 +37,24 @@ const DailyReport: React.FC = () => {
 
   // 데이터 로드
   useEffect(() => {
-    if (user?.id && date) {
-      const record = getSleepRecordByDate(user.id, date);
-      setReportData(record);
-    }
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        if (user?.id && date) {
+          // 실제로는 비동기 API 호출이 될 수 있음
+          await new Promise(resolve => setTimeout(resolve, 100));
+          const record = getSleepRecordByDate(user.id, date);
+          setReportData(record);
+        }
+      } catch (error) {
+        console.error('데이터 로드 오류:', error);
+        setReportData(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadData();
   }, [user?.id, date]);
 
   // 월별 데이터 로드 (캘린더용)
@@ -183,6 +200,28 @@ const DailyReport: React.FC = () => {
     email: profile?.email || user?.email || ''
   }), [profile?.name, profile?.email, user?.name, user?.email]);
 
+  // 로딩 중
+  if (isLoading) {
+    return (
+      <div className="daily-report-page">
+        <NavBar 
+          onStartSleepRecord={handleStartSleepRecord}
+          userProfile={currentUserProfile}
+          onLogout={handleLogout}
+        />
+        <Container width={800} backgroundColor="#000000">
+          <main className="daily-report-main">
+            <div className="daily-report-container">
+              <div className="daily-report-content">
+                <LoadingSpinner size="large" text="수면 데이터를 불러오는 중..." />
+              </div>
+            </div>
+          </main>
+        </Container>
+      </div>
+    );
+  }
+
   // 데이터가 없을 경우 기본 메시지
   if (!reportData) {
     return (
@@ -196,9 +235,14 @@ const DailyReport: React.FC = () => {
           <main className="daily-report-main">
             <div className="daily-report-container">
               <div className="daily-report-content">
-                <div style={{ textAlign: 'center', padding: '100px 0', color: '#a1a1aa' }}>
-                  <h2>해당 날짜의 수면 기록이 없습니다.</h2>
-                  <p>다른 날짜를 선택해주세요.</p>
+                <div className="flex flex-col items-center justify-center py-24 text-center">
+                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" strokeWidth="1.5" className="mb-4">
+                    <path d="M12 18V5"/>
+                    <path d="M15 13a4.17 4.17 0 0 1-3-4 4.17 4.17 0 0 1-3 4"/>
+                    <path d="M17.598 6.5A3 3 0 1 0 12 5a3 3 0 1 0-5.598 1.5"/>
+                  </svg>
+                  <h2 className="text-xl font-semibold text-white mb-2">해당 날짜의 수면 기록이 없습니다</h2>
+                  <p className="text-sm text-[#a1a1aa]">다른 날짜를 선택해주세요</p>
                 </div>
               </div>
             </div>
@@ -239,12 +283,29 @@ const DailyReport: React.FC = () => {
                 <div className="flex items-center justify-end mb-2">
                   {showCalendar && (
                     <div className="flex items-center gap-4 mr-2">
-                      <button className="w-6 h-6 flex items-center justify-center text-white hover:bg-gray-800 rounded transition-colors" onClick={handlePrevMonth}>‹</button>
-                      <span>{currentMonth.getFullYear()}.{currentMonth.getMonth() + 1}</span>
-                      <button className="w-6 h-6 flex items-center justify-center text-white hover:bg-gray-800 rounded transition-colors" onClick={handleNextMonth}>›</button>
+                      <button 
+                        className="w-6 h-6 flex items-center justify-center text-white hover:bg-gray-800 rounded transition-colors" 
+                        onClick={handlePrevMonth}
+                        aria-label="이전 달로 이동"
+                      >
+                        ‹
+                      </button>
+                      <span aria-live="polite">{currentMonth.getFullYear()}.{currentMonth.getMonth() + 1}</span>
+                      <button 
+                        className="w-6 h-6 flex items-center justify-center text-white hover:bg-gray-800 rounded transition-colors" 
+                        onClick={handleNextMonth}
+                        aria-label="다음 달로 이동"
+                      >
+                        ›
+                      </button>
                     </div>
                   )}
-                  <button className="flex items-center gap-2 text-white hover:bg-gray-800 rounded transition-colors" onClick={handleCalendarToggle}>
+                  <button 
+                    className="flex items-center gap-2 text-white hover:bg-gray-800 rounded transition-colors p-1" 
+                    onClick={handleCalendarToggle}
+                    aria-label={showCalendar ? '캘린더 접기' : '캘린더 펼치기'}
+                    aria-expanded={showCalendar}
+                  >
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       {showCalendar ? (
                         <path d="m18 15-6-6-6 6"/>
@@ -489,7 +550,20 @@ const DailyReport: React.FC = () => {
                     <p>수면 중 뇌파 등급(A~E)과 소음 이벤트</p>
                   </div>
                   <div className="brainwave-chart">
-                    <BrainwaveChart brainwaveAnalysis={reportData.brainwaveAnalysis} />
+                    <ErrorBoundary
+                      fallback={
+                        <div className="flex flex-col items-center justify-center p-8 bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl">
+                          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#fb2c36" strokeWidth="2" className="mb-4">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                            <line x1="12" y1="9" x2="12" y2="13"/>
+                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                          </svg>
+                          <p className="text-sm text-[#a1a1aa]">뇌파 차트를 표시할 수 없습니다</p>
+                        </div>
+                      }
+                    >
+                      <BrainwaveChart brainwaveAnalysis={reportData.brainwaveAnalysis} />
+                    </ErrorBoundary>
                   </div>
                   <div className="brainwave-legend">
                     <div className="flex items-center gap-6 text-sm">
@@ -513,8 +587,9 @@ const DailyReport: React.FC = () => {
                       </button>
                     </div>
                     <div className="noise-events-grid">
-                      <div className="grid grid-cols-2 gap-3">
-                        {reportData?.noiseEvents?.map((event, index) => (
+                      {reportData?.noiseEvents && reportData.noiseEvents.length > 0 ? (
+                        <div className="grid grid-cols-2 gap-3">
+                          {reportData.noiseEvents.map((event, index) => (
                           <div key={index} className="flex items-center gap-2 text-base">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary">
                               {event.icon === 'user' && (
@@ -549,8 +624,19 @@ const DailyReport: React.FC = () => {
                             </svg>
                             <span className="flex-1">{event.type}</span>
                           </div>
-                        ))}
-                      </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center py-8 text-center">
+                          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" strokeWidth="1.5" className="mb-3 opacity-50">
+                            <path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"/>
+                            <line x1="22" y1="9" x2="16" y2="15"/>
+                            <line x1="16" y1="9" x2="22" y2="15"/>
+                          </svg>
+                          <p className="text-sm font-semibold text-white mb-1">감지된 소음이 없습니다</p>
+                          <p className="text-xs text-[#a1a1aa]">조용한 환경에서 편안한 수면을 취하셨습니다</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
