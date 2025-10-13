@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Container from '../components/Container';
 import NavBar from '../components/NavBar';
+import LoadingSpinner from '../components/LoadingSpinner';
+import ErrorBoundary from '../components/ErrorBoundary';
 import { useAuth, useUserProfile } from '../store/hooks';
 import { getSleepRecordsByMonth } from '../sleepData';
 import { analyzeWeeklyData, analyzeMonthlyData } from '../utils/statisticsCalculations';
 import { DailySleepRecord } from '../types/sleepData';
+import { CHART_CONFIG } from '../constants/sleep';
 import '../styles/statistics.css';
 import '../styles/profile.css';
 
@@ -15,53 +18,78 @@ const StatisticsAnalysis: React.FC = () => {
   const [analysisType, setAnalysisType] = useState<'weekly' | 'monthly'>('weekly');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [sleepRecords, setSleepRecords] = useState<DailySleepRecord[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const { profile } = useUserProfile();
 
-  const handleStartSleepRecord = () => {
+  const handleStartSleepRecord = useCallback(() => {
     // 수면 기록 시작 로직
     console.log('수면 기록 시작');
-  };
+  }, []);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     // 로그아웃 로직
     console.log('로그아웃');
     navigate('/login');
-  };
+  }, [navigate]);
 
-  const handleDateClick = (date: string) => {
+  const handleDateClick = useCallback((date: string) => {
     navigate(`/daily-report/${date}`);
-  };
+  }, [navigate]);
 
   // 데이터 로드
   useEffect(() => {
-    if (user?.id) {
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth() + 1;
-      const records = getSleepRecordsByMonth(user.id, year, month);
-      setSleepRecords(records);
-    }
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        if (user?.id) {
+          // 실제로는 비동기 API 호출이 될 수 있음
+          await new Promise(resolve => setTimeout(resolve, 100));
+          const year = currentDate.getFullYear();
+          const month = currentDate.getMonth() + 1;
+          const records = getSleepRecordsByMonth(user.id, year, month);
+          setSleepRecords(records);
+        }
+      } catch (error) {
+        console.error('데이터 로드 오류:', error);
+        setSleepRecords([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadData();
   }, [user?.id, currentDate]);
 
-  // 실제 사용자 프로필 정보 사용
-  const currentUserProfile = {
+  // 실제 사용자 프로필 정보 사용 - 메모이제이션
+  const currentUserProfile = useMemo(() => ({
     name: profile?.name || user?.name || '사용자',
     avatar: '',
     email: profile?.email || user?.email || ''
-  };
+  }), [profile?.name, profile?.email, user?.name, user?.email]);
 
-  // 실제 데이터로 계산된 주간/월간 데이터
-  const weeklyData = analyzeWeeklyData(sleepRecords, currentDate);
-  const monthlyData = analyzeMonthlyData(sleepRecords, currentDate.getFullYear(), currentDate.getMonth() + 1);
+  // 실제 데이터로 계산된 주간/월간 데이터 - 메모이제이션
+  const weeklyData = useMemo(() => 
+    analyzeWeeklyData(sleepRecords, currentDate),
+    [sleepRecords, currentDate]
+  );
+  
+  const monthlyData = useMemo(() => 
+    analyzeMonthlyData(sleepRecords, currentDate.getFullYear(), currentDate.getMonth() + 1),
+    [sleepRecords, currentDate]
+  );
 
-  const currentData = analysisType === 'weekly' ? weeklyData : monthlyData;
+  const currentData = useMemo(() => 
+    analysisType === 'weekly' ? weeklyData : monthlyData,
+    [analysisType, weeklyData, monthlyData]
+  );
 
-  // 수면 점수 차트의 Y축 설정을 동적으로 계산
-  const getSleepScoreYAxisConfig = () => {
+  // 수면 점수 차트의 Y축 설정을 동적으로 계산 - 메모이제이션
+  const sleepScoreYAxis = useMemo(() => {
     const scores = weeklyData.sleepScoreChart.map(item => item.score).filter(score => score > 0);
     
     if (scores.length === 0) {
-      return { domain: [0, 100], ticks: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100] };
+      return { domain: [0, 100] as [number, number], ticks: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100] };
     }
 
     const minScore = Math.min(...scores);
@@ -69,22 +97,20 @@ const StatisticsAnalysis: React.FC = () => {
 
     // 최솟값이 50 이상인 경우: 50~100
     if (minScore >= 50) {
-      return { domain: [50, 100], ticks: [50, 60, 70, 80, 90, 100] };
+      return { domain: [50, 100] as [number, number], ticks: [50, 60, 70, 80, 90, 100] };
     }
     
     // 최댓값이 50 미만인 경우: 0~50
     if (maxScore < 50) {
-      return { domain: [0, 50], ticks: [0, 10, 20, 30, 40, 50] };
+      return { domain: [0, 50] as [number, number], ticks: [0, 10, 20, 30, 40, 50] };
     }
     
     // 이외의 경우: 0~100
-    return { domain: [0, 100], ticks: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100] };
-  };
+    return { domain: [0, 100] as [number, number], ticks: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100] };
+  }, [weeklyData.sleepScoreChart]);
 
-  const sleepScoreYAxis = getSleepScoreYAxisConfig();
-
-  // 날짜 네비게이션 핸들러
-  const handlePrevPeriod = () => {
+  // 날짜 네비게이션 핸들러 - useCallback 최적화
+  const handlePrevPeriod = useCallback(() => {
     const newDate = new Date(currentDate);
     if (analysisType === 'weekly') {
       newDate.setDate(newDate.getDate() - 7);
@@ -92,9 +118,9 @@ const StatisticsAnalysis: React.FC = () => {
       newDate.setMonth(newDate.getMonth() - 1);
     }
     setCurrentDate(newDate);
-  };
+  }, [currentDate, analysisType]);
 
-  const handleNextPeriod = () => {
+  const handleNextPeriod = useCallback(() => {
     const newDate = new Date(currentDate);
     if (analysisType === 'weekly') {
       newDate.setDate(newDate.getDate() + 7);
@@ -102,7 +128,27 @@ const StatisticsAnalysis: React.FC = () => {
       newDate.setMonth(newDate.getMonth() + 1);
     }
     setCurrentDate(newDate);
-  };
+  }, [currentDate, analysisType]);
+
+  // 로딩 중
+  if (isLoading) {
+    return (
+      <div className="statistics-page">
+        <NavBar 
+          onStartSleepRecord={handleStartSleepRecord}
+          userProfile={currentUserProfile}
+          onLogout={handleLogout}
+        />
+        <Container width={800} backgroundColor="#000000">
+          <main className="statistics-main">
+            <div className="statistics-container">
+              <LoadingSpinner size="large" text="통계 데이터를 분석하는 중..." />
+            </div>
+          </main>
+        </Container>
+      </div>
+    );
+  }
 
   return (
     <div className="statistics-page">
@@ -172,8 +218,9 @@ const StatisticsAnalysis: React.FC = () => {
                     <>
                       <div className="chart-section">
                         <h4>수면 시간 (시간)</h4>
-                        <div className="chart-container">
-                          <ResponsiveContainer width="100%" height={200}>
+                        <ErrorBoundary fallback={<div className="text-center py-8 text-[#a1a1aa]">차트를 표시할 수 없습니다</div>}>
+                          <div className="chart-container">
+                            <ResponsiveContainer width="100%" height={200}>
                             <BarChart data={weeklyData.sleepTimeChart} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                               <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" />
                               <XAxis 
@@ -212,12 +259,14 @@ const StatisticsAnalysis: React.FC = () => {
                               </defs>
                             </BarChart>
                           </ResponsiveContainer>
-                        </div>
+                          </div>
+                        </ErrorBoundary>
                       </div>
                       <div className="chart-section">
                         <h4>수면 점수</h4>
-                        <div className="chart-container">
-                          <ResponsiveContainer width="100%" height={200}>
+                        <ErrorBoundary fallback={<div className="text-center py-8 text-[#a1a1aa]">차트를 표시할 수 없습니다</div>}>
+                          <div className="chart-container">
+                            <ResponsiveContainer width="100%" height={200}>
                             <BarChart data={weeklyData.sleepScoreChart} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                               <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" />
                               <XAxis 
@@ -257,15 +306,17 @@ const StatisticsAnalysis: React.FC = () => {
                               </defs>
                             </BarChart>
                           </ResponsiveContainer>
-                        </div>
+                          </div>
+                        </ErrorBoundary>
                       </div>
                     </>
                   ) : (
                     <>
                       <div className="chart-section">
                         <h4>주간 평균 수면 시간 (시간)</h4>
-                        <div className="chart-container">
-                          <ResponsiveContainer width="100%" height={200}>
+                        <ErrorBoundary fallback={<div className="text-center py-8 text-[#a1a1aa]">차트를 표시할 수 없습니다</div>}>
+                          <div className="chart-container">
+                            <ResponsiveContainer width="100%" height={200}>
                             <LineChart data={monthlyData.weeklyAvgChart} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                               <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" />
                               <XAxis 
@@ -301,12 +352,14 @@ const StatisticsAnalysis: React.FC = () => {
                               />
                             </LineChart>
                           </ResponsiveContainer>
-                        </div>
+                          </div>
+                        </ErrorBoundary>
                       </div>
                       <div className="chart-section">
                         <h4>주간 평균 수면 점수</h4>
-                        <div className="chart-container">
-                          <ResponsiveContainer width="100%" height={200}>
+                        <ErrorBoundary fallback={<div className="text-center py-8 text-[#a1a1aa]">차트를 표시할 수 없습니다</div>}>
+                          <div className="chart-container">
+                            <ResponsiveContainer width="100%" height={200}>
                             <LineChart data={monthlyData.weeklyAvgChart} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                               <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" />
                               <XAxis 
@@ -342,7 +395,8 @@ const StatisticsAnalysis: React.FC = () => {
                               />
                             </LineChart>
                           </ResponsiveContainer>
-                        </div>
+                          </div>
+                        </ErrorBoundary>
                       </div>
                     </>
                   )}
