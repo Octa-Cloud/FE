@@ -349,6 +349,57 @@
   transition: transform 0.2s ease;
 }
 
+/* Navigation Buttons */
+.nav-back-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: #a1a1aa;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Apple SD Gothic Neo', -apple-system, sans-serif;
+  padding: 8px 12px;
+  height: 32px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nav-back-button:hover {
+  background: rgba(161, 161, 170, 0.1);
+  color: #ffffff;
+}
+
+.nav-divider {
+  height: 24px;
+  width: 1px;
+  background: #2a2a2a;
+}
+
+.nav-stats-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: #a1a1aa;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Apple SD Gothic Neo', -apple-system, sans-serif;
+  padding: 8px 12px;
+  height: 32px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nav-stats-button:hover {
+  background: rgba(161, 161, 170, 0.1);
+  color: #ffffff;
+}
+
 .start-sleep-button {
   display: flex;
   align-items: center;

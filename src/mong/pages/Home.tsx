@@ -39,12 +39,20 @@ export default function Home() {
             ))}
           </div>
 
-          <button
-            style={{ backgroundColor: '#00d4aa', color: '#000', border: 'none', borderRadius: 8, height: 48, padding: '0 24px', marginTop: 24, cursor: 'pointer', fontSize: 18, fontWeight: 500 }}
-            onClick={() => navigate('/signup')}
-          >
-            mong과 함께 시작하기
-          </button>
+          <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
+            <button
+              style={{ backgroundColor: '#00d4aa', color: '#000', border: 'none', borderRadius: 8, height: 48, padding: '0 24px', cursor: 'pointer', fontSize: 18, fontWeight: 500 }}
+              onClick={() => navigate('/signup')}
+            >
+              mong과 함께 시작하기
+            </button>
+            <button
+              style={{ backgroundColor: 'transparent', color: '#00d4aa', border: '1px solid #00d4aa', borderRadius: 8, height: 48, padding: '0 24px', cursor: 'pointer', fontSize: 18, fontWeight: 500 }}
+              onClick={() => navigate('/daily-report/2025-10-15')}
+            >
+              일별 보고서
+            </button>
+          </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
             <span style={{ color: '#a1a1aa', fontSize: 14 }}>이미 계정이 있으신가요?</span>

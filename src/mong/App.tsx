@@ -9,6 +9,8 @@ import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
 import ProfileModification from './pages/ProfileModification';
 import SleepGoalSetting from './pages/SleepGoalSetting';
+import StatisticsAnalysis from './pages/StatisticsAnalysis';
+import DailyReport from './pages/DailyReport';
 import SleepDashboard from './pages/SleepDashboard';
 import SleepSetup from './pages/SleepSetup';
 import SleepMeasuring from './pages/SleepMeasuring';
@@ -129,12 +131,13 @@ function AppInitializer() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/profile" element={<ProfileModification />} />
         <Route path="/sleep-goal" element={<SleepGoalSetting />} />
-
-          <Route path="/dashboard" element={<SleepDashboard />} />
-          <Route path="/sleep-setup" element={<SleepSetup />} />
-          <Route path="/sleep-measuring" element={<SleepMeasuring />} />
-          <Route path="/wakeup" element={<WakeUp />} />
-          <Route path="/wake-up-summary" element={<WakeUpSummary />} />
+        <Route path="/statistics" element={<StatisticsAnalysis />} />
+        <Route path="/daily-report/:date" element={<DailyReport />} />
+        <Route path="/dashboard" element={<SleepDashboard />} />
+        <Route path="/sleep-setup" element={<SleepSetup />} />
+        <Route path="/sleep-measuring" element={<SleepMeasuring />} />
+        <Route path="/wakeup" element={<WakeUp />} />
+        <Route path="/wake-up-summary" element={<WakeUpSummary />} />
       </Routes>
     </Router>
   );
