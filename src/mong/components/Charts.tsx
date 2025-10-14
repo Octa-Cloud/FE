@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // BarChart에 전달될 데이터 항목의 타입을 정의합니다.
 interface BarChartItem {
@@ -22,6 +22,24 @@ interface BarChartProps {
 export const BarChart: React.FC<BarChartProps> = ({ data, maxValue, color = '#00d4aa', height = 120, showTooltip = false }) => {
     const maxBarHeight = height - 20;
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+    const [animatedBars, setAnimatedBars] = useState<boolean[]>([]);
+
+    useEffect(() => {
+        // 각 바를 순차적으로 애니메이션
+        const animationSequence = data.map((_, index) => {
+            setTimeout(() => {
+                setAnimatedBars(prev => {
+                    const newState = [...prev];
+                    newState[index] = true;
+                    return newState;
+                });
+            }, index * 150); // 각 바마다 150ms 간격
+        });
+
+        return () => {
+            animationSequence.forEach(clearTimeout);
+        };
+    }, [data]);
 
     return (
         <div style={{
@@ -35,6 +53,7 @@ export const BarChart: React.FC<BarChartProps> = ({ data, maxValue, color = '#00
         }}>
             {data.map((item, index) => {
                 const barHeight = maxValue > 0 ? (item.value / maxValue) * maxBarHeight : 0;
+                const isAnimated = animatedBars[index] || false;
                 return (
                     <div key={index} style={{
                         display: 'flex',
@@ -46,12 +65,15 @@ export const BarChart: React.FC<BarChartProps> = ({ data, maxValue, color = '#00
                         <div
                             style={{
                                 width: '100%',
-                                height: barHeight,
+                                height: isAnimated ? barHeight : 0,
                                 backgroundColor: color,
                                 borderRadius: '2px 2px 0 0',
                                 minHeight: barHeight > 0 ? 2 : 0,
-                                transition: 'height 0.3s ease',
-                                cursor: showTooltip ? 'pointer' : 'default'
+                                transition: 'height 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
+                                cursor: showTooltip ? 'pointer' : 'default',
+                                transform: isAnimated ? 'scaleY(1)' : 'scaleY(0)',
+                                transformOrigin: 'bottom',
+                                opacity: isAnimated ? 1 : 0
                             }}
                             onMouseEnter={() => showTooltip && setHoveredIndex(index)}
                             onMouseLeave={() => showTooltip && setHoveredIndex(null)}

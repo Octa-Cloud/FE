@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import ProfileHeader from '../components/ProfileHeader';
+import DashboardProfileHeader from '../components/DashboardProfileHeader';
 import Container from '../components/Container';
 import { SleepHoursChart, SleepScoreChart } from '../components/Charts';
 import { useAuth, useUserProfile } from '../store/hooks';
@@ -19,7 +19,9 @@ import { IoStatsChart } from "react-icons/io5";
 import { LuCalendarDays, LuArrowRight } from "react-icons/lu";
 import { FaChartLine, FaRegClock, FaChartPie, FaChartBar, FaChevronLeft, FaChevronRight, FaPlus } from "react-icons/fa";
 
-// 👇 [수정] "새벽 6시 이전" 관련 중복 로직을 모두 제거하고 단순화
+//  이번 주(일~토) 범위 내의 수면 데이터를 필터링하고
+//  차트에서 사용할 sleepHours / sleepScores 배열 생성
+//  → 주간 수면 추이 및 점수 추이 그래프에 사용됨
 const generateCurrentWeekChartData = (sleepData: SleepData[]) => {
     const today = new Date();
     const dayOfWeek = today.getDay();
@@ -28,9 +30,7 @@ const generateCurrentWeekChartData = (sleepData: SleepData[]) => {
     startOfWeek.setHours(0, 0, 0, 0);
     const dayLabels = ['일', '월', '화', '수', '목', '금', '토'];
 
-    // 이번 주에 해당하는 모든 데이터를 필터링
     const currentWeekData = sleepData.filter(data => {
-        // Timezone 문제를 피하기 위해 날짜 문자열을 직접 파싱
         const [year, month, day] = data.date.split('-').map(Number);
         const recordDate = new Date(year, month - 1, day);
         return recordDate >= startOfWeek && recordDate <= today;
@@ -45,7 +45,6 @@ const generateCurrentWeekChartData = (sleepData: SleepData[]) => {
         const day = String(currentDate.getDate()).padStart(2, '0');
         const dateStr = `${year}-${month}-${day}`;
         
-        // 필터링된 데이터에서 해당 날짜의 기록을 찾음
         const foundData = currentWeekData.find(d => d.date === dateStr);
         
         if (foundData) {
@@ -71,6 +70,7 @@ export default function SleepDashboard() {
     const [selectedDate, setSelectedDate] = useState<string | null>(null)
     const [recentRecords, setRecentRecords] = useState<SleepData[]>([])
     const [currentMonth, setCurrentMonth] = useState(new Date())
+    const [chartSectionVisible, setChartSectionVisible] = useState(false)
 
     const today = new Date();
     today.setHours(0,0,0,0);
@@ -124,7 +124,7 @@ export default function SleepDashboard() {
 
     return (
         <Container className="sleep-dashboard-page" backgroundColor="#000000">
-            <ProfileHeader
+            <DashboardProfileHeader
                 onBack={handleBack}
                 onStartSleepRecord={handleStartSleepRecord}
                 userProfile={userProfile}
@@ -135,6 +135,8 @@ export default function SleepDashboard() {
                 <div className="w-full max-w-4xl relative">
                     <div className="profile-content">
                         <div className="sleep-dashboard-content">
+                            
+                            {/* 📊 상단 통계 카드 (전체 평균 / 주간 평균 / 평균 수면시간) */}
                             <div className="grid grid-cols-3 gap-4 mb-6">
                                 <div className="stats-card">
                                     <div className="flex items-center justify-between mb-4">
@@ -161,7 +163,8 @@ export default function SleepDashboard() {
                                     <div className="text-xs text-gray-400">목표: 8시간</div>
                                 </div>
                             </div>
-                            
+
+                            {/* 수면 패턴 분석 (이번 주 수면시간 / 점수 추이 차트) */}
                             <div className="sleep-goal-card mb-6">
                                 <div className="flex items-center justify-between mb-6">
                                     <div className="flex items-center gap-2">
@@ -197,6 +200,7 @@ export default function SleepDashboard() {
                                 )}
                             </div>
                             
+                            {/* 수면 기록 달력 (월별 달력 + 날짜 클릭 시 상세 정보 표시) */}
                             <div className="sleep-goal-card mb-6">
                                 <div className="flex items-center justify-between mb-6">
                                     <div className="flex items-center gap-2">
@@ -253,9 +257,9 @@ export default function SleepDashboard() {
                                         selectedDate === todayStr ? (
                                             <div className="bg-gray-800 rounded-lg p-4 flex items-center justify-between">
                                                 <span className="text-gray-400 text-sm">
-                                                    {today.getHours() < 6 ? "아직 수면 기록이 없습니다. (새벽 6시 이후부터 기록됩니다)" : "오늘 수면 기록이 없습니다."}
+                                                    {new Date().getHours() < 6 ? "아직 수면 기록이 없습니다. (새벽 6시 이후부터 기록됩니다)" : "오늘 수면 기록이 없습니다."}
                                                 </span>
-                                                {today.getHours() >= 6 && (
+                                                {new Date().getHours() >= 6 && (
                                                     <button onClick={() => navigate('/sleep-setup')} className="px-4 py-2 bg-primary-400 text-black text-sm font-semibold rounded-lg flex items-center gap-2 hover:bg-primary-300 transition-colors"><FaPlus size={14} />수면 측정하러 가기</button>
                                                 )}
                                             </div>
@@ -268,6 +272,7 @@ export default function SleepDashboard() {
                                 )}
                             </div>
                             
+                            {/* 최근 수면 기록 (최근 8일 카드 리스트) */}
                             <div className="sleep-goal-card">
                                 <div className="mb-4"><span className="text-lg font-bold text-white">최근 수면 기록</span></div>
                                 <div className="text-sm text-gray-400 mb-6">최근 기록들을 한눈에 확인하고 월간 리포트에서 상세 분석을 확인하세요</div>
@@ -297,4 +302,3 @@ export default function SleepDashboard() {
         </Container>
     )
 }
-

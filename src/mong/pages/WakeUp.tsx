@@ -1,28 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import '../styles/profile.css';
 
 const WakeUp = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const [currentTime, setCurrentTime] = useState(new Date());
+    const [currentTime, setCurrentTime] = useState(new Date()); // 실시간 시각 표시용
+    const [isVisible, setIsVisible] = useState(false); // 전체 페이드 인 제어
+    const [greetingVisible, setGreetingVisible] = useState(false); // "좋은 아침입니다!" 표시 여부
+    const [timeVisible, setTimeVisible] = useState(false); // 시계, 날짜 표시 여부
+    const [buttonVisible, setButtonVisible] = useState(false); // 버튼 표시 여부
 
     // SleepMeasuring에서 전달된 수면 시간 (초 단위)
     const sleepTimeSeconds = location.state?.sleepTime || 0;
 
     useEffect(() => {
-        // 데이터가 없을 경우 대시보드로 리다이렉트
+        // 데이터가 없을 경우 대시보드로 리다이렉트 (0초)
         if (!location.state?.sleepTime) {
             alert("잘못된 접근입니다. 메인 페이지로 이동합니다.");
             navigate('/dashboard');
         }
 
+        // 페이지 로드 시 애니메이션 순차적으로 실행
+        setIsVisible(true);
+        
+        setTimeout(() => setGreetingVisible(true), 300);
+        setTimeout(() => setTimeVisible(true), 600);
+        setTimeout(() => setButtonVisible(true), 900);
+
+        // 현재 시간 매초 갱신
         const timer = setInterval(() => {
             setCurrentTime(new Date());
         }, 1000);
 
+        // 언마운트 시 타이머 정리
         return () => clearInterval(timer);
     }, [location.state, navigate]);
 
+    // 현재 시간을 '오전/오후 시:분' 형태로 표시
     const formatTime = (date: Date): string => {
         const hours = date.getHours();
         const minutes = date.getMinutes().toString().padStart(2, '0');
@@ -31,6 +46,7 @@ const WakeUp = () => {
         return `${ampm} ${displayHours}:${minutes}`;
     };
 
+    // 오늘 날짜를 'YYYY년 M월 D일 요일' 형태로 표시
     const formatDate = (date: Date): string => {
         const year = date.getFullYear();
         const month = date.getMonth() + 1;
@@ -41,6 +57,8 @@ const WakeUp = () => {
         return `${year}년 ${month}월 ${day}일 ${weekday}`;
     };
 
+    // 수면 시간을 '시/분' 단위로 변환
+    // ex) 3800초 → "1시간 3분", 90초 → "1분"
     const formatSleepTime = (seconds: number): string => {
         const hours = Math.floor(seconds / 3600);
         const minutes = Math.floor((seconds % 3600) / 60);
@@ -56,126 +74,108 @@ const WakeUp = () => {
         navigate('/wake-up-summary', { state: { sleepTime: sleepTimeSeconds } });
     };
 
-    // 스타일 객체
-    const styles: { [key: string]: React.CSSProperties } = {
-        wakeupPage: {
-            width: '100vw',
-            height: '100vh',
-            backgroundColor: '#000000',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            fontFamily: "'Apple SD Gothic Neo', -apple-system, BlinkMacSystemFont, sans-serif",
-        },
-        contentFrame: {
-            width: '448px',
-            backgroundColor: '#1a1a1a',
-            border: '1px solid #2a2a2a',
-            borderRadius: '14px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '40px',
-            boxSizing: 'border-box',
-        },
-        greeting: {
-            color: '#00d4aa',
-            fontSize: '30px',
-            fontWeight: 500,
-            margin: '0 0 16px 0',
-            textAlign: 'center',
-        },
-        subtitle: {
-            color: '#a1a1aa',
-            fontSize: '18px',
-            fontWeight: 400,
-            margin: '0 0 24px 0',
-            textAlign: 'center',
-        },
-        sleepTimeDisplay: {
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            marginBottom: '24px',
-            padding: '16px 24px',
-            backgroundColor: 'rgba(0, 212, 170, 0.1)',
-            border: '1px solid rgba(0, 212, 170, 0.3)',
-            borderRadius: '8px',
-        },
-        sleepTimeLabel: {
-            color: '#00d4aa',
-            fontSize: '14px',
-            fontWeight: 400,
-            marginBottom: '4px',
-        },
-        sleepTimeValue: {
-            color: '#ffffff',
-            fontSize: '20px',
-            fontWeight: 500,
-        },
-        timeDisplay: {
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            marginBottom: '40px',
-        },
-        currentTime: {
-            color: '#ffffff',
-            fontFamily: "'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif",
-            fontSize: '36px',
-            fontWeight: 300,
-            marginBottom: '8px',
-        },
-        currentDate: {
-            color: '#a1a1aa',
-            fontFamily: "'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif",
-            fontSize: '16px',
-            fontWeight: 400,
-        },
-        wakeupButton: {
-            width: '320px',
-            height: '64px',
-            backgroundColor: '#00d4aa',
-            border: 'none',
-            borderRadius: '8px',
-            color: '#000000',
-            fontSize: '18px',
-            fontWeight: 500,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            transition: 'background-color 0.2s ease',
-        },
-    };
-
     return (
-        <div style={styles.wakeupPage}>
-            <div style={styles.contentFrame}>
-                <h1 style={styles.greeting}>좋은 아침입니다!</h1>
-                <p style={styles.subtitle}>상쾌한 하루를 시작해보세요</p>
+        <div 
+            className="wakeup-page"
+            style={{
+                opacity: isVisible ? 1 : 0,
+                transition: 'opacity 0.8s ease-in-out',
+            }}
+        >
+            <div 
+                className="wakeup-content-frame"
+                style={{
+                    transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+                    transition: 'transform 0.6s ease-out',
+                }}
+            >
+                {/* 인사 문구 */}
+                <h1 
+                    className="wakeup-greeting"
+                    style={{
+                        opacity: greetingVisible ? 1 : 0,
+                        transform: greetingVisible ? 'translateY(0)' : 'translateY(10px)',
+                        transition: 'all 0.6s ease-out',
+                    }}
+                >
+                    좋은 아침입니다!
+                </h1>
+                <p 
+                    className="wakeup-subtitle"
+                    style={{
+                        opacity: greetingVisible ? 1 : 0,
+                        transform: greetingVisible ? 'translateY(0)' : 'translateY(10px)',
+                        transition: 'all 0.6s ease-out 0.1s',
+                    }}
+                >
+                    상쾌한 하루를 시작해보세요
+                </p>
 
+                {/* 수면 시간 표시 (SleepMeasuring에서 전달된 값) */}
                 {sleepTimeSeconds > 0 && (
-                    <div style={styles.sleepTimeDisplay}>
-                        <div style={styles.sleepTimeLabel}>수면 시간</div>
-                        <div style={styles.sleepTimeValue}>{formatSleepTime(sleepTimeSeconds)}</div>
+                    <div 
+                        className="wakeup-sleep-time-display"
+                        style={{
+                            opacity: greetingVisible ? 1 : 0,
+                            transform: greetingVisible ? 'translateY(0)' : 'translateY(10px)',
+                            transition: 'all 0.6s ease-out 0.2s',
+                        }}
+                    >
+                        <div className="wakeup-sleep-time-label">수면 시간</div>
+                        <div className="wakeup-sleep-time-value">{formatSleepTime(sleepTimeSeconds)}</div>
                     </div>
                 )}
 
-                <div style={styles.timeDisplay}>
-                    <div style={styles.currentTime}>{formatTime(currentTime)}</div>
-                    <div style={styles.currentDate}>{formatDate(currentTime)}</div>
+                {/* 현재 시각 및 날짜 */}
+                <div 
+                    className="wakeup-time-display"
+                    style={{
+                        opacity: timeVisible ? 1 : 0,
+                        transform: timeVisible ? 'translateY(0)' : 'translateY(15px)',
+                        transition: 'all 0.6s ease-out',
+                    }}
+                >
+                    <div 
+                        className="wakeup-current-time"
+                        style={{
+                            opacity: timeVisible ? 1 : 0,
+                            transform: timeVisible ? 'translateY(0)' : 'translateY(15px)',
+                            transition: 'all 0.6s ease-out 0.1s',
+                        }}
+                    >
+                        {formatTime(currentTime)}
+                    </div>
+                    <div 
+                        className="wakeup-current-date"
+                        style={{
+                            opacity: timeVisible ? 1 : 0,
+                            transform: timeVisible ? 'translateY(0)' : 'translateY(15px)',
+                            transition: 'all 0.6s ease-out 0.2s',
+                        }}
+                    >
+                        {formatDate(currentTime)}
+                    </div>
                 </div>
 
+                {/* 기상하기 버튼 */}
                 <button
-                    style={styles.wakeupButton}
-                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#00b894'}
-                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#00d4aa'}
+                    className="wakeup-button"
+                    style={{
+                        opacity: buttonVisible ? 1 : 0,
+                        transform: buttonVisible ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.95)',
+                        transitionDelay: buttonVisible ? '0s' : '0.3s',
+                    }}
+                    onMouseOver={(e) => {
+                        e.currentTarget.style.backgroundColor = '#00b894';
+                        e.currentTarget.style.transform = 'translateY(0) scale(1.02)';
+                    }}
+                    onMouseOut={(e) => {
+                        e.currentTarget.style.backgroundColor = '#00d4aa';
+                        e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                    }}
                     onClick={handleWakeUp}
                 >
-                    <span style={{ fontSize: '16px' }}>☀️</span>
+                    <span style={{ fontSize: '16px', transition: 'transform 0.2s ease' }}>☀️</span>
                     기상하기
                 </button>
             </div>
