@@ -183,7 +183,11 @@ const StatisticsAnalysis: React.FC = () => {
         <main className="statistics-main">
           <div className="statistics-container">
             <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-1 p-1 bg-[#2a2a2a] rounded-lg">
+              <div 
+                className="flex items-center gap-1 p-1 bg-[#2a2a2a] rounded-lg"
+                role="tablist"
+                aria-label="통계 분석 기간 선택"
+              >
                 <button 
                   className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
                     analysisType === 'weekly' 
@@ -191,6 +195,10 @@ const StatisticsAnalysis: React.FC = () => {
                       : 'bg-transparent text-[#a1a1aa] hover:bg-[#a1a1aa]/10 hover:text-white'
                   }`}
                   onClick={() => setAnalysisType('weekly')}
+                  role="tab"
+                  aria-selected={analysisType === 'weekly'}
+                  aria-controls="statistics-content"
+                  tabIndex={analysisType === 'weekly' ? 0 : -1}
                 >
                   주간 분석
                 </button>
@@ -201,33 +209,41 @@ const StatisticsAnalysis: React.FC = () => {
                       : 'bg-transparent text-[#a1a1aa] hover:bg-[#a1a1aa]/10 hover:text-white'
                   }`}
                   onClick={() => setAnalysisType('monthly')}
+                  role="tab"
+                  aria-selected={analysisType === 'monthly'}
+                  aria-controls="statistics-content"
+                  tabIndex={analysisType === 'monthly' ? 0 : -1}
                 >
                   월간 분석
                 </button>
               </div>
             </div>
 
-            <div className="statistics-content">
+            <div className="statistics-content" id="statistics-content" role="tabpanel">
               {/* 기간 표시 및 차트 */}
               <div className="period-card">
                 <div className="flex items-center justify-between mb-6">
                   <div className="period-title">
                     <h2>{currentData.period}</h2>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2" role="group" aria-label="기간 네비게이션">
                     <button 
                       className="w-8 h-8 rounded-md bg-[#2a2a2a] border-none text-[#a1a1aa] flex items-center justify-center cursor-pointer transition-all hover:bg-[#3a3a3a] hover:text-white" 
                       onClick={handlePrevPeriod}
+                      aria-label={analysisType === 'weekly' ? '이전 주로 이동' : '이전 달로 이동'}
+                      title={analysisType === 'weekly' ? '이전 주' : '이전 달'}
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                         <path d="m15 18-6-6 6-6"/>
                       </svg>
                     </button>
                     <button 
                       className="w-8 h-8 rounded-md bg-[#2a2a2a] border-none text-[#a1a1aa] flex items-center justify-center cursor-pointer transition-all hover:bg-[#3a3a3a] hover:text-white" 
                       onClick={handleNextPeriod}
+                      aria-label={analysisType === 'weekly' ? '다음 주로 이동' : '다음 달로 이동'}
+                      title={analysisType === 'weekly' ? '다음 주' : '다음 달'}
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                         <path d="m9 18 6-6-6-6"/>
                       </svg>
                     </button>
@@ -244,40 +260,76 @@ const StatisticsAnalysis: React.FC = () => {
                     {analysisType === 'weekly' ? (
                       <>
                         <div className="space-y-3">
-                          <h4 className="text-sm font-medium text-[#a1a1aa] mb-3">수면 시간 (시간)</h4>
-                          <SleepTimeChart 
-                            data={weeklyData.sleepTimeChart}
-                            isWeekly={true}
-                            margin={{ top: 10, right: 10, left: 30, bottom: 30 }}
-                          />
+                          <h4 className="text-sm font-medium text-[#a1a1aa] mb-3" id="weekly-sleep-time-title">수면 시간 (시간)</h4>
+                          <div 
+                            role="img" 
+                            aria-labelledby="weekly-sleep-time-title"
+                            aria-describedby="weekly-sleep-time-desc"
+                          >
+                            <SleepTimeChart 
+                              data={weeklyData.sleepTimeChart}
+                              isWeekly={true}
+                              margin={{ top: 10, right: 10, left: 30, bottom: 30 }}
+                            />
+                          </div>
+                          <div id="weekly-sleep-time-desc" className="sr-only">
+                            주간 평균 수면 시간: {currentData.summary.avgHours}시간
+                          </div>
                         </div>
                         <div className="space-y-3">
-                          <h4 className="text-sm font-medium text-[#a1a1aa] mb-3">수면 점수</h4>
-                          <SleepScoreChart 
-                            data={weeklyData.sleepScoreChart}
-                            isWeekly={true}
-                            margin={{ top: 10, right: 10, left: 30, bottom: 30 }}
-                            yAxisConfig={sleepScoreYAxis}
-                          />
+                          <h4 className="text-sm font-medium text-[#a1a1aa] mb-3" id="weekly-sleep-score-title">수면 점수</h4>
+                          <div 
+                            role="img" 
+                            aria-labelledby="weekly-sleep-score-title"
+                            aria-describedby="weekly-sleep-score-desc"
+                          >
+                            <SleepScoreChart 
+                              data={weeklyData.sleepScoreChart}
+                              isWeekly={true}
+                              margin={{ top: 10, right: 10, left: 30, bottom: 30 }}
+                              yAxisConfig={sleepScoreYAxis}
+                            />
+                          </div>
+                          <div id="weekly-sleep-score-desc" className="sr-only">
+                            주간 평균 수면 점수: {currentData.summary.avgScore}점
+                          </div>
                         </div>
                       </>
                     ) : (
                       <>
                         <div className="space-y-3">
-                          <h4 className="text-sm font-medium text-[#a1a1aa] mb-3">월간 수면 시간 (시간)</h4>
-                          <SleepTimeChart 
-                            data={monthlyTimeChartData}
-                            isWeekly={false}
-                            margin={{ top: 10, right: 10, left: 30, bottom: 30 }}
-                          />
+                          <h4 className="text-sm font-medium text-[#a1a1aa] mb-3" id="monthly-sleep-time-title">월간 수면 시간 (시간)</h4>
+                          <div 
+                            role="img" 
+                            aria-labelledby="monthly-sleep-time-title"
+                            aria-describedby="monthly-sleep-time-desc"
+                          >
+                            <SleepTimeChart 
+                              data={monthlyTimeChartData}
+                              isWeekly={false}
+                              margin={{ top: 10, right: 10, left: 30, bottom: 30 }}
+                            />
+                          </div>
+                          <div id="monthly-sleep-time-desc" className="sr-only">
+                            월간 평균 수면 시간: {currentData.summary.avgHours}시간
+                          </div>
                         </div>
                         <div className="space-y-3">
-                          <h4 className="text-sm font-medium text-[#a1a1aa] mb-3">월간 수면 점수</h4>
-                          <SleepScoreChart 
-                            data={monthlyScoreChartData}
-                            isWeekly={false}
-                            margin={{ top: 10, right: 10, left: 30, bottom: 30 }}
-                          />
+                          <h4 className="text-sm font-medium text-[#a1a1aa] mb-3" id="monthly-sleep-score-title">월간 수면 점수</h4>
+                          <div 
+                            role="img" 
+                            aria-labelledby="monthly-sleep-score-title"
+                            aria-describedby="monthly-sleep-score-desc"
+                          >
+                            <SleepScoreChart 
+                              data={monthlyScoreChartData}
+                              isWeekly={false}
+                              margin={{ top: 10, right: 10, left: 30, bottom: 30 }}
+                            />
+                          </div>
+                          <div id="monthly-sleep-score-desc" className="sr-only">
+                            월간 평균 수면 점수: {currentData.summary.avgScore}점
+                          </div>
                         </div>
                       </>
                     )}
