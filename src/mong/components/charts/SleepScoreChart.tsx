@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import ErrorBoundary from '../ErrorBoundary';
 
@@ -24,6 +24,8 @@ const SleepScoreChart: React.FC<SleepScoreChartProps> = ({
   margin = { top: 10, right: 10, left: 30, bottom: 30 },
   yAxisConfig: customYAxisConfig
 }) => {
+  // 고유한 gradient ID 생성 - 여러 차트 인스턴스에서 ID 충돌 방지
+  const gradientId = useId();
   const xAxisConfig = isWeekly 
     ? {
         dataKey: "day" as const,
@@ -72,8 +74,8 @@ const SleepScoreChart: React.FC<SleepScoreChartProps> = ({
 
   const barConfig = {
     dataKey: "score" as const,
-    fill: "url(#sleepScoreGradient)",
-    radius: isWeekly ? [4, 4, 0, 0] : [3, 3, 0, 0],
+    fill: `url(#${gradientId})`,
+    radius: (isWeekly ? [4, 4, 0, 0] : [3, 3, 0, 0]) as [number, number, number, number],
     stroke: "#3b82f6",
     strokeWidth: 0.5,
     maxBarSize: isWeekly ? 40 : 6
@@ -90,7 +92,7 @@ const SleepScoreChart: React.FC<SleepScoreChartProps> = ({
             <Tooltip {...tooltipConfig} />
             <Bar {...barConfig} />
             <defs>
-              <linearGradient id="sleepScoreGradient" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#3b82f6" />
                 <stop offset="100%" stopColor="#2563eb" />
               </linearGradient>
