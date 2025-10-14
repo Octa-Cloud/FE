@@ -113,6 +113,23 @@ const StatisticsAnalysis: React.FC = () => {
     return { domain: [0, 100] as [number, number], ticks: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100] };
   }, [weeklyData.sleepScoreChart]);
 
+  // 월간 차트 데이터 메모이제이션 - 불필요한 재계산 방지
+  const monthlyTimeChartData = useMemo(() => 
+    monthlyData.monthlyDailyChart.map(item => ({ 
+      date: item.date, 
+      hours: item.hours 
+    })),
+    [monthlyData.monthlyDailyChart]
+  );
+
+  const monthlyScoreChartData = useMemo(() => 
+    monthlyData.monthlyDailyChart.map(item => ({ 
+      date: item.date, 
+      score: item.score 
+    })),
+    [monthlyData.monthlyDailyChart]
+  );
+
   // 날짜 네비게이션 핸들러 - useCallback 최적화
   const handlePrevPeriod = useCallback(() => {
     const newDate = new Date(currentDate);
@@ -249,7 +266,7 @@ const StatisticsAnalysis: React.FC = () => {
                         <div className="space-y-3">
                           <h4 className="text-sm font-medium text-[#a1a1aa] mb-3">월간 수면 시간 (시간)</h4>
                           <SleepTimeChart 
-                            data={monthlyData.monthlyDailyChart.map(item => ({ date: item.date, hours: item.hours }))}
+                            data={monthlyTimeChartData}
                             isWeekly={false}
                             margin={{ top: 10, right: 10, left: 30, bottom: 30 }}
                           />
@@ -257,7 +274,7 @@ const StatisticsAnalysis: React.FC = () => {
                         <div className="space-y-3">
                           <h4 className="text-sm font-medium text-[#a1a1aa] mb-3">월간 수면 점수</h4>
                           <SleepScoreChart 
-                            data={monthlyData.monthlyDailyChart.map(item => ({ date: item.date, score: item.score }))}
+                            data={monthlyScoreChartData}
                             isWeekly={false}
                             margin={{ top: 10, right: 10, left: 30, bottom: 30 }}
                           />
