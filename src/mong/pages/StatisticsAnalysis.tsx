@@ -182,14 +182,14 @@ const StatisticsAnalysis: React.FC = () => {
       <Container width={800} backgroundColor="#000000">
         <main className="statistics-main">
           <div className="statistics-container">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-4 md:mb-6">
               <div 
-                className="flex items-center gap-1 p-1 bg-[#2a2a2a] rounded-lg"
+                className="flex items-center gap-1 p-1 bg-[#2a2a2a] rounded-lg w-full sm:w-auto"
                 role="tablist"
                 aria-label="통계 분석 기간 선택"
               >
                 <button 
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  className={`px-3 py-2 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-all flex-1 sm:flex-none ${
                     analysisType === 'weekly' 
                       ? 'bg-[#a1a1aa] text-black' 
                       : 'bg-transparent text-[#a1a1aa] hover:bg-[#a1a1aa]/10 hover:text-white'
@@ -203,7 +203,7 @@ const StatisticsAnalysis: React.FC = () => {
                   주간 분석
                 </button>
                 <button 
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  className={`px-3 py-2 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-all flex-1 sm:flex-none ${
                     analysisType === 'monthly' 
                       ? 'bg-[#a1a1aa] text-black' 
                       : 'bg-transparent text-[#a1a1aa] hover:bg-[#a1a1aa]/10 hover:text-white'
@@ -228,7 +228,7 @@ const StatisticsAnalysis: React.FC = () => {
                   </div>
                   <div className="flex gap-2" role="group" aria-label="기간 네비게이션">
                     <button 
-                      className="w-8 h-8 rounded-md bg-[#2a2a2a] border-none text-[#a1a1aa] flex items-center justify-center cursor-pointer transition-all hover:bg-[#3a3a3a] hover:text-white" 
+                      className="w-10 h-10 sm:w-8 sm:h-8 rounded-md bg-[#2a2a2a] border-none text-[#a1a1aa] flex items-center justify-center cursor-pointer transition-all hover:bg-[#3a3a3a] hover:text-white touch-manipulation" 
                       onClick={handlePrevPeriod}
                       aria-label={analysisType === 'weekly' ? '이전 주로 이동' : '이전 달로 이동'}
                       title={analysisType === 'weekly' ? '이전 주' : '이전 달'}
@@ -238,7 +238,7 @@ const StatisticsAnalysis: React.FC = () => {
                       </svg>
                     </button>
                     <button 
-                      className="w-8 h-8 rounded-md bg-[#2a2a2a] border-none text-[#a1a1aa] flex items-center justify-center cursor-pointer transition-all hover:bg-[#3a3a3a] hover:text-white" 
+                      className="w-10 h-10 sm:w-8 sm:h-8 rounded-md bg-[#2a2a2a] border-none text-[#a1a1aa] flex items-center justify-center cursor-pointer transition-all hover:bg-[#3a3a3a] hover:text-white touch-manipulation" 
                       onClick={handleNextPeriod}
                       aria-label={analysisType === 'weekly' ? '다음 주로 이동' : '다음 달로 이동'}
                       title={analysisType === 'weekly' ? '다음 주' : '다음 달'}
@@ -256,11 +256,11 @@ const StatisticsAnalysis: React.FC = () => {
                     onStartSleepRecord={handleStartSleepRecord}
                   />
                 ) : (
-                  <div className="grid grid-cols-2 gap-8 min-h-[280px] mt-2">
+                  <div className="grid grid-cols-2 gap-2 sm:gap-4 md:gap-8 min-h-[280px] mt-2">
                     {analysisType === 'weekly' ? (
                       <>
                         <div className="space-y-3">
-                          <h4 className="text-sm font-medium text-[#a1a1aa] mb-3" id="weekly-sleep-time-title">수면 시간 (시간)</h4>
+                          <h4 className="text-xs sm:text-sm font-medium text-[#a1a1aa] mb-2 sm:mb-3" id="weekly-sleep-time-title">수면 시간 (시간)</h4>
                           <div 
                             role="img" 
                             aria-labelledby="weekly-sleep-time-title"
@@ -269,7 +269,7 @@ const StatisticsAnalysis: React.FC = () => {
                             <SleepTimeChart 
                               data={weeklyData.sleepTimeChart}
                               isWeekly={true}
-                              margin={{ top: 10, right: 10, left: 30, bottom: 30 }}
+                              margin={{ top: 10, right: 30, left: 30, bottom: 30 }}
                             />
                           </div>
                           <div id="weekly-sleep-time-desc" className="sr-only">
@@ -277,7 +277,7 @@ const StatisticsAnalysis: React.FC = () => {
                           </div>
                         </div>
                         <div className="space-y-3">
-                          <h4 className="text-sm font-medium text-[#a1a1aa] mb-3" id="weekly-sleep-score-title">수면 점수</h4>
+                          <h4 className="text-xs sm:text-sm font-medium text-[#a1a1aa] mb-2 sm:mb-3" id="weekly-sleep-score-title">수면 점수</h4>
                           <div 
                             role="img" 
                             aria-labelledby="weekly-sleep-score-title"
@@ -286,7 +286,7 @@ const StatisticsAnalysis: React.FC = () => {
                             <SleepScoreChart 
                               data={weeklyData.sleepScoreChart}
                               isWeekly={true}
-                              margin={{ top: 10, right: 10, left: 30, bottom: 30 }}
+                              margin={{ top: 10, right: 30, left: 30, bottom: 30 }}
                               yAxisConfig={sleepScoreYAxis}
                             />
                           </div>
@@ -298,7 +298,7 @@ const StatisticsAnalysis: React.FC = () => {
                     ) : (
                       <>
                         <div className="space-y-3">
-                          <h4 className="text-sm font-medium text-[#a1a1aa] mb-3" id="monthly-sleep-time-title">월간 수면 시간 (시간)</h4>
+                          <h4 className="text-xs sm:text-sm font-medium text-[#a1a1aa] mb-2 sm:mb-3" id="monthly-sleep-time-title">월간 수면 시간 (시간)</h4>
                           <div 
                             role="img" 
                             aria-labelledby="monthly-sleep-time-title"
@@ -307,7 +307,7 @@ const StatisticsAnalysis: React.FC = () => {
                             <SleepTimeChart 
                               data={monthlyTimeChartData}
                               isWeekly={false}
-                              margin={{ top: 10, right: 10, left: 30, bottom: 30 }}
+                              margin={{ top: 10, right: 30, left: 30, bottom: 30 }}
                             />
                           </div>
                           <div id="monthly-sleep-time-desc" className="sr-only">
@@ -315,7 +315,7 @@ const StatisticsAnalysis: React.FC = () => {
                           </div>
                         </div>
                         <div className="space-y-3">
-                          <h4 className="text-sm font-medium text-[#a1a1aa] mb-3" id="monthly-sleep-score-title">월간 수면 점수</h4>
+                          <h4 className="text-xs sm:text-sm font-medium text-[#a1a1aa] mb-2 sm:mb-3" id="monthly-sleep-score-title">월간 수면 점수</h4>
                           <div 
                             role="img" 
                             aria-labelledby="monthly-sleep-score-title"
@@ -324,7 +324,7 @@ const StatisticsAnalysis: React.FC = () => {
                             <SleepScoreChart 
                               data={monthlyScoreChartData}
                               isWeekly={false}
-                              margin={{ top: 10, right: 10, left: 30, bottom: 30 }}
+                              margin={{ top: 10, right: 30, left: 30, bottom: 30 }}
                             />
                           </div>
                           <div id="monthly-sleep-score-desc" className="sr-only">

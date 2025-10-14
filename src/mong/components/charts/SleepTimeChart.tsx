@@ -16,7 +16,7 @@ interface SleepTimeChartProps {
 const SleepTimeChart: React.FC<SleepTimeChartProps> = ({ 
   data, 
   isWeekly = true, 
-  margin = { top: 10, right: 10, left: 30, bottom: 30 }
+  margin = { top: 10, right: 30, left: 30, bottom: 30 }
 }) => {
   // 고유한 gradient ID 생성 - 여러 차트 인스턴스에서 ID 충돌 방지
   const gradientId = useId();
@@ -26,14 +26,14 @@ const SleepTimeChart: React.FC<SleepTimeChartProps> = ({
         axisLine: false,
         tickLine: false,
         height: 30,
-        tick: { fontSize: 12, fill: '#a1a1aa' }
+        tick: { fontSize: window.innerWidth < 640 ? 10 : 12, fill: '#a1a1aa' }
       }
     : {
         dataKey: "date" as const,
         axisLine: false,
         tickLine: false,
         height: 30,
-        tick: { fontSize: 10, fill: '#a1a1aa' },
+        tick: { fontSize: window.innerWidth < 640 ? 9 : 10, fill: '#a1a1aa' },
         interval: 4,
         tickFormatter: (value: string, index: number) => {
           const day = parseInt(value.replace('일', ''));
@@ -67,14 +67,19 @@ const SleepTimeChart: React.FC<SleepTimeChartProps> = ({
     radius: (isWeekly ? [4, 4, 0, 0] : [3, 3, 0, 0]) as [number, number, number, number],
     stroke: "#00d4aa",
     strokeWidth: 0.5,
-    maxBarSize: isWeekly ? 40 : 6
+    maxBarSize: isWeekly ? 30 : 5
   };
 
   return (
     <ErrorBoundary fallback={<div className="text-center py-8 text-[#a1a1aa]">차트를 표시할 수 없습니다</div>}>
-      <div className="h-[240px] p-5 rounded-[14px] bg-[#1a1a1a] border border-[#2a2a2a] relative flex items-center justify-center">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={margin}>
+      <div className="h-[200px] md:h-[240px] rounded-[14px] bg-[#1a1a1a] border border-[#2a2a2a] relative flex items-center justify-center p-4">
+        <div className="flex items-center justify-center w-full h-full">
+          <BarChart 
+            width={isWeekly ? 280 : 360} 
+            height={isWeekly ? 160 : 200} 
+            data={data} 
+            margin={margin}
+          >
             <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" />
             <XAxis {...xAxisConfig} />
             <YAxis {...yAxisConfig} />
@@ -87,7 +92,7 @@ const SleepTimeChart: React.FC<SleepTimeChartProps> = ({
               </linearGradient>
             </defs>
           </BarChart>
-        </ResponsiveContainer>
+        </div>
       </div>
     </ErrorBoundary>
   );
