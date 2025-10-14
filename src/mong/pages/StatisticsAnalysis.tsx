@@ -6,6 +6,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorBoundary from '../components/ErrorBoundary';
 import SleepTimeChart from '../components/charts/SleepTimeChart';
 import SleepScoreChart from '../components/charts/SleepScoreChart';
+import EmptyState from '../components/EmptyState';
 import { useAuth, useUserProfile } from '../store/hooks';
 import { getSleepRecordsByMonth } from '../sleepData';
 import { analyzeWeeklyData, analyzeMonthlyData } from '../utils/statisticsCalculations';
@@ -216,51 +217,59 @@ const StatisticsAnalysis: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-8 min-h-[280px] mt-2">
-                  {analysisType === 'weekly' ? (
-                    <>
-                      <div className="space-y-3">
-                        <h4 className="text-sm font-medium text-[#a1a1aa] mb-3">수면 시간 (시간)</h4>
-                        <SleepTimeChart 
-                          data={weeklyData.sleepTimeChart}
-                          isWeekly={true}
-                          margin={{ top: 10, right: 10, left: 30, bottom: 30 }}
-                        />
-                      </div>
-                      <div className="space-y-3">
-                        <h4 className="text-sm font-medium text-[#a1a1aa] mb-3">수면 점수</h4>
-                        <SleepScoreChart 
-                          data={weeklyData.sleepScoreChart}
-                          isWeekly={true}
-                          margin={{ top: 10, right: 10, left: 30, bottom: 30 }}
-                          yAxisConfig={sleepScoreYAxis}
-                        />
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="space-y-3">
-                        <h4 className="text-sm font-medium text-[#a1a1aa] mb-3">월간 수면 시간 (시간)</h4>
-                        <SleepTimeChart 
-                          data={monthlyData.monthlyDailyChart.map(item => ({ date: item.date, hours: item.hours }))}
-                          isWeekly={false}
-                          margin={{ top: 10, right: 10, left: 30, bottom: 30 }}
-                        />
-                      </div>
-                      <div className="space-y-3">
-                        <h4 className="text-sm font-medium text-[#a1a1aa] mb-3">월간 수면 점수</h4>
-                        <SleepScoreChart 
-                          data={monthlyData.monthlyDailyChart.map(item => ({ date: item.date, score: item.score }))}
-                          isWeekly={false}
-                          margin={{ top: 10, right: 10, left: 30, bottom: 30 }}
-                        />
-                      </div>
-                    </>
-                  )}
-                </div>
+                {sleepRecords.length === 0 ? (
+                  <EmptyState 
+                    type={analysisType}
+                    onStartSleepRecord={handleStartSleepRecord}
+                  />
+                ) : (
+                  <div className="grid grid-cols-2 gap-8 min-h-[280px] mt-2">
+                    {analysisType === 'weekly' ? (
+                      <>
+                        <div className="space-y-3">
+                          <h4 className="text-sm font-medium text-[#a1a1aa] mb-3">수면 시간 (시간)</h4>
+                          <SleepTimeChart 
+                            data={weeklyData.sleepTimeChart}
+                            isWeekly={true}
+                            margin={{ top: 10, right: 10, left: 30, bottom: 30 }}
+                          />
+                        </div>
+                        <div className="space-y-3">
+                          <h4 className="text-sm font-medium text-[#a1a1aa] mb-3">수면 점수</h4>
+                          <SleepScoreChart 
+                            data={weeklyData.sleepScoreChart}
+                            isWeekly={true}
+                            margin={{ top: 10, right: 10, left: 30, bottom: 30 }}
+                            yAxisConfig={sleepScoreYAxis}
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="space-y-3">
+                          <h4 className="text-sm font-medium text-[#a1a1aa] mb-3">월간 수면 시간 (시간)</h4>
+                          <SleepTimeChart 
+                            data={monthlyData.monthlyDailyChart.map(item => ({ date: item.date, hours: item.hours }))}
+                            isWeekly={false}
+                            margin={{ top: 10, right: 10, left: 30, bottom: 30 }}
+                          />
+                        </div>
+                        <div className="space-y-3">
+                          <h4 className="text-sm font-medium text-[#a1a1aa] mb-3">월간 수면 점수</h4>
+                          <SleepScoreChart 
+                            data={monthlyData.monthlyDailyChart.map(item => ({ date: item.date, score: item.score }))}
+                            isWeekly={false}
+                            margin={{ top: 10, right: 10, left: 30, bottom: 30 }}
+                          />
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
 
-              {/* 요약 카드 */}
+              {/* 요약 카드 - 데이터가 있을 때만 표시 */}
+              {sleepRecords.length > 0 && (
               <div className="summary-card">
                 <div className="card-header">
                   <h4>{analysisType === 'weekly' ? '주간' : '월간'} 수면 요약</h4>
@@ -290,8 +299,10 @@ const StatisticsAnalysis: React.FC = () => {
                   </div>
                 </div>
               </div>
+              )}
 
-              {/* 수면 패턴 분석 */}
+              {/* 수면 패턴 분석 - 데이터가 있을 때만 표시 */}
+              {sleepRecords.length > 0 && (
               <div className="patterns-card">
                 <div className="card-header">
                   <h4>수면 패턴 분석</h4>
@@ -330,8 +341,10 @@ const StatisticsAnalysis: React.FC = () => {
                   </div>
                 </div>
               </div>
+              )}
 
-              {/* 분석 결과 */}
+              {/* 분석 결과 - 데이터가 있을 때만 표시 */}
+              {sleepRecords.length > 0 && (
               <div className="analysis-card">
                 <div className="card-header">
                   <h4>분석 결과</h4>
@@ -354,8 +367,10 @@ const StatisticsAnalysis: React.FC = () => {
                   ))}
                 </div>
               </div>
+              )}
 
-              {/* 목표 및 성취 */}
+              {/* 목표 및 성취 - 데이터가 있을 때만 표시 */}
+              {sleepRecords.length > 0 && (
               <div className="goals-card">
                 <div className="card-header">
                   <h4>수면 목표 및 성취</h4>
@@ -378,6 +393,7 @@ const StatisticsAnalysis: React.FC = () => {
                   ))}
                 </div>
               </div>
+              )}
             </div>
           </div>
         </main>
