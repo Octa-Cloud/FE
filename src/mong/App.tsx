@@ -11,6 +11,11 @@ import ProfileModification from './pages/ProfileModification';
 import SleepGoalSetting from './pages/SleepGoalSetting';
 import StatisticsAnalysis from './pages/StatisticsAnalysis';
 import DailyReport from './pages/DailyReport';
+import SleepDashboard from './pages/SleepDashboard';
+import SleepSetup from './pages/SleepSetup';
+import SleepMeasuring from './pages/SleepMeasuring';
+import WakeUp from './pages/WakeUp';
+import WakeUpSummary from './pages/WakeUpSummary';
 import { User } from './types';
 import { initializeTestData } from './testData';
 
@@ -128,6 +133,11 @@ function AppInitializer() {
         <Route path="/sleep-goal" element={<SleepGoalSetting />} />
         <Route path="/statistics" element={<StatisticsAnalysis />} />
         <Route path="/daily-report/:date" element={<DailyReport />} />
+        <Route path="/dashboard" element={<SleepDashboard />} />
+        <Route path="/sleep-setup" element={<SleepSetup />} />
+        <Route path="/sleep-measuring" element={<SleepMeasuring />} />
+        <Route path="/wakeup" element={<WakeUp />} />
+        <Route path="/wake-up-summary" element={<WakeUpSummary />} />
       </Routes>
     </Router>
   );
