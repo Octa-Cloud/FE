@@ -39,28 +39,7 @@
   margin: 0;
 }
 
-.charts-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 32px;
-  min-height: 360px;
-}
 
-.chart-section h4 {
-  font-size: 14px;
-  font-weight: 500;
-  color: #a1a1aa;
-  margin-bottom: 12px;
-}
-
-.chart-container {
-  height: 200px;
-  padding: 20px;
-  border-radius: 14px;
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
-  position: relative;
-}
 
 /* Bar Chart */
 .chart-bars {

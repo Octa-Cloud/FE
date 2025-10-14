@@ -7,9 +7,14 @@ import { DailySleepRecord } from '../types/sleepData';
 // 날짜 관련 유틸리티
 export const getWeekDates = (date: Date): Date[] => {
   const weekDates: Date[] = [];
-  const dayOfWeek = date.getDay();
+  const dayOfWeek = date.getDay(); // 0=일요일, 1=월요일, ..., 6=토요일
+  
+  // 한국식 주간: 월요일을 주의 시작으로 설정
+  // 일요일(0)이면 -6, 월요일(1)이면 0, 화요일(2)이면 -1, ...
+  const daysFromMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  
   const startOfWeek = new Date(date);
-  startOfWeek.setDate(date.getDate() - dayOfWeek);
+  startOfWeek.setDate(date.getDate() + daysFromMonday);
   
   for (let i = 0; i < 7; i++) {
     const weekDate = new Date(startOfWeek);
@@ -156,18 +161,19 @@ export const analyzeSleepRecords = (records: DailySleepRecord[]) => {
 // 주간 데이터 분석
 export const analyzeWeeklyData = (records: DailySleepRecord[], startDate: Date) => {
   const weekDates = getWeekDates(startDate);
+  
   const weekData = weekDates.map(date => {
     const dateStr = date.toISOString().split('T')[0];
     return records.find(r => r.date === dateStr);
   });
 
   const sleepTimeChart = weekDates.map((date, index) => ({
-    day: ['일', '월', '화', '수', '목', '금', '토'][date.getDay()],
+    day: ['월', '화', '수', '목', '금', '토', '일'][date.getDay() === 0 ? 6 : date.getDay() - 1], // 월요일부터 시작
     hours: Math.round((weekData[index]?.sleepTimeHours || 0) * 10) / 10 // 소수점 1자리
   }));
 
   const sleepScoreChart = weekDates.map((date, index) => ({
-    day: ['일', '월', '화', '수', '목', '금', '토'][date.getDay()],
+    day: ['월', '화', '수', '목', '금', '토', '일'][date.getDay() === 0 ? 6 : date.getDay() - 1], // 월요일부터 시작
     score: weekData[index]?.sleepScore || 0
   }));
 
@@ -175,7 +181,7 @@ export const analyzeWeeklyData = (records: DailySleepRecord[], startDate: Date) 
   const analysis = analyzeSleepRecords(validRecords);
 
   return {
-    period: `이번 주 ${(startDate.getMonth() + 1)}/${startDate.getDate()} - ${weekDates[6].getMonth() + 1}/${weekDates[6].getDate()}`,
+    period: `이번 주 ${weekDates[0].getMonth() + 1}/${weekDates[0].getDate()} - ${weekDates[6].getMonth() + 1}/${weekDates[6].getDate()}`,
     sleepTimeChart,
     sleepScoreChart,
     summary: {
@@ -204,6 +210,22 @@ export const analyzeMonthlyData = (records: DailySleepRecord[], year: number, mo
     return recordDate.getFullYear() === year && recordDate.getMonth() + 1 === month;
   });
 
+  // 월간 일별 데이터 생성 (한 달 전체 날짜)
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const monthlyDailyChart = [];
+  
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+    const dayRecord = monthRecords.find(r => r.date === dateStr);
+    
+    monthlyDailyChart.push({
+      date: `${day}일`,
+      hours: dayRecord ? Math.round(dayRecord.sleepTimeHours * 10) / 10 : 0,
+      score: dayRecord ? dayRecord.sleepScore : 0
+    });
+  }
+
+  // 주차별 평균 데이터도 유지 (요약용)
   const weeks = getMonthWeeks(year, month);
   const weeklyAvgChart = weeks.map(week => {
     const weekRecords = monthRecords.filter(r => {
@@ -233,6 +255,7 @@ export const analyzeMonthlyData = (records: DailySleepRecord[], year: number, mo
 
   return {
     period: `${year}년 ${month}월`,
+    monthlyDailyChart,
     weeklyAvgChart,
     summary: {
       avgScore: analysis.avgScore,

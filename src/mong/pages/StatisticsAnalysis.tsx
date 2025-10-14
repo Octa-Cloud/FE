@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Container from '../components/Container';
 import NavBar from '../components/NavBar';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorBoundary from '../components/ErrorBoundary';
+import SleepTimeChart from '../components/charts/SleepTimeChart';
+import SleepScoreChart from '../components/charts/SleepScoreChart';
 import { useAuth, useUserProfile } from '../store/hooks';
 import { getSleepRecordsByMonth } from '../sleepData';
 import { analyzeWeeklyData, analyzeMonthlyData } from '../utils/statisticsCalculations';
@@ -16,7 +17,7 @@ import '../styles/profile.css';
 const StatisticsAnalysis: React.FC = () => {
   const navigate = useNavigate();
   const [analysisType, setAnalysisType] = useState<'weekly' | 'monthly'>('weekly');
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(new Date(2025, 9, 1)); // 2025년 10월 1일 (9/29-10/5 주간 테스트)
   const [sleepRecords, setSleepRecords] = useState<DailySleepRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
@@ -42,14 +43,16 @@ const StatisticsAnalysis: React.FC = () => {
     const loadData = async () => {
       setIsLoading(true);
       try {
-        if (user?.id) {
-          // 실제로는 비동기 API 호출이 될 수 있음
-          await new Promise(resolve => setTimeout(resolve, 100));
-          const year = currentDate.getFullYear();
-          const month = currentDate.getMonth() + 1;
-          const records = getSleepRecordsByMonth(user.id, year, month);
-          setSleepRecords(records);
-        }
+        // 테스트용: 하드코딩된 사용자 ID 사용
+        const testUserId = 'test-user-001';
+        // 실제로는 비동기 API 호출이 될 수 있음
+        await new Promise(resolve => setTimeout(resolve, 100));
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth() + 1;
+        const records = getSleepRecordsByMonth(testUserId, year, month);
+        console.log('로드된 수면 기록:', records.length, '개');
+        console.log('날짜 범위:', year, '년', month, '월');
+        setSleepRecords(records);
       } catch (error) {
         console.error('데이터 로드 오류:', error);
         setSleepRecords([]);
@@ -59,7 +62,7 @@ const StatisticsAnalysis: React.FC = () => {
     };
     
     loadData();
-  }, [user?.id, currentDate]);
+  }, [currentDate]);
 
   // 실제 사용자 프로필 정보 사용 - 메모이제이션
   const currentUserProfile = useMemo(() => ({
@@ -213,190 +216,44 @@ const StatisticsAnalysis: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="charts-grid">
+                <div className="grid grid-cols-2 gap-8 min-h-[280px] mt-2">
                   {analysisType === 'weekly' ? (
                     <>
-                      <div className="chart-section">
-                        <h4>수면 시간 (시간)</h4>
-                        <ErrorBoundary fallback={<div className="text-center py-8 text-[#a1a1aa]">차트를 표시할 수 없습니다</div>}>
-                          <div className="chart-container">
-                            <ResponsiveContainer width="100%" height={200}>
-                            <BarChart data={weeklyData.sleepTimeChart} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                              <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" />
-                              <XAxis 
-                                dataKey="day" 
-                                axisLine={false}
-                                tickLine={false}
-                                tick={{ fontSize: 12, fill: '#a1a1aa' }}
-                              />
-                              <YAxis 
-                                domain={[6, 9]}
-                                tickCount={5}
-                                axisLine={false}
-                                tickLine={false}
-                                tick={{ fontSize: 12, fill: '#a1a1aa' }}
-                              />
-                              <Tooltip 
-                                contentStyle={{
-                                  backgroundColor: '#1a1a1a',
-                                  border: '1px solid #2a2a2a',
-                                  borderRadius: '8px',
-                                  color: '#ffffff'
-                                }}
-                                labelStyle={{ color: '#ffffff' }}
-                                formatter={(value: number) => [`${value}시간`, '수면 시간']}
-                              />
-                              <Bar 
-                                dataKey="hours" 
-                                fill="url(#sleepTimeGradient)"
-                                radius={[4, 4, 0, 0]}
-                              />
-                              <defs>
-                                <linearGradient id="sleepTimeGradient" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="0%" stopColor="#00d4aa" />
-                                  <stop offset="100%" stopColor="#00b894" />
-                                </linearGradient>
-                              </defs>
-                            </BarChart>
-                          </ResponsiveContainer>
-                          </div>
-                        </ErrorBoundary>
+                      <div className="space-y-3">
+                        <h4 className="text-sm font-medium text-[#a1a1aa] mb-3">수면 시간 (시간)</h4>
+                        <SleepTimeChart 
+                          data={weeklyData.sleepTimeChart}
+                          isWeekly={true}
+                          margin={{ top: 10, right: 10, left: 30, bottom: 30 }}
+                        />
                       </div>
-                      <div className="chart-section">
-                        <h4>수면 점수</h4>
-                        <ErrorBoundary fallback={<div className="text-center py-8 text-[#a1a1aa]">차트를 표시할 수 없습니다</div>}>
-                          <div className="chart-container">
-                            <ResponsiveContainer width="100%" height={200}>
-                            <BarChart data={weeklyData.sleepScoreChart} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                              <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" />
-                              <XAxis 
-                                dataKey="day" 
-                                axisLine={false}
-                                tickLine={false}
-                                tick={{ fontSize: 12, fill: '#a1a1aa' }}
-                              />
-                              <YAxis 
-                                domain={sleepScoreYAxis.domain}
-                                ticks={sleepScoreYAxis.ticks}
-                                axisLine={false}
-                                tickLine={false}
-                                tick={{ fontSize: 12, fill: '#a1a1aa' }}
-                              />
-                              <Tooltip 
-                                contentStyle={{
-                                  backgroundColor: '#1a1a1a',
-                                  border: '1px solid #2a2a2a',
-                                  borderRadius: '8px',
-                                  color: '#ffffff'
-                                }}
-                                labelStyle={{ color: '#ffffff' }}
-                                formatter={(value: number) => [`${value}점`, '수면 점수']}
-                              />
-                              <Bar 
-                                dataKey="score" 
-                                fill="url(#sleepScoreGradient)"
-                                radius={[4, 4, 0, 0]}
-                                maxBarSize={40}
-                              />
-                              <defs>
-                                <linearGradient id="sleepScoreGradient" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="0%" stopColor="#3b82f6" />
-                                  <stop offset="100%" stopColor="#2563eb" />
-                                </linearGradient>
-                              </defs>
-                            </BarChart>
-                          </ResponsiveContainer>
-                          </div>
-                        </ErrorBoundary>
+                      <div className="space-y-3">
+                        <h4 className="text-sm font-medium text-[#a1a1aa] mb-3">수면 점수</h4>
+                        <SleepScoreChart 
+                          data={weeklyData.sleepScoreChart}
+                          isWeekly={true}
+                          margin={{ top: 10, right: 10, left: 30, bottom: 30 }}
+                          yAxisConfig={sleepScoreYAxis}
+                        />
                       </div>
                     </>
                   ) : (
                     <>
-                      <div className="chart-section">
-                        <h4>주간 평균 수면 시간 (시간)</h4>
-                        <ErrorBoundary fallback={<div className="text-center py-8 text-[#a1a1aa]">차트를 표시할 수 없습니다</div>}>
-                          <div className="chart-container">
-                            <ResponsiveContainer width="100%" height={200}>
-                            <LineChart data={monthlyData.weeklyAvgChart} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                              <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" />
-                              <XAxis 
-                                dataKey="week" 
-                                axisLine={false}
-                                tickLine={false}
-                                tick={{ fontSize: 12, fill: '#a1a1aa' }}
-                              />
-                              <YAxis 
-                                domain={[6.5, 8]}
-                                tickCount={5}
-                                axisLine={false}
-                                tickLine={false}
-                                tick={{ fontSize: 12, fill: '#a1a1aa' }}
-                              />
-                              <Tooltip 
-                                contentStyle={{
-                                  backgroundColor: '#1a1a1a',
-                                  border: '1px solid #2a2a2a',
-                                  borderRadius: '8px',
-                                  color: '#ffffff'
-                                }}
-                                labelStyle={{ color: '#ffffff' }}
-                                formatter={(value: number) => [`${value}시간`, '수면 시간']}
-                              />
-                              <Line 
-                                type="monotone" 
-                                dataKey="hours" 
-                                stroke="#00d4aa" 
-                                strokeWidth={3}
-                                dot={{ fill: '#00d4aa', strokeWidth: 2, r: 4 }}
-                                activeDot={{ r: 6, stroke: '#00d4aa', strokeWidth: 2, fill: '#00d4aa' }}
-                              />
-                            </LineChart>
-                          </ResponsiveContainer>
-                          </div>
-                        </ErrorBoundary>
+                      <div className="space-y-3">
+                        <h4 className="text-sm font-medium text-[#a1a1aa] mb-3">월간 수면 시간 (시간)</h4>
+                        <SleepTimeChart 
+                          data={monthlyData.monthlyDailyChart.map(item => ({ date: item.date, hours: item.hours }))}
+                          isWeekly={false}
+                          margin={{ top: 10, right: 10, left: 30, bottom: 30 }}
+                        />
                       </div>
-                      <div className="chart-section">
-                        <h4>주간 평균 수면 점수</h4>
-                        <ErrorBoundary fallback={<div className="text-center py-8 text-[#a1a1aa]">차트를 표시할 수 없습니다</div>}>
-                          <div className="chart-container">
-                            <ResponsiveContainer width="100%" height={200}>
-                            <LineChart data={monthlyData.weeklyAvgChart} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                              <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" />
-                              <XAxis 
-                                dataKey="week" 
-                                axisLine={false}
-                                tickLine={false}
-                                tick={{ fontSize: 12, fill: '#a1a1aa' }}
-                              />
-                              <YAxis 
-                                domain={[75, 90]}
-                                tickCount={4}
-                                axisLine={false}
-                                tickLine={false}
-                                tick={{ fontSize: 12, fill: '#a1a1aa' }}
-                              />
-                              <Tooltip 
-                                contentStyle={{
-                                  backgroundColor: '#1a1a1a',
-                                  border: '1px solid #2a2a2a',
-                                  borderRadius: '8px',
-                                  color: '#ffffff'
-                                }}
-                                labelStyle={{ color: '#ffffff' }}
-                                formatter={(value: number) => [`${value}점`, '수면 점수']}
-                              />
-                              <Line 
-                                type="monotone" 
-                                dataKey="score" 
-                                stroke="#3b82f6" 
-                                strokeWidth={3}
-                                dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
-                                activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2, fill: '#3b82f6' }}
-                              />
-                            </LineChart>
-                          </ResponsiveContainer>
-                          </div>
-                        </ErrorBoundary>
+                      <div className="space-y-3">
+                        <h4 className="text-sm font-medium text-[#a1a1aa] mb-3">월간 수면 점수</h4>
+                        <SleepScoreChart 
+                          data={monthlyData.monthlyDailyChart.map(item => ({ date: item.date, score: item.score }))}
+                          isWeekly={false}
+                          margin={{ top: 10, right: 10, left: 30, bottom: 30 }}
+                        />
                       </div>
                     </>
                   )}
