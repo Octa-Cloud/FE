@@ -7,25 +7,26 @@ import { IoTimeOutline, IoWarningOutline, IoCheckmarkCircleOutline, IoArrowBack 
 import { FaPlay, FaChevronDown } from "react-icons/fa";
 
 export default function SleepSetup() {
+    // 사용자가 입력하는 목표 기상 시간 (시, 분)
     const [wakeHour, setWakeHour] = useState<number>(6)
     const [wakeMinute, setWakeMinute] = useState<number>(0)
+
     const navigate = useNavigate()
 
     const handleStartRecording = () => {
-        // 확인 팝업 표시
+        // 하루 한 번 측정 확인 팝업 -> "예" 버튼 클릭 시 수면 측정 페이지로 이동
         if (window.confirm("수면 측정은 하루에 한 번만 가능합니다. 측정을 시작하시겠습니까?")) {
-            // 수면 측정 페이지로 이동
             navigate('/sleep-measuring')
         }
     }
 
+    // '뒤로가기' 버튼 -> 대시보드로 돌아가기
     const handleGoBack = () => {
-        // 대시보드로 돌아가기
         navigate('/dashboard')
     }
 
+    // '목표 설정 바로가기' 버튼 -> 수면 목표 설정 페이지로 이동
     const handleGoToGoalSetting = () => {
-        // 수면 목표 설정 페이지로 이동
         navigate('/sleep-goal')
     }
 
@@ -54,6 +55,7 @@ export default function SleepSetup() {
                         </div>
                     </div>
 
+                    {/* 목표 기상 시간 설정 */} 
                     <div className="basic-card">
                         <div className="basic-card-header">
                             <IoTimeOutline color="#a1a1aa" size={20} />
@@ -61,6 +63,7 @@ export default function SleepSetup() {
                         </div>
                         <p className="basic-card-description">목표 기상 시간을 설정하세요</p>
 
+                        {/* 시/분 입력 필드 */}
                         <div style={{ marginBottom: 16 }}>
                             <div className="basic-input-group">
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -104,6 +107,7 @@ export default function SleepSetup() {
                                 </div>
                             </div>
 
+                            {/* 미리 선택 가능한 시간 프리셋 버튼 */}
                             <div className="basic-preset-buttons">
                                 {[
                                     { label: '06:00', hour: 6, minute: 0 },
@@ -121,22 +125,18 @@ export default function SleepSetup() {
                                         style={{ transition: 'all 0.2s ease' }}
                                         onMouseOver={(e) => {
                                             if (wakeHour === preset.hour && wakeMinute === preset.minute) {
-                                                // 선택된 버튼: 어두운 청록색으로 호버
                                                 e.currentTarget.style.setProperty('background-color', '#00b894', 'important');
                                                 e.currentTarget.style.setProperty('border-color', '#00b894', 'important');
                                             } else {
-                                                // 선택되지 않은 버튼: 밝은 회색으로 호버
                                                 e.currentTarget.style.setProperty('background-color', 'rgba(42, 42, 46, 0.5)', 'important');
                                                 e.currentTarget.style.setProperty('border-color', '#52525b', 'important');
                                             }
                                         }}
                                         onMouseOut={(e) => {
                                             if (wakeHour === preset.hour && wakeMinute === preset.minute) {
-                                                // 선택된 버튼: CSS 클래스로 복원 (인라인 스타일 제거)
                                                 e.currentTarget.style.removeProperty('background-color');
                                                 e.currentTarget.style.removeProperty('border-color');
                                             } else {
-                                                // 선택되지 않은 버튼: CSS 클래스로 복원 (인라인 스타일 제거)
                                                 e.currentTarget.style.removeProperty('background-color');
                                                 e.currentTarget.style.removeProperty('border-color');
                                             }
@@ -148,6 +148,7 @@ export default function SleepSetup() {
                             </div>
                         </div>
 
+                         {/* 목표 설정 페이지로 이동 버튼 */}
                         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                             <button 
                                 onClick={handleGoToGoalSetting}
@@ -168,6 +169,7 @@ export default function SleepSetup() {
                         </div>
                     </div>
 
+                    {/* 수면 측정 전 유의사항 카드 */}
                     <div className="basic-card">
                         <div className="basic-card-header">
                             <IoWarningOutline color="#a1a1aa" size={20} />
@@ -217,6 +219,7 @@ export default function SleepSetup() {
                         </div>
                     </div>
 
+                    {/* 수면 측정 시작 버튼 */}
                     <div style={{ marginBottom: 32 }}>
                         <button 
                             onClick={handleStartRecording} 

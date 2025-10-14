@@ -8,11 +8,11 @@ import { FaSun, FaMoon } from "react-icons/fa";
 
 export default function SleepMeasuring() {
     const navigate = useNavigate()
-    const [elapsedTime, setElapsedTime] = useState<number>(0)
-    const [brightness, setBrightness] = useState<number>(50)
-    const [isMeasuring, setIsMeasuring] = useState<boolean>(true)
+    const [elapsedTime, setElapsedTime] = useState<number>(0) // 경과 시간 (초 단위)
+    const [brightness, setBrightness] = useState<number>(50) // 화면 밝기 (0~100)
+    const [isMeasuring, setIsMeasuring] = useState<boolean>(true) // 측정 중 여부
 
-    // 실시간 시간 업데이트
+    // 수면 측정 타이머 (1초마다 경과시간 증가) - 측정 중일 때만 동작
     useEffect(() => {
         let interval: NodeJS.Timeout | undefined;
         if (isMeasuring) {
@@ -20,10 +20,12 @@ export default function SleepMeasuring() {
                 setElapsedTime(prev => prev + 1)
             }, 1000)
         }
+        // 컴포넌트 언마운트 시 또는 측정 중단 시 타이머 정리
         return () => clearInterval(interval)
     }, [isMeasuring])
 
-    // 시간 포맷팅 (시:분:초)
+    // 초 단위를 '시:분:초' 형태로 변환
+    // 3600초 이상이면 시간 단위 표시 포함
     const formatTime = (seconds: number): string => {
         const hours = Math.floor(seconds / 3600)
         const minutes = Math.floor((seconds % 3600) / 60)
@@ -43,12 +45,12 @@ export default function SleepMeasuring() {
         navigate('/wakeup', { state: { sleepTime: elapsedTime } })
     }
 
-    // 밝기 조절
+    // 슬라이더 변경 시 화면 밝기 조절
     const handleBrightnessChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setBrightness(parseInt(e.target.value))
     }
 
-    // 뒤로가기 버튼 클릭 시 확인 팝업을 띄우는 함수
+    // 뒤로가기 버튼 클릭 시 경고 팝업
     const handleGoBack = () => {
         if (window.confirm("지금 뒤로가면 기록이 저장되지 않습니다. 그래도 뒤로 가시겠습니까?")) {
             navigate('/sleep-setup');
@@ -61,6 +63,8 @@ export default function SleepMeasuring() {
                 <div style={{ paddingTop: 32, paddingBottom: 32 }}>
                     <div style={{ marginBottom: 32, paddingTop: 16 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+                            
+                            {/* 🔙 상단 뒤로가기 버튼 */}
                             <button 
                                 onClick={handleGoBack}
                                 style={{ 
@@ -88,7 +92,8 @@ export default function SleepMeasuring() {
                             </button>
                         </div>
                     </div>
-                    {/* 실시간 시간 표시 */}
+                    
+                    {/* 실시간 측정 시간 표시 */}
                     <div style={{ textAlign: 'center', marginBottom: 80 }}>
                         <h1 style={{
                             fontSize: 48,
@@ -104,7 +109,7 @@ export default function SleepMeasuring() {
                         </h1>
                     </div>
 
-                    {/* 밝기 조절 섹션 */}
+                    {/* 밝기 조절 슬라이더 */}
                     <div style={{
                         backgroundColor: '#1a1a1a',
                         border: '1px solid #2a2a2a',
