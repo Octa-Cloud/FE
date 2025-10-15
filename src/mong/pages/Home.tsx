@@ -39,6 +39,7 @@ export default function Home() {
             ))}
           </div>
 
+          {/* 회원가입 버튼 */}
           <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
             <button
               style={{ backgroundColor: '#00d4aa', color: '#000', border: 'none', borderRadius: 8, height: 48, padding: '0 24px', cursor: 'pointer', fontSize: 18, fontWeight: 500 }}
@@ -46,23 +47,16 @@ export default function Home() {
             >
               mong과 함께 시작하기
             </button>
-            <button
-              style={{ backgroundColor: 'transparent', color: '#00d4aa', border: '1px solid #00d4aa', borderRadius: 8, height: 48, padding: '0 24px', cursor: 'pointer', fontSize: 18, fontWeight: 500 }}
-              onClick={() => navigate('/daily-report/2025-10-15')}
-            >
-              일별 보고서
-            </button>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
-            <span style={{ color: '#a1a1aa', fontSize: 14 }}>이미 계정이 있으신가요?</span>
+            <span style={{ color: '#a1a1aa', fontSize: 13 }}>이미 계정이 있으신가요?</span>
             <a href="/login" style={{ color: '#00d4aa', fontSize: 16, fontWeight: 500, textDecoration: 'none' }}>로그인</a>
           </div>
 
-          <div style={{ width: 448, maxWidth: '100%', marginTop: 24 }}>
+          <div style={{ width: 600, maxWidth: '100%', marginTop: 24 }}>
             <p style={{ color: '#a1a1aa', fontSize: 14, textAlign: 'center', margin: 0 }}>
-              mong은 과학적인 방법으로 수면을 분석하여 더 나은 수면 습관을 만드는 데 도움
-              을 드립니다.
+              mong은 과학적인 방법으로 수면을 분석하여 더 나은 수면 습관을 만드는 데 도움을 드립니다.
             </p>
             <p style={{ color: '#a1a1aa', fontSize: 14, textAlign: 'center', marginTop: 8 }}>
               무료로 시작하고, 언제든지 설정을 변경할 수 있습니다.

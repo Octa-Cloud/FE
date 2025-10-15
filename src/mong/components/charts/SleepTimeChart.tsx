@@ -1,97 +1,66 @@
-import React, { useId } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import React from 'react';
 import ErrorBoundary from '../ErrorBoundary';
+import { BarChart as SimpleBarChart } from '../Charts';
 
 interface SleepTimeChartProps {
   data: Array<{ day?: string; date?: string; hours: number; [key: string]: any }>;
   isWeekly?: boolean;
-  margin?: {
-    top: number;
-    right: number;
-    bottom: number;
-    left: number;
-  };
+  margin?: { top: number; right: number; bottom: number; left: number };
 }
 
-const SleepTimeChart: React.FC<SleepTimeChartProps> = ({ 
-  data, 
-  isWeekly = true, 
-  margin = { top: 10, right: 30, left: 30, bottom: 30 }
-}) => {
-  // 고유한 gradient ID 생성 - 여러 차트 인스턴스에서 ID 충돌 방지
-  const gradientId = useId();
-  const xAxisConfig = isWeekly 
-    ? {
-        dataKey: "day" as const,
-        axisLine: false,
-        tickLine: false,
-        height: 30,
-        tick: { fontSize: window.innerWidth < 640 ? 10 : 12, fill: '#a1a1aa' }
-      }
-    : {
-        dataKey: "date" as const,
-        axisLine: false,
-        tickLine: false,
-        height: 30,
-        tick: { fontSize: window.innerWidth < 640 ? 9 : 10, fill: '#a1a1aa' },
-        interval: 4,
-        tickFormatter: (value: string, index: number) => {
-          const day = parseInt(value.replace('일', ''));
-          return [1, 6, 11, 16, 21, 26, 31].includes(day) ? value : '';
-        }
-      };
-
-  const yAxisConfig = {
-    domain: [0, 10] as [number, number],
-    ticks: isWeekly ? [0, 2, 4, 6, 8, 10] : undefined,
-    tickCount: isWeekly ? undefined : 6,
-    axisLine: false,
-    tickLine: false,
-    tick: { fontSize: 12, fill: '#a1a1aa' }
-  };
-
-  const tooltipConfig = {
-    contentStyle: {
-      backgroundColor: '#1a1a1a',
-      border: '1px solid #2a2a2a',
-      borderRadius: '8px',
-      color: '#ffffff'
-    },
-    labelStyle: { color: '#ffffff' },
-    formatter: (value: number) => [`${value}시간`, '수면 시간']
-  };
-
-  const barConfig = {
-    dataKey: isWeekly ? "hours" : "hours",
-    fill: `url(#${gradientId})`,
-    radius: (isWeekly ? [4, 4, 0, 0] : [3, 3, 0, 0]) as [number, number, number, number],
-    stroke: "#00d4aa",
-    strokeWidth: 0.5,
-    maxBarSize: isWeekly ? 30 : 5
-  };
+const SleepTimeChart: React.FC<SleepTimeChartProps> = ({ data, isWeekly = true }) => {
+  const maxHours = Math.max(...data.map(item => item.hours), 1);
+  // Charts.tsx의 BarChart 포맷으로 매핑
+  const mapped = data.map(item => {
+    const labelText = '수면 시간';
+    const dayLabel = (item.day || item.date || '').toString();
+    // 분 표시용 디스플레이 값 구성 (주간 데이터에 한해 가독성 향상)
+    const whole = Math.floor(item.hours);
+    const mins = Math.round((item.hours - whole) * 60);
+    return {
+      value: item.hours,
+      label: labelText,
+      day: dayLabel,
+      unit: '',
+      displayValue: `${whole}시간 ${mins}분`
+    };
+  });
 
   return (
     <ErrorBoundary fallback={<div className="text-center py-8 text-[#a1a1aa]">차트를 표시할 수 없습니다</div>}>
-      <div className="h-[200px] md:h-[240px] rounded-[14px] bg-[#1a1a1a] border border-[#2a2a2a] relative flex items-center justify-center p-4">
-        <div className="flex items-center justify-center w-full h-full">
-          <BarChart 
-            width={isWeekly ? 280 : 360} 
-            height={isWeekly ? 160 : 200} 
-            data={data} 
-            margin={margin}
-          >
-            <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" />
-            <XAxis {...xAxisConfig} />
-            <YAxis {...yAxisConfig} />
-            <Tooltip {...tooltipConfig} />
-            <Bar {...barConfig} />
-            <defs>
-              <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#00d4aa" />
-                <stop offset="100%" stopColor="#00b894" />
-              </linearGradient>
-            </defs>
-          </BarChart>
+      <div style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 14, padding: 16, height: 200, display: 'flex' }}>
+        <div style={{ position: 'relative', height: 120, fontSize: 11, color: '#a1a1aa', marginRight: 8, minWidth: 30 }}>
+          <span style={{ position: 'absolute', top: 10, right: 0, transform: 'translateY(-50%)' }}>{maxHours.toFixed(1)}h</span>
+          <span style={{ position: 'absolute', top: '50%', right: 0, transform: 'translateY(-50%)' }}>{(maxHours * 0.5).toFixed(1)}h</span>
+          <span style={{ position: 'absolute', bottom: 10, right: 0, transform: 'translateY(50%)' }}>0h</span>
+        </div>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <SimpleBarChart data={mapped} maxValue={maxHours} color="#00D4AA" height={120} showTooltip={true} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 11, color: '#a1a1aa', paddingLeft: 8, paddingRight: 8 }}>
+            {isWeekly ? (
+              <>
+                <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+              </>
+            ) : (
+              // 월간: 실제 데이터에 맞는 날짜 라벨 생성
+              (() => {
+                const maxDay = Math.max(...data.map(d => parseInt((d.date || '0').toString().replace('일','')) || 0), 0);
+                if (maxDay === 0) return [];
+                
+                // 5일 간격으로 라벨 생성 (최대 7개)
+                const interval = Math.max(1, Math.floor(maxDay / 7));
+                const labels = [];
+                for (let i = 1; i <= maxDay; i += interval) {
+                  labels.push(i);
+                }
+                // 마지막 날짜가 포함되지 않았다면 추가
+                if (labels[labels.length - 1] !== maxDay) {
+                  labels.push(maxDay);
+                }
+                return labels.map((n, i) => <span key={i}>{`${n}일`}</span>);
+              })()
+            )}
+          </div>
         </div>
       </div>
     </ErrorBoundary>

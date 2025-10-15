@@ -26,9 +26,9 @@ export default function SleepSetup() {
     }
 
     // '목표 설정 바로가기' 버튼 -> 수면 목표 설정 페이지로 이동
-    const handleGoToGoalSetting = () => {
-        navigate('/sleep-goal')
-    }
+  const handleGoToGoalSetting = () => {
+      navigate('/sleep-goal', { state: { from: 'sleep-setup' } })
+  }
 
     return (
         <div className="page-container">

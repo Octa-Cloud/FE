@@ -18,6 +18,7 @@ import WakeUp from './pages/WakeUp';
 import WakeUpSummary from './pages/WakeUpSummary';
 import { User } from './types';
 import { initializeTestData } from './testData';
+import { initializeAdditionalTestData } from './DummyData';
 
 // 앱 초기화 컴포넌트 - useAuth 훅 사용하지 않고 직접 dispatch 사용
 function AppInitializer() {
@@ -111,6 +112,9 @@ function AppInitializer() {
 
     // 통합 테스트 데이터 초기화
     initializeTestData();
+    
+    // 추가 테스트 데이터 초기화 (DummyData.ts)
+    initializeAdditionalTestData();
     
     // 특정 사용자 제거
     removeSpecificUsers();

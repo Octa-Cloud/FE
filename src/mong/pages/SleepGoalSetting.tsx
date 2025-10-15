@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import ProfileStatsCard from '../components/ProfileStatsCard';
 import ProfileFooter from '../components/ProfileFooter';
@@ -11,6 +11,8 @@ import '../styles/profile.css';
 
 const SleepGoalSetting = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const cameFromSetup = Boolean((location.state as any)?.from === 'sleep-setup');
   const { user, logout } = useAuth();
   const { profile } = useUserProfile();
   
@@ -24,60 +26,74 @@ const SleepGoalSetting = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
+  // 실제 사용자 프로필 정보 사용 - 메모이제이션
+  const userProfile = useMemo(() => ({
+    name: profile?.name || user?.name || '사용자',
+    avatar: (profile?.name || user?.name || '사용자').charAt(0)
+  }), [profile?.name, user?.name]);
 
-
-  // 사용자 데이터 가져오기
-  const currentUser = user || profile;
+  const userData = useMemo(() => {
+    // localStorage에서 사용자 프로필 정보 가져오기
+    const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
+    const currentUserId = user?.id || profile?.id;
+    const currentUser = storedUsers.find((u: any) => u.id === currentUserId);
+    
+    // 실제 사용자 데이터가 있으면 사용, 없으면 기본값
+    if (currentUser && currentUser.profile) {
+      return {
+        name: currentUser.name || '사용자',
+        email: currentUser.email || '',
+        avatar: (currentUser.name || '사용자').charAt(0),
+        averageScore: currentUser.profile.averageScore || 85,
+        averageSleepTime: currentUser.profile.averageSleepTime || 7.5,
+        totalDays: currentUser.profile.totalDays || 30
+      };
+    }
+    
+    // 기본값
+    return {
+      name: profile?.name || user?.name || '사용자',
+      email: profile?.email || user?.email || '',
+      avatar: (profile?.name || user?.name || '사용자').charAt(0),
+      averageScore: 85,
+      averageSleepTime: 7.5,
+      totalDays: 30
+    };
+  }, [profile?.name, profile?.email, user?.name, user?.email, user?.id, profile?.id]);
   
-  // 현재 사용자의 수면 목표 데이터 가져오기
-  const getCurrentUserSleepGoal = () => {
-    if (currentUser?.id) {
-      const testUserSleepGoal = getTestUserSleepGoal(currentUser.id);
+  // 현재 사용자의 수면 목표 데이터 가져오기 - 메모이제이션
+  const sleepGoalData = useMemo(() => {
+    const userId = user?.id || profile?.id;
+    
+    if (userId) {
+      const testUserSleepGoal = getTestUserSleepGoal(userId);
       if (testUserSleepGoal) {
         return testUserSleepGoal;
       }
     }
+    
     // 기본값
     return {
       targetBedtime: '23:00',
       targetWakeTime: '07:00',
       targetSleepHours: 8.0,
-      name: '사용자'
+      name: profile?.name || user?.name || '사용자'
     };
-  };
-
-  const sleepGoalData = getCurrentUserSleepGoal();
-  
-  const userProfile = {
-    name: currentUser?.name || '사용자',
-    avatar: (currentUser?.name || '사용자').charAt(0)
-  };
-
-  const userData = {
-    name: currentUser?.name || '사용자',
-    email: currentUser?.email || '',
-    avatar: (currentUser?.name || '사용자').charAt(0),
-    averageScore: 85,
-    averageSleepTime: 7.5,
-    totalDays: 30
-  };
+  }, [user?.id, user?.name, profile?.id, profile?.name]);
 
   // 시간 계산 유틸리티 함수들
-  const timeToMinutes = (timeStr: string): number => {
+  const timeToMinutes = useCallback((timeStr: string): number => {
     const [hours, minutes] = timeStr.split(':').map(Number);
     return hours * 60 + minutes;
-  };
+  }, []);
 
-  const minutesToTime = (minutes: number): string => {
+  const minutesToTime = useCallback((minutes: number): string => {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
-  };
+  }, []);
 
-
-
-
-  const calculateSleepHours = (bedtime: string, wakeTime: string): string => {
+  const calculateSleepHours = useCallback((bedtime: string, wakeTime: string): string => {
     const bedtimeMinutes = timeToMinutes(bedtime);
     let wakeMinutes = timeToMinutes(wakeTime);
     
@@ -89,9 +105,9 @@ const SleepGoalSetting = () => {
     const sleepMinutes = wakeMinutes - bedtimeMinutes;
     const sleepHours = sleepMinutes / 60;
     return sleepHours.toFixed(1);
-  };
+  }, [timeToMinutes]);
 
-  const calculateWakeTime = (bedtime: string, sleepHours: string): string => {
+  const calculateWakeTime = useCallback((bedtime: string, sleepHours: string): string => {
     const bedtimeMinutes = timeToMinutes(bedtime);
     const sleepMinutes = parseFloat(sleepHours) * 60;
     const wakeMinutes = bedtimeMinutes + sleepMinutes;
@@ -99,13 +115,13 @@ const SleepGoalSetting = () => {
     // 24시간을 넘어가면 다음날로 계산
     const adjustedWakeMinutes = wakeMinutes % (24 * 60);
     return minutesToTime(adjustedWakeMinutes);
-  };
+  }, [timeToMinutes, minutesToTime]);
 
   // 수면시간 입력 검증
-  const validateSleepHours = (value: string): boolean => {
+  const validateSleepHours = useCallback((value: string): boolean => {
     const num = parseFloat(value);
     return !isNaN(num) && num >= 1 && num <= 24;
-  };
+  }, []);
 
   // 로컬 스토리지에서 수면 목표 데이터 로드
   useEffect(() => {
@@ -120,26 +136,28 @@ const SleepGoalSetting = () => {
     }
   }, []);
 
-
   // 뒤로가기 핸들러
-  const handleBack = () => {
-    navigate('/profile');
-  };
+  const handleBack = useCallback(() => {
+    if (cameFromSetup) {
+      navigate('/sleep-setup');
+    } else {
+      navigate('/profile');
+    }
+  }, [cameFromSetup, navigate]);
 
   // 수면 기록 시작 핸들러
-  const handleStartSleepRecord = () => {
-    // TODO: 수면 기록 시작 로직 구현
+  const handleStartSleepRecord = useCallback(() => {
     console.log('수면 기록 시작');
-  };
+  }, []);
 
   // 로그아웃 핸들러
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     logout();
     navigate('/');
-  };
+  }, [logout, navigate]);
 
   // 폼 데이터 변경 핸들러
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     
     // 오류 메시지 초기화
@@ -180,22 +198,21 @@ const SleepGoalSetting = () => {
       
       return newFormData;
     });
-  };
-
+  }, [calculateSleepHours, validateSleepHours, calculateWakeTime]);
 
   // 수정 모드 토글
-  const handleEdit = () => {
+  const handleEdit = useCallback(() => {
     setIsEditing(true);
-  };
+  }, []);
 
   // 취소 핸들러
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     setIsEditing(false);
     // 원래 데이터로 복원
-  };
+  }, []);
 
   // 저장 핸들러
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     // 입력 검증
     if (!validateSleepHours(formData.targetSleepHours)) {
       setErrorMessage('수면시간은 1-24시간 사이의 값이어야 합니다.');
@@ -217,16 +234,17 @@ const SleepGoalSetting = () => {
       
       setIsEditing(false);
       console.log('수면 목표가 저장되었습니다:', sleepGoalData);
+      alert('수면 목표를 저장했습니다!');
     } catch (error) {
       console.error('수면 목표 저장 중 오류 발생:', error);
       setErrorMessage('저장 중 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [formData, validateSleepHours]);
 
   return (
-    <Container className="sleep-goal-setting-page" backgroundColor="#000000">
+    <Container className="sleep-goal-setting-page" backgroundColor="#000000" width="100vw">
       <NavBar
         onStartSleepRecord={handleStartSleepRecord}
         userProfile={userProfile}
@@ -235,7 +253,8 @@ const SleepGoalSetting = () => {
       
       <main className="flex-1 flex justify-center px-8 py-6 relative">
         <div className="w-full max-w-4xl relative">
-          <div className="profile-content">
+          <div className="profile-content" style={{ minHeight: 'auto' }}>
+
             {/* 사용자 통계 카드 */}
             <ProfileStatsCard userData={userData} />
             
@@ -274,6 +293,7 @@ const SleepGoalSetting = () => {
                 )}
                 
                 <div className="grid grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-4">
+
                   {/* 목표 수면시간 */}
                   <div className="space-y-2">
                     <label 
@@ -302,13 +322,13 @@ const SleepGoalSetting = () => {
                     </div>
                   </div>
 
-                  {/* 목표 취침시간 */}
+                  {/* 목표 취침시각*/}
                   <div className="space-y-2">
                     <label 
                       htmlFor="targetBedtime" 
                       className="form-label"
                     >
-                      목표 취침시간
+                      목표 취침시각
                     </label>
                     <input
                       type="time"
@@ -321,13 +341,13 @@ const SleepGoalSetting = () => {
                     />
                   </div>
 
-                  {/* 목표 기상시간 */}
+                  {/* 목표 기상시각 */}
                   <div className="space-y-2">
                     <label 
                       htmlFor="targetWakeTime" 
                       className="form-label"
                     >
-                      목표 기상시간
+                      목표 기상시각
                     </label>
                     <input
                       type="time"
@@ -352,6 +372,37 @@ const SleepGoalSetting = () => {
                 />
               </div>
             </div>
+          </div>
+          
+          {/* 뒤로가기 버튼 */}
+          <div className="mt-4" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            {cameFromSetup ? (
+              <button
+                type="button"
+                className="btn-back"
+                onClick={() => navigate('/sleep-setup')}
+                aria-label="수면 설정으로 돌아가기"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6 }}>
+                  <path d="m12 19-7-7 7-7"></path>
+                  <path d="M19 12H5"></path>
+                </svg>
+                뒤로가기
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="btn-back"
+                onClick={() => navigate('/dashboard')}
+                aria-label="대시보드로 돌아가기"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6 }}>
+                  <path d="m12 19-7-7 7-7"></path>
+                  <path d="M19 12H5"></path>
+                </svg>
+                대시보드로 돌아가기
+              </button>
+            )}
           </div>
         </div>
       </main>

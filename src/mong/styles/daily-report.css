@@ -1,0 +1,4 @@
+/* Daily Report specific layout snippets that were inline */
+.daily-report-page { background: #000000; min-height: 100vh; }
+.daily-report-main { padding: 16px; }
+/* Calendar micro styles rely on component classNames; core visuals kept inline in statistics.css if any */

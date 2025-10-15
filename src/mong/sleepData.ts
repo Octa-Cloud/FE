@@ -3,6 +3,7 @@
  */
 
 import { DailySleepRecord, UserSleepData, BrainwavePoint } from './types/sleepData';
+import { additionalSleepData } from './DummyData';
 import {
   formatTimeFromHours,
   calculateSleepStages,
@@ -237,15 +238,24 @@ export const testSleepData: UserSleepData[] = [
   {
     userId: 'test-user-003', // 박불면
     records: generateOctoberSleepData()
-  }
+  },
+  ...additionalSleepData
 ];
 
 // 특정 날짜의 수면 기록 가져오기
 export const getSleepRecordByDate = (userId: string, date: string): DailySleepRecord | null => {
-  const userData = testSleepData.find(data => data.userId === userId);
-  if (!userData) return null;
+  // localStorage에서 수면 데이터 가져오기
+  const storedSleepData = JSON.parse(localStorage.getItem('sleepData') || '[]');
+  const userData = storedSleepData.find((data: UserSleepData) => data.userId === userId);
   
-  const record = userData.records.find(r => r.date === date);
+  if (userData) {
+    const record = userData.records.find((r: DailySleepRecord) => r.date === date);
+    return record || null;
+  }
+  
+  // localStorage에 데이터가 없으면 기본 더미 사용자로 폴백
+  const fallbackData = testSleepData.find(data => data.userId === userId) || testSleepData[0];
+  const record = fallbackData.records.find(r => r.date === date);
   return record || null;
 };
 
@@ -255,9 +265,7 @@ export const getSleepRecordsByDateRange = (
   startDate: string,
   endDate: string
 ): DailySleepRecord[] => {
-  const userData = testSleepData.find(data => data.userId === userId);
-  if (!userData) return [];
-  
+  const userData = testSleepData.find(data => data.userId === userId) || testSleepData[0];
   return userData.records.filter(r => r.date >= startDate && r.date <= endDate);
 };
 
@@ -267,11 +275,19 @@ export const getSleepRecordsByMonth = (
   year: number,
   month: number
 ): DailySleepRecord[] => {
-  const userData = testSleepData.find(data => data.userId === userId);
-  if (!userData) return [];
+  // localStorage에서 수면 데이터 가져오기
+  const storedSleepData = JSON.parse(localStorage.getItem('sleepData') || '[]');
+  const userData = storedSleepData.find((data: UserSleepData) => data.userId === userId);
   
+  if (userData) {
+    const monthStr = month.toString().padStart(2, '0');
+    return userData.records.filter((r: DailySleepRecord) => r.date.startsWith(`${year}-${monthStr}`));
+  }
+  
+  // localStorage에 데이터가 없으면 기본 더미 사용자로 폴백
+  const fallbackData = testSleepData.find(data => data.userId === userId) || testSleepData[0];
   const monthStr = month.toString().padStart(2, '0');
-  return userData.records.filter(r => r.date.startsWith(`${year}-${monthStr}`));
+  return fallbackData.records.filter(r => r.date.startsWith(`${year}-${monthStr}`));
 };
 
 // 수면 점수 상태 가져오기 (캘린더 표시용)

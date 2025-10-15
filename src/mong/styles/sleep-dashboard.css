@@ -1,0 +1,9 @@
+/* Sleep Dashboard Styles */
+.sleep-dashboard-page { min-height: 100vh; background: #000000; display: flex; flex-direction: column; position: relative; overflow-x: hidden; }
+.sleep-dashboard-content { display: flex; flex-direction: column; gap: 1px; }
+.sleep-goal-card { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 14px; padding: 25px; }
+.stats-card { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 14px; padding: 25px; }
+.bg-primary-400 { background-color: #00d4aa; }
+.text-primary-400 { color: #00d4aa; }
+.hover\:bg-primary-300:hover { background-color: #00b894; }
+.hover\:bg-primary-500:hover { background-color: #00a085; }

@@ -25,15 +25,28 @@ const ProfileModification = () => {
     clearTempProfile 
   } = useUserProfile();
 
-  // 현재 로그인한 사용자의 프로필 데이터 가져오기
+  // 현재 로그인한 사용자의 프로필 데이터 가져오기 - 실제 사용자 데이터 사용
   const getCurrentUserProfile = () => {
-    if (user?.id) {
-      const testUserProfile = getTestUserProfile(user.id);
-      if (testUserProfile) {
-        return testUserProfile;
-      }
+    // localStorage에서 사용자 프로필 정보 가져오기
+    const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
+    const currentUserId = user?.id;
+    const currentUser = storedUsers.find((u: any) => u.id === currentUserId);
+    
+    // 실제 사용자 데이터가 있으면 사용, 없으면 기본값
+    if (currentUser && currentUser.profile) {
+      return {
+        name: currentUser.name || '사용자',
+        email: currentUser.email || '',
+        avatar: (currentUser.name || '사용자').charAt(0),
+        averageScore: currentUser.profile.averageScore || 85,
+        averageSleepTime: currentUser.profile.averageSleepTime || 7.5,
+        totalDays: currentUser.profile.totalDays || 30,
+        birthDate: currentUser.birthDate || '1990-01-01',
+        gender: currentUser.gender || '남'
+      };
     }
-    // 기본값 (로그인하지 않았거나 테스트 사용자가 아닌 경우)
+    
+    // 기본값 (로그인하지 않았거나 사용자 데이터가 없는 경우)
     return {
       name: '김수면',
       email: 'a@a.a',
@@ -119,10 +132,6 @@ const ProfileModification = () => {
     navigate(-1); // Go back to previous page
   };
 
-  const handleStartSleepRecord = () => {
-    // Navigate to sleep recording page
-    console.log('Starting sleep record...');
-  };
 
   const handleLogout = () => {
     logout();
@@ -147,6 +156,32 @@ const ProfileModification = () => {
         // 저장 성공 후 편집 모드 종료
         setEditing(false);
         console.log('✅ 프로필 저장 완료');
+        alert('프로필이 변경되었습니다!');
+
+        // 전역 프로필 및 로컬 스토리지 동기화 - 헤더 이름/아바타 즉시 반영
+        try {
+          const newProfile = {
+            ...(profile as any),
+            ...updatedData,
+            avatar: (updatedData?.name || (profile as any)?.name || 'U').charAt(0)
+          } as any;
+          setProfile(newProfile);
+
+          const storedUserRaw = localStorage.getItem('user');
+          if (storedUserRaw) {
+            const storedUser = JSON.parse(storedUserRaw);
+            const mergedStored = {
+              ...storedUser,
+              name: newProfile.name,
+              email: newProfile.email,
+              birthDate: newProfile.birthDate,
+              gender: newProfile.gender
+            };
+            localStorage.setItem('user', JSON.stringify(mergedStored));
+          }
+        } catch (e) {
+          console.warn('프로필 동기화 중 경고:', e);
+        }
       } else if (result && result.type && result.type.endsWith('/rejected')) {
         console.error('❌ 프로필 업데이트 실패:', result.payload);
         alert(`프로필 업데이트에 실패했습니다: ${result.payload || '알 수 없는 오류'}`);
@@ -175,7 +210,7 @@ const ProfileModification = () => {
   // 컴포넌트가 마운트되지 않았거나 로딩 중일 때
   if (!isMounted || loading) {
     return (
-      <Container className="profile-modification-page">
+      <Container className="profile-modification-page" width="100vw">
         <div style={{ padding: '2rem', textAlign: 'center' }}>
           {!isMounted ? '초기화 중...' : '로딩 중...'}
         </div>
@@ -185,9 +220,8 @@ const ProfileModification = () => {
 
 
   return (
-    <Container className="profile-modification-page">
+    <Container className="profile-modification-page" width="100vw">
       <NavBar 
-        onStartSleepRecord={handleStartSleepRecord}
         onLogout={handleLogout}
         userProfile={{
           name: currentUserData?.name || '사용자',
@@ -226,6 +260,20 @@ const ProfileModification = () => {
                 {error}
               </div>
             )}
+          </div>
+          <div className="mt-4" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <button
+              type="button"
+              className="btn-back"
+              onClick={() => navigate('/dashboard')}
+              aria-label="대시보드로 돌아가기"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6 }}>
+                <path d="m12 19-7-7 7-7"></path>
+                <path d="M19 12H5"></path>
+              </svg>
+              대시보드로 돌아가기
+            </button>
           </div>
         </div>
       </main>

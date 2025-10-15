@@ -6,6 +6,7 @@ export interface SleepData {
     sleepDuration: string;
     sleepHours: number;
     sleepMinutes: number;
+    sleepTimeHours: number;
     sleepScore: number;
     sleepStatus: string;
     scoreColor: string;
@@ -96,6 +97,7 @@ const generateRandomSleepData = (date: Date): SleepData => {
         sleepDuration: formatSleepDuration(sleepHours, sleepMinutes),
         sleepHours,
         sleepMinutes,
+        sleepTimeHours: sleepDurationMinutes / 60, // 정확한 수면 시간 (시간 단위)
         sleepScore,
         sleepStatus: getSleepStatus(sleepScore),
         scoreColor: getScoreColor(sleepScore)

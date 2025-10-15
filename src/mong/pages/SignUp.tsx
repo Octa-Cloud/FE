@@ -204,8 +204,9 @@ export default function SignupCard() {
 
       await register(userData);
       
-      // 회원가입 성공 시 프로필 페이지로 이동
-      navigate('/profile');
+      // 회원가입 성공 시 알림창 표시 후 대시보드로 이동
+      alert('회원가입이 완료되었습니다! 반가워요!');
+      navigate('/dashboard');
     } catch (error) {
       console.error('Registration failed:', error);
       setErrorMessage('회원가입에 실패했습니다. 다시 시도해주세요.');
