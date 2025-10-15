@@ -193,7 +193,9 @@ const DailyReport: React.FC = () => {
     const record = monthlyData.find(r => r.date === dateStr);
     if (!record) return null;
     
-    return getSleepStatusByScore(record.sleepScore);
+    if (record.sleepScore >= 85) return 'good';
+    if (record.sleepScore >= 70) return 'normal';
+    return 'bad';
   };
 
   const hasSleepData = (day: number, isCurrentMonth: boolean) => {
@@ -380,17 +382,15 @@ const DailyReport: React.FC = () => {
   }
 
   const getScoreLabel = (score: number) => {
-    if (score >= 90) return '우수';
     if (score >= 80) return '좋음';
     if (score >= 70) return '보통';
     return '개선 필요';
   };
 
   const getScoreBadgeColor = (score: number) => {
-    if (score >= 90) return 'excellent';
-    if (score >= 80) return 'good';
-    if (score >= 70) return 'average';
-    return 'poor';
+    if (score >= 85) return 'good';
+    if (score >= 70) return 'normal';
+    return 'bad';
   };
 
   return (

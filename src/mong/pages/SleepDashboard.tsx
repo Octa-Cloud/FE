@@ -6,6 +6,7 @@ import SleepTimeChart from '../components/charts/SleepTimeChart';
 import SleepScoreChart from '../components/charts/SleepScoreChart';
 import { useAuth, useUserProfile } from '../store/hooks';
 import '../styles/sleep-dashboard.css';
+import '../styles/statistics.css';
 
 import {
     generateSleepData,
@@ -83,6 +84,40 @@ export default function SleepDashboard() {
     today.setHours(0,0,0,0);
     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
+    const calendarDays = useMemo(() => {
+        const year = currentMonth.getFullYear();
+        const month = currentMonth.getMonth();
+        
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const daysInMonth = lastDay.getDate();
+        const startingDayOfWeek = firstDay.getDay(); // 0: 일요일, 1: 월요일 ...
+        
+        const days = [];
+        
+        // 1. 이전 달의 빈 날짜들을 null로 채웁니다.
+        for (let i = 0; i < startingDayOfWeek; i++) {
+          days.push(null);
+        }
+        
+        // 2. 현재 달의 날짜들을 객체로 채웁니다.
+        for (let day = 1; day <= daysInMonth; day++) {
+          days.push({
+            day: day,
+            date: new Date(year, month, day),
+          });
+        }
+        
+        // 3. 마지막 주를 7일로 맞추기 위해 다음 달의 빈 날짜들을 null로 채웁니다.
+        const totalCells = days.length;
+        const lastWeekRemainingCells = (7 - (totalCells % 7)) % 7;
+        for (let i = 0; i < lastWeekRemainingCells; i++) {
+          days.push(null);
+        }
+        
+        return days;
+    }, [currentMonth]);
+
     const loadSleepData = useCallback(() => {
         clearSleepData();
         
@@ -118,8 +153,8 @@ export default function SleepDashboard() {
                         sleepHours: Math.floor(sleepDurationHours),
                         sleepMinutes: Math.round((sleepDurationHours % 1) * 60),
                         sleepTimeHours: record.sleepTimeHours || sleepDurationHours, // 정확한 수면 시간 추가
-                        sleepStatus: record.sleepScore >= 85 ? 'good' : record.sleepScore >= 70 ? 'normal' : 'poor',
-                        scoreColor: record.sleepScore >= 85 ? '#00d4aa' : record.sleepScore >= 70 ? '#f39c12' : '#e74c3c',
+                        sleepStatus: record.sleepScore >= 85 ? '좋음' : record.sleepScore >= 70 ? '보통' : '나쁨',
+                        scoreColor: record.sleepScore >= 85 ? '#22C55E' : record.sleepScore >= 70 ? '#EAB308' : '#C52222',
                         bedTime: record.bedtime,
                         wakeTime: record.wakeTime,
                         sleepEfficiency: record.sleepEfficiency,
@@ -197,36 +232,6 @@ export default function SleepDashboard() {
         avatar: (profile?.name || user?.name || '사용자').charAt(0)
     }), [profile?.name, user?.name]);
 
-    // userData도 메모이제이션 (ProfileStatsCard에 전달용) - 실제 사용자 데이터 사용
-    const userData = useMemo(() => {
-        // localStorage에서 사용자 프로필 정보 가져오기
-        const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
-        const currentUserId = user?.id || profile?.id;
-        const currentUser = storedUsers.find((u: any) => u.id === currentUserId);
-        
-        // 실제 사용자 데이터가 있으면 사용, 없으면 기본값
-        if (currentUser && currentUser.profile) {
-            return {
-                name: currentUser.name || '사용자',
-                email: currentUser.email || '',
-                avatar: (currentUser.name || '사용자').charAt(0),
-                averageScore: currentUser.profile.averageScore || 85,
-                averageSleepTime: currentUser.profile.averageSleepTime || 7.5,
-                totalDays: currentUser.profile.totalDays || 30
-            };
-        }
-        
-        // 기본값
-        return {
-            name: profile?.name || user?.name || '사용자',
-            email: profile?.email || user?.email || '',
-            avatar: (profile?.name || user?.name || '사용자').charAt(0),
-            averageScore: 85,
-            averageSleepTime: 7.5,
-            totalDays: 30
-        };
-    }, [profile?.name, profile?.email, user?.name, user?.email, user?.id, profile?.id]);
-
     // 사용자의 수면 목표 시간 가져오기 - 메모이제이션
     const targetSleepHours = useMemo(() => {
         const currentUserId = user?.id || profile?.id;
@@ -260,30 +265,8 @@ export default function SleepDashboard() {
         navigate('/');
     }, [logout, navigate]);
 
-    const getMonthName = (date: Date) => `${date.getFullYear()}년 ${date.getMonth() + 1}월`
-
-    const getCalendarDays = useCallback((date: Date) => {
-        const year = date.getFullYear(); 
-        const month = date.getMonth(); 
-        const firstDay = new Date(year, month, 1); 
-        const lastDay = new Date(year, month + 1, 0); 
-        const firstDayOfWeek = firstDay.getDay(); 
-        const days = []; 
-        const prevMonth = new Date(year, month, 0); 
-        for (let i = firstDayOfWeek - 1; i >= 0; i--) { 
-            days.push({ day: prevMonth.getDate() - i, isCurrentMonth: false, date: new Date(year, month - 1, prevMonth.getDate() - i) }) 
-        } 
-        for (let day = 1; day <= lastDay.getDate(); day++) {
-            days.push({ day, isCurrentMonth: true, date: new Date(year, month, day) }) 
-        } 
-        const remainingDays = 42 - days.length; 
-        for (let day = 1; day <= remainingDays; day++) { 
-            days.push({ day, isCurrentMonth: false, date: new Date(year, month + 1, day) }) 
-        } 
-        return days
-    }, []);
-    const goToPreviousMonth = useCallback(() => setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1)), [])
-    const goToNextMonth = useCallback(() => setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1)), [])
+    const goToPreviousMonth = useCallback(() => setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1)), []);
+    const goToNextMonth = useCallback(() => setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1)), []);
     const selectedDayData = useMemo(() => findSleepDataByDate(sleepData, selectedDate), [sleepData, selectedDate]);
 
     return (
@@ -378,7 +361,7 @@ export default function SleepDashboard() {
                                     </div>
                                     <div className="flex items-center gap-4">
                                         <button onClick={goToPreviousMonth} className="w-8 h-8 bg-gray-600 border border-gray-500 text-white rounded-lg flex items-center justify-center hover:bg-gray-500 transition-colors"><FaChevronLeft size={14} /></button>
-                                        <span className="text-base font-medium text-white min-w-[120px] text-center">{getMonthName(currentMonth)}</span>
+                                        <span className="text-base font-medium text-white min-w-[120px] text-center">{currentMonth.getFullYear()}년 {currentMonth.getMonth() + 1}월</span>
                                         <button onClick={goToNextMonth} className="w-8 h-8 bg-gray-600 border border-gray-500 text-white rounded-lg flex items-center justify-center hover:bg-gray-500 transition-colors"><FaChevronRight size={14} /></button>
                                     </div>
                                 </div>
@@ -388,22 +371,31 @@ export default function SleepDashboard() {
                                         {['일', '월', '화', '수', '목', '금', '토'].map(day => (<div key={day} className="text-center text-sm font-medium text-gray-400">{day}</div>))}
                                     </div>
                                     <div className="grid grid-cols-7 gap-2">
-                                        {getCalendarDays(currentMonth).map((dayInfo, index) => {
-                                            const { day, isCurrentMonth, date } = dayInfo;
+                                        {/* calendarDays 배열을 사용하여 렌더링 */}
+                                        {calendarDays.map((dayInfo, index) => {
+                                            // 1. dayInfo가 null이면 (빈 칸이면) 빈 div를 렌더링합니다.
+                                            if (!dayInfo) {
+                                                return <div key={index} />;
+                                            }
+
+                                            // 2. dayInfo가 있으면 날짜 정보를 추출합니다.
+                                            const { day, date } = dayInfo;
                                             const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
                                             const dayData = findSleepDataByDate(sleepData, dateStr); 
                                             const isSelected = selectedDate === dateStr; 
                                             const isToday = dateStr === todayStr; 
-                                            const isClickable = isCurrentMonth && date <= today;
+                                            const isClickable = date <= today;
                                             
                                             return (
                                                 <div 
                                                     key={index} 
-                                                    className={`text-center font-medium text-base py-2 relative transition-all duration-200 rounded-lg ${isSelected ? 'bg-primary-400 text-black font-bold' : isToday ? 'bg-gray-600 text-white' : isClickable ? 'hover:bg-gray-600' : ''} ${isCurrentMonth ? 'text-white' : 'text-gray-500'} ${isClickable ? 'cursor-pointer' : 'cursor-default opacity-50'}`}
+                                                    className={`text-center font-medium text-base py-2 relative transition-all duration-200 rounded-lg text-white ${isSelected ? 'bg-primary-400 text-black font-bold' : isToday ? 'bg-gray-600' : ''} ${isClickable ? 'cursor-pointer hover:bg-gray-600' : 'cursor-default opacity-50'}`}
                                                     onClick={() => { if (isClickable) { setSelectedDate(dateStr); } }}
                                                 >
                                                     {day}
-                                                    {dayData && isCurrentMonth && (<div className="absolute bottom-1.5 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 rounded-full" style={{ backgroundColor: dayData.scoreColor }}/>)}
+                                                    {dayData && (
+                                                        <span className={`sleep-indicator ${dayData.sleepScore >= 85 ? 'good' : dayData.sleepScore >= 70 ? 'normal' : 'bad'} block mx-auto mt-1`} />
+                                                    )}
                                                 </div>
                                             );
                                         })}

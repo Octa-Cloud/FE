@@ -196,6 +196,7 @@ const StatisticsAnalysis: React.FC = () => {
                 role="tablist"
                 aria-label="통계 분석 기간 선택"
               >
+                {/* 주간 분석 탭 */}
                 <button 
                   className={`px-3 py-2 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-all flex-1 sm:flex-none ${
                     analysisType === 'weekly' 
@@ -210,6 +211,7 @@ const StatisticsAnalysis: React.FC = () => {
                 >
                   주간 분석
                 </button>
+                {/* 월간 분석 탭 */}
                 <button 
                   className={`px-3 py-2 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-all flex-1 sm:flex-none ${
                     analysisType === 'monthly' 
@@ -345,28 +347,28 @@ const StatisticsAnalysis: React.FC = () => {
               <div className="summary-card">
                 <div className="card-header">
                   <h4>{analysisType === 'weekly' ? '주간' : '월간'} 수면 요약</h4>
-                  <p>{analysisType === 'weekly' ? '이번 주' : '이번 달'} 수면 패턴 분석</p>
+                  <p>평균 수면 점수, 시간, 취침 시각</p>
                 </div>
                 <div className="summary-grid">
                   <div className="summary-item">
                     <div className="summary-icon blue">
                       <span>{currentData.summary.avgScore}</span>
                     </div>
-                    <p className="summary-label">{analysisType === 'weekly' ? '평균' : '월 평균'} 수면 점수</p>
+                    <p className="summary-label">{analysisType === 'weekly' ? '주간 평균' : '월간 평균'} 수면 점수</p>
                     <p className="summary-change">{currentData.summary.scoreChange}</p>
                   </div>
                   <div className="summary-item">
                     <div className="summary-icon green">
                       <span>{currentData.summary.avgHours}h</span>
                     </div>
-                    <p className="summary-label">{analysisType === 'weekly' ? '평균' : '월 평균'} 수면 시간</p>
+                    <p className="summary-label">{analysisType === 'weekly' ? '주간 평균' : '월간 평균'} 수면 시간</p>
                     <p className="summary-change">{currentData.summary.hoursStatus}</p>
                   </div>
                   <div className="summary-item">
                     <div className="summary-icon orange">
                       <span>{currentData.summary.avgBedtime}</span>
                     </div>
-                    <p className="summary-label">{analysisType === 'weekly' ? '평균' : '월 평균'} 취침 시간</p>
+                    <p className="summary-label">{analysisType === 'weekly' ? '주간 평균' : '월간 평균'} 취침 시각</p>
                     <p className="summary-change">{currentData.summary.bedtimeStatus}</p>
                   </div>
                 </div>
@@ -377,8 +379,8 @@ const StatisticsAnalysis: React.FC = () => {
               {sleepRecords.length > 0 && (
               <div className="patterns-card">
                 <div className="card-header">
-                  <h4>수면 패턴 분석</h4>
-                  <p>{analysisType === 'weekly' ? '이번 주' : '이번 달'} 상세 분석</p>
+                <h4>{analysisType === 'weekly' ? '주간' : '월간'} 수면 패턴</h4>
+                  <p>수면 단계별 평균 비율</p>
                 </div>
                 <div className="summary-grid">
                   <div className="summary-item">

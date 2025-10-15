@@ -107,8 +107,8 @@ const BasicInfoForm = ({
           </svg>
         </div>
         <div>
-          <h4 className="text-xl font-semibold text-white m-0">기본 정보</h4>
-          <p className="text-sm text-gray-400 mt-1 mb-0">개인정보를 수정할 수 있습니다</p>
+          <h4 className="text-xl font-semibold text-white m-0">사용자 정보</h4>
+          <p className="text-sm text-gray-400 mt-1 mb-0">닉네임을 변경할 수 있습니다</p>
         </div>
       </div>
       
@@ -116,10 +116,10 @@ const BasicInfoForm = ({
         <div className="flex flex-col gap-4">
           <BaseInput
             ref={nameInputRef}
-            label="이름"
+            label="닉네임"
             id="name"
             type="text"
-            placeholder="이름을 입력하세요"
+            placeholder="닉네임을 입력하세요"
             value={formData.name}
             onChange={handleInputChange}
             disabled={!isEditing}
