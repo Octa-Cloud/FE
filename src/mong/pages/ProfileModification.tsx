@@ -7,7 +7,6 @@ import BasicInfoForm from '../components/BasicInfoForm';
 import Container from '../components/Container';
 import '../styles/profile.css';
 import { User } from '../types';
-import { getTestUserProfile } from '../testData';
 
 const ProfileModification = () => {
   const navigate = useNavigate();
@@ -128,11 +127,6 @@ const ProfileModification = () => {
     }
   }, [user]); // profile과 setProfile을 의존성 배열에서 제거
 
-  const handleBack = () => {
-    navigate(-1); // Go back to previous page
-  };
-
-
   const handleLogout = () => {
     logout();
     navigate('/');
@@ -217,7 +211,6 @@ const ProfileModification = () => {
       </Container>
     );
   }
-
 
   return (
     <Container className="profile-modification-page" width="100vw">
