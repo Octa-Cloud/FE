@@ -4,6 +4,7 @@
  */
 
 import { User, TestUser } from './types';
+import { additionalTestUsers } from './DummyData';
 
 // 통합된 테스트 사용자 데이터
 export const testUsers: TestUser[] = [
@@ -81,7 +82,8 @@ export const testUsers: TestUser[] = [
       targetWakeTime: '07:00',
       targetSleepHours: 6.0
     }
-  }
+  },
+  ...additionalTestUsers
 ];
 
 // 테스트 데이터 초기화 함수
