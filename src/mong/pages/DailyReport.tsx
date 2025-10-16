@@ -10,7 +10,7 @@ import { getSleepRecordByDate, getSleepRecordsByMonth, getSleepStatus as getSlee
 import { DailySleepRecord } from '../types/sleepData';
 import { WEEKDAYS_KR } from '../constants/sleep';
 import '../styles/statistics.css';
-import '../styles/profile.css';
+import '../styles/daily-report.css';
 
 const DailyReport: React.FC = () => {
   const { date } = useParams<{ date: string }>();
@@ -21,10 +21,22 @@ const DailyReport: React.FC = () => {
   const { user } = useAuth();
   const { profile } = useUserProfile();
   
+  // 로컬 타임존 기준 YYYY-MM-DD 파서/포매터
+  const parseDateStr = (s: string) => {
+    const [y, m, d] = s.split('-').map(Number);
+    return new Date(y, (m || 1) - 1, d || 1);
+  };
+  const formatDateStr = (d: Date) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+
   // 현재 보고 있는 월 상태 (기본값: URL 파라미터의 date 또는 오늘)
   const [currentMonth, setCurrentMonth] = useState(() => {
     if (date) {
-      return new Date(date);
+      return parseDateStr(date);
     }
     return new Date();
   });
@@ -105,11 +117,12 @@ const DailyReport: React.FC = () => {
 
   // 달력 공통 함수들
   const getCurrentDate = () => {
-    return new Date(date || new Date().toISOString().split('T')[0]);
+    if (date) return parseDateStr(date);
+    return new Date();
   };
 
   const getWeekDates = (selectedDate: string) => {
-    const date = new Date(selectedDate);
+    const date = parseDateStr(selectedDate);
     const dayOfWeek = date.getDay();
     const startOfWeek = new Date(date);
     startOfWeek.setDate(date.getDate() - dayOfWeek);
@@ -180,7 +193,9 @@ const DailyReport: React.FC = () => {
     const record = monthlyData.find(r => r.date === dateStr);
     if (!record) return null;
     
-    return getSleepStatusByScore(record.sleepScore);
+    if (record.sleepScore >= 85) return 'good';
+    if (record.sleepScore >= 70) return 'normal';
+    return 'bad';
   };
 
   const hasSleepData = (day: number, isCurrentMonth: boolean) => {
@@ -222,7 +237,7 @@ const DailyReport: React.FC = () => {
     );
   }
 
-  // 데이터가 없을 경우 기본 메시지
+  // 데이터가 없을 경우에도 캘린더는 유지 표시
   if (!reportData) {
     return (
       <div className="daily-report-page">
@@ -235,6 +250,120 @@ const DailyReport: React.FC = () => {
           <main className="daily-report-main">
             <div className="daily-report-container">
               <div className="daily-report-content">
+                {/* 캘린더 미니뷰 */}
+                <div className="calendar-mini">
+                  <div className="flex items-center justify-end mb-2">
+                    {showCalendar && (
+                      <div className="flex items-center gap-4 mr-2">
+                        <button 
+                          className="w-6 h-6 flex items-center justify-center text-white hover:bg-gray-800 rounded transition-colors" 
+                          onClick={handlePrevMonth}
+                          aria-label="이전 달로 이동"
+                        >
+                          ‹
+                        </button>
+                        <span aria-live="polite">{currentMonth.getFullYear()}.{currentMonth.getMonth() + 1}</span>
+                        <button 
+                          className="w-6 h-6 flex items-center justify-center text-white hover:bg-gray-800 rounded transition-colors" 
+                          onClick={handleNextMonth}
+                          aria-label="다음 달로 이동"
+                        >
+                          ›
+                        </button>
+                      </div>
+                    )}
+                    <button 
+                      className="flex items-center gap-2 text-white hover:bg-gray-800 rounded transition-colors p-1" 
+                      onClick={handleCalendarToggle}
+                      aria-label={showCalendar ? '캘린더 접기' : '캘린더 펼치기'}
+                      aria-expanded={showCalendar}
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        {showCalendar ? (
+                          <path d="m18 15-6-6-6 6"/>
+                        ) : (
+                          <path d="m6 9 6 6 6-6"/>
+                        )}
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div className="calendar-weekdays">
+                    <div>일</div>
+                    <div>월</div>
+                    <div>화</div>
+                    <div>수</div>
+                    <div>목</div>
+                    <div>금</div>
+                    <div>토</div>
+                  </div>
+
+                  {showCalendar ? (
+                    <div className="calendar-days-grid">
+                      {calendar.map((dayData, index) => {
+                        if (!dayData) {
+                          return (
+                            <div key={index} className="calendar-day-cell empty" />
+                          );
+                        }
+                        const { day, fullDate, isCurrentMonth } = dayData;
+                        if (!isCurrentMonth) {
+                          return (
+                            <div key={index} className="calendar-day-cell empty" />
+                          );
+                        }
+                        const isSelected = isSelectedDate(day, fullDate);
+                        const sleepStatus = getSleepStatus(day, isCurrentMonth);
+                        const hasData = hasSleepData(day, isCurrentMonth);
+                        return (
+                          <div
+                            key={index}
+                            className={`calendar-day-cell ${isSelected ? 'selected' : ''} ${hasData ? 'has-data' : ''}`}
+                            onClick={() => {
+                              const selectedDate = formatDateStr(fullDate);
+                              handleCalendarDateSelect(selectedDate);
+                            }}
+                            role="button"
+                            tabIndex={0}
+                            aria-label={`${currentMonth.getFullYear()}년 ${currentMonth.getMonth() + 1}월 ${day}일${hasData ? ' (수면 기록 있음)' : ''}`}
+                            aria-pressed={isSelected}
+                          >
+                            <span className="day-number">{day}</span>
+                            {sleepStatus && <span className={`sleep-indicator ${sleepStatus}`} />}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="calendar-days">
+                      {getWeekDates(date || new Date().toISOString().split('T')[0]).map((dayData, index) => {
+                        const { day, fullDate, isCurrentMonth } = dayData;
+                        const isSelected = isSelectedDate(day, fullDate);
+                        const sleepStatus = getSleepStatus(day, isCurrentMonth);
+                        const hasData = hasSleepData(day, isCurrentMonth);
+                        return (
+                          <div 
+                            key={index}
+                            className={`calendar-day ${isSelected ? 'selected' : ''} ${!isCurrentMonth ? 'other-month' : ''} ${hasData ? 'has-data' : ''}`} 
+                            onClick={() => {
+                              const selectedDate = formatDateStr(fullDate);
+                              handleCalendarDateSelect(selectedDate);
+                            }}
+                            role="button"
+                            tabIndex={0}
+                            aria-label={`${fullDate.getMonth() + 1}월 ${day}일 ${WEEKDAYS_KR[fullDate.getDay()]}요일${hasData ? ' (수면 기록 있음)' : ''}`}
+                            aria-pressed={isSelected}
+                          >
+                            <span className="day-number">{day}</span>
+                            {sleepStatus && <span className={`sleep-indicator ${sleepStatus}`} />}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* 데이터 없음 메시지 */}
                 <div className="flex flex-col items-center justify-center py-24 text-center">
                   <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" strokeWidth="1.5" className="mb-4">
                     <path d="M12 18V5"/>
@@ -242,7 +371,7 @@ const DailyReport: React.FC = () => {
                     <path d="M17.598 6.5A3 3 0 1 0 12 5a3 3 0 1 0-5.598 1.5"/>
                   </svg>
                   <h2 className="text-xl font-semibold text-white mb-2">해당 날짜의 수면 기록이 없습니다</h2>
-                  <p className="text-sm text-[#a1a1aa]">다른 날짜를 선택해주세요</p>
+                  <p className="text-sm text-[#a1a1aa]">달력에서 다른 날짜를 선택해주세요</p>
                 </div>
               </div>
             </div>
@@ -253,17 +382,15 @@ const DailyReport: React.FC = () => {
   }
 
   const getScoreLabel = (score: number) => {
-    if (score >= 90) return '우수';
     if (score >= 80) return '좋음';
     if (score >= 70) return '보통';
     return '개선 필요';
   };
 
   const getScoreBadgeColor = (score: number) => {
-    if (score >= 90) return 'excellent';
-    if (score >= 80) return 'good';
-    if (score >= 70) return 'average';
-    return 'poor';
+    if (score >= 85) return 'good';
+    if (score >= 70) return 'normal';
+    return 'bad';
   };
 
   return (
@@ -355,13 +482,13 @@ const DailyReport: React.FC = () => {
                           key={index}
                           className={`calendar-day-cell ${isSelected ? 'selected' : ''} ${hasData ? 'has-data' : ''}`}
                           onClick={() => {
-                            const selectedDate = fullDate.toISOString().split('T')[0];
+                            const selectedDate = formatDateStr(fullDate);
                             handleCalendarDateSelect(selectedDate);
                           }}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter' || e.key === ' ') {
                               e.preventDefault();
-                              const selectedDate = fullDate.toISOString().split('T')[0];
+                              const selectedDate = formatDateStr(fullDate);
                               handleCalendarDateSelect(selectedDate);
                             }
                           }}
@@ -380,7 +507,7 @@ const DailyReport: React.FC = () => {
                   </div>
                 ) : (
                   <div className="calendar-days">
-                    {getWeekDates(date || new Date().toISOString().split('T')[0]).map((dayData, index) => {
+                      {getWeekDates(date || formatDateStr(new Date())).map((dayData, index) => {
                       const { day, fullDate, isCurrentMonth } = dayData;
                       const isSelected = isSelectedDate(day, fullDate);
                       const sleepStatus = getSleepStatus(day, isCurrentMonth);
@@ -391,13 +518,13 @@ const DailyReport: React.FC = () => {
                           key={index}
                           className={`calendar-day ${isSelected ? 'selected' : ''} ${!isCurrentMonth ? 'other-month' : ''} ${hasData ? 'has-data' : ''}`} 
                           onClick={() => {
-                            const selectedDate = fullDate.toISOString().split('T')[0];
+                            const selectedDate = formatDateStr(fullDate);
                             handleCalendarDateSelect(selectedDate);
                           }}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter' || e.key === ' ') {
                               e.preventDefault();
-                              const selectedDate = fullDate.toISOString().split('T')[0];
+                              const selectedDate = formatDateStr(fullDate);
                               handleCalendarDateSelect(selectedDate);
                             }
                           }}
@@ -774,4 +901,3 @@ const DailyReport: React.FC = () => {
 };
 
 export default DailyReport;
-

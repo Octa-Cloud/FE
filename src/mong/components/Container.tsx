@@ -1,5 +1,14 @@
 import React from 'react';
-import { ContainerProps } from '../types';
+
+interface ContainerProps {
+  children: React.ReactNode;
+  width?: number | string;
+  className?: string;
+  backgroundColor?: string;
+  minHeight?: string;
+  textColor?: string;
+  centered?: boolean;
+}
 
 const Container = React.memo<ContainerProps>(({ 
   children, 
@@ -14,6 +23,11 @@ const Container = React.memo<ContainerProps>(({
     ? 'flex items-center justify-center min-h-screen'
     : '';
 
+  // width가 문자열인 경우 (예: "100vw") 그대로 사용, 숫자인 경우 maxWidth로 사용
+  const widthStyle = typeof width === 'string' 
+    ? { width: width }
+    : { maxWidth: width };
+
   return (
     <div 
       className={outerClasses}
@@ -26,7 +40,7 @@ const Container = React.memo<ContainerProps>(({
     >
       <div 
         className={centered ? `${className}` : `w-full mx-auto ${className}`}
-        style={{ maxWidth: width }}
+        style={widthStyle}
       >
         {children}
       </div>

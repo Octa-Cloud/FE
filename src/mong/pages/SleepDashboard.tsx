@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import DashboardProfileHeader from '../components/DashboardProfileHeader';
+import NavBar from '../components/NavBar';
 import Container from '../components/Container';
-import { SleepHoursChart, SleepScoreChart } from '../components/Charts';
+import SleepTimeChart from '../components/charts/SleepTimeChart';
+import SleepScoreChart from '../components/charts/SleepScoreChart';
 import { useAuth, useUserProfile } from '../store/hooks';
-import '../styles/profile.css';
+import '../styles/sleep-dashboard.css';
+import '../styles/statistics.css';
 
 import {
     generateSleepData,
@@ -54,7 +56,13 @@ const generateCurrentWeekChartData = (sleepData: SleepData[]) => {
         }
     }
     return {
-        sleepHours: chartData.map(data => ({ day: data.day, hours: data.hours || (data.sleepHours + data.sleepMinutes / 60), sleepHours: data.sleepHours, sleepMinutes: data.sleepMinutes, dayOfWeekLabel: data.dayOfWeekLabel })),
+        sleepHours: chartData.map(data => ({ 
+            day: data.day, 
+            hours: data.sleepTimeHours || data.hours || (data.sleepHours + data.sleepMinutes / 60), 
+            sleepHours: data.sleepHours, 
+            sleepMinutes: data.sleepMinutes, 
+            dayOfWeekLabel: data.dayOfWeekLabel 
+        })),
         sleepScores: chartData.map(data => ({ day: data.day, score: data.sleepScore || 0, dayOfWeekLabel: data.dayOfWeekLabel }))
     };
 };
@@ -76,102 +84,246 @@ export default function SleepDashboard() {
     today.setHours(0,0,0,0);
     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-    const loadSleepData = () => {
+    const calendarDays = useMemo(() => {
+        const year = currentMonth.getFullYear();
+        const month = currentMonth.getMonth();
+        
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const daysInMonth = lastDay.getDate();
+        const startingDayOfWeek = firstDay.getDay(); // 0: 일요일, 1: 월요일 ...
+        
+        const days = [];
+        
+        // 1. 이전 달의 빈 날짜들을 null로 채웁니다.
+        for (let i = 0; i < startingDayOfWeek; i++) {
+          days.push(null);
+        }
+        
+        // 2. 현재 달의 날짜들을 객체로 채웁니다.
+        for (let day = 1; day <= daysInMonth; day++) {
+          days.push({
+            day: day,
+            date: new Date(year, month, day),
+          });
+        }
+        
+        // 3. 마지막 주를 7일로 맞추기 위해 다음 달의 빈 날짜들을 null로 채웁니다.
+        const totalCells = days.length;
+        const lastWeekRemainingCells = (7 - (totalCells % 7)) % 7;
+        for (let i = 0; i < lastWeekRemainingCells; i++) {
+          days.push(null);
+        }
+        
+        return days;
+    }, [currentMonth]);
+
+    const loadSleepData = useCallback(() => {
         clearSleepData();
-        const data = generateSleepData(); 
+        
+        // localStorage에서 현재 사용자의 수면 데이터 가져오기
+        const storedSleepData = JSON.parse(localStorage.getItem('sleepData') || '[]');
+        const currentUserId = user?.id || profile?.id;
+        
+        let data: SleepData[] = [];
+        
+        if (currentUserId) {
+            const userData = storedSleepData.find((data: any) => data.userId === currentUserId);
+            if (userData) {
+                // DummyData 형식을 SleepData 형식으로 변환
+                data = userData.records.map((record: any) => {
+                    // sleepTime을 숫자로 변환 (예: "7시간 30분" -> 7.5)
+                    let sleepDurationHours = 0;
+                    if (typeof record.sleepTime === 'string') {
+                        // "7시간 30분" 형식을 파싱
+                        const timeMatch = record.sleepTime.match(/(\d+)시간\s*(\d+)?분?/);
+                        if (timeMatch) {
+                            const hours = parseInt(timeMatch[1]);
+                            const minutes = timeMatch[2] ? parseInt(timeMatch[2]) : 0;
+                            sleepDurationHours = hours + (minutes / 60);
+                        }
+                    } else if (typeof record.sleepTime === 'number') {
+                        sleepDurationHours = record.sleepTime;
+                    }
+                    
+                    return {
+                        date: record.date,
+                        sleepScore: record.sleepScore,
+                        sleepDuration: sleepDurationHours > 0 ? `${Math.floor(sleepDurationHours)}시간 ${Math.round((sleepDurationHours % 1) * 60)}분` : record.sleepTime,
+                        sleepHours: Math.floor(sleepDurationHours),
+                        sleepMinutes: Math.round((sleepDurationHours % 1) * 60),
+                        sleepTimeHours: record.sleepTimeHours || sleepDurationHours, // 정확한 수면 시간 추가
+                        sleepStatus: record.sleepScore >= 85 ? '좋음' : record.sleepScore >= 70 ? '보통' : '나쁨',
+                        scoreColor: record.sleepScore >= 85 ? '#22C55E' : record.sleepScore >= 70 ? '#EAB308' : '#C52222',
+                        bedTime: record.bedtime,
+                        wakeTime: record.wakeTime,
+                        sleepEfficiency: record.sleepEfficiency,
+                        sleepStages: record.sleepStages,
+                        brainwaveData: record.brainwaveData,
+                        noiseEvents: record.noiseEvents,
+                        sleepMemo: record.sleepMemo
+                    };
+                });
+            }
+        }
+        
+        // localStorage에 데이터가 없으면 기본 데이터 생성
+        if (data.length === 0) {
+            data = generateSleepData();
+        }
+        
         setSleepData(data); 
-        const calculatedStats = calculateStats(data); 
+        
+        // 실제 사용자 프로필 데이터를 사용하여 통계 계산
+        const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
+        const currentUser = storedUsers.find((u: any) => u.id === currentUserId);
+        
+        let calculatedStats;
+        if (currentUser && currentUser.profile) {
+            // 이번 주의 실제 평균 계산
+            const today = new Date();
+            const dayOfWeek = today.getDay();
+            const startOfWeek = new Date(today);
+            startOfWeek.setDate(today.getDate() - dayOfWeek);
+            startOfWeek.setHours(0, 0, 0, 0);
+
+            const currentWeekData = data.filter(sleepData => {
+                const recordDate = new Date(sleepData.date);
+                return recordDate >= startOfWeek && recordDate <= today;
+            });
+
+            let weeklyAverage = 0;
+            if (currentWeekData.length > 0) {
+                const weeklyScore = currentWeekData.reduce((sum, sleepData) => sum + sleepData.sleepScore, 0);
+                weeklyAverage = Math.round(weeklyScore / currentWeekData.length);
+            } else {
+                // 이번 주 데이터가 없으면 전체 평균 사용
+                weeklyAverage = currentUser.profile.averageScore || 85;
+            }
+
+            // 프로필 데이터 사용
+            calculatedStats = {
+                averageScore: currentUser.profile.averageScore || 85,
+                weeklyAverage: weeklyAverage,
+                averageSleepHours: currentUser.profile.averageSleepTime || 7.5,
+                totalRecords: currentUser.profile.totalDays || 30
+            };
+        } else {
+            // 실제 수면 기록 데이터 기반 계산
+            calculatedStats = calculateStats(data);
+        }
+        
         setStats(calculatedStats); 
         const chart = generateCurrentWeekChartData(data); 
         setChartData(chart); 
         const recent = getRecentRecords(data); 
         setRecentRecords(recent);
-    }
+    }, [user?.id, profile?.id])
 
     useEffect(() => {
         loadSleepData()
-    }, [])
+    }, [loadSleepData])
 
     const hasChartData = chartData.sleepHours?.some((day: any) => day.hours > 0);
 
-    const currentUser = user || profile;
-    
-    const userProfile = {
-        name: currentUser?.name || '사용자',
-        avatar: (currentUser?.name || '사용자').charAt(0)
-    };
+    // 실제 사용자 프로필 정보 사용 - 메모이제이션
+    const currentUserProfile = useMemo(() => ({
+        name: profile?.name || user?.name || '사용자',
+        avatar: (profile?.name || user?.name || '사용자').charAt(0)
+    }), [profile?.name, user?.name]);
 
-    const handleBack = () => {
-        navigate('/profile');
-    };
+    // 사용자의 수면 목표 시간 가져오기 - 메모이제이션
+    const targetSleepHours = useMemo(() => {
+        const currentUserId = user?.id || profile?.id;
+        
+        if (currentUserId) {
+            // localStorage에서 사용자 데이터 가져오기
+            const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
+            const currentUser = storedUsers.find((u: any) => u.id === currentUserId);
+            
+            if (currentUser && currentUser.sleepGoal) {
+                return currentUser.sleepGoal.targetSleepHours || 8.0;
+            }
+            
+            // 수면 목표 설정 페이지에서 저장된 데이터 확인
+            const savedSleepGoal = localStorage.getItem('sleepGoal');
+            if (savedSleepGoal) {
+                const goalData = JSON.parse(savedSleepGoal);
+                return goalData.targetSleepHours || 8.0;
+            }
+        }
+        
+        return 8.0; // 기본값
+    }, [user?.id, profile?.id]);
 
-    const handleStartSleepRecord = () => {
+    const handleStartSleepRecord = useCallback(() => {
         navigate('/sleep-setup');
-    };
+    }, [navigate]);
 
-    const handleLogout = () => {
+    const handleLogout = useCallback(() => {
         logout();
         navigate('/');
-    };
+    }, [logout, navigate]);
 
-    const getMonthName = (date: Date) => `${date.getFullYear()}년 ${date.getMonth() + 1}월`
-    const getCalendarDays = (date: Date) => {
-        const year = date.getFullYear(); const month = date.getMonth(); const firstDay = new Date(year, month, 1); const lastDay = new Date(year, month + 1, 0); const firstDayOfWeek = firstDay.getDay(); const days = []; const prevMonth = new Date(year, month, 0); for (let i = firstDayOfWeek - 1; i >= 0; i--) { days.push({ day: prevMonth.getDate() - i, isCurrentMonth: false, date: new Date(year, month - 1, prevMonth.getDate() - i) }) } for (let day = 1; day <= lastDay.getDate(); day++) { days.push({ day, isCurrentMonth: true, date: new Date(year, month, day) }) } const remainingDays = 42 - days.length; for (let day = 1; day <= remainingDays; day++) { days.push({ day, isCurrentMonth: false, date: new Date(year, month + 1, day) }) } return days
-    }
-    const goToPreviousMonth = () => setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))
-    const goToNextMonth = () => setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))
-    const selectedDayData = findSleepDataByDate(sleepData, selectedDate)
+    const goToPreviousMonth = useCallback(() => setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1)), []);
+    const goToNextMonth = useCallback(() => setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1)), []);
+    const selectedDayData = useMemo(() => findSleepDataByDate(sleepData, selectedDate), [sleepData, selectedDate]);
 
     return (
-        <Container className="sleep-dashboard-page" backgroundColor="#000000">
-            <DashboardProfileHeader
-                onBack={handleBack}
-                onStartSleepRecord={handleStartSleepRecord}
-                userProfile={userProfile}
+        <Container className="sleep-dashboard-page" backgroundColor="#000000" width="100vw">
+            <NavBar
+                userProfile={currentUserProfile}
                 onLogout={handleLogout}
+                onStartSleepRecord={handleStartSleepRecord}
+                showStartButton
             />
             
             <main className="flex-1 flex justify-center px-8 py-6 relative">
                 <div className="w-full max-w-4xl relative">
-                    <div className="profile-content">
+                    <div className="page-content">
                         <div className="sleep-dashboard-content">
                             
-                            {/* 📊 상단 통계 카드 (전체 평균 / 주간 평균 / 평균 수면시간) */}
-                            <div className="grid grid-cols-3 gap-4 mb-6">
-                                <div className="stats-card">
+                            {/* 상단 3개 카드를 가로로 배치 */}
+                            <div className="grid grid-cols-3 gap-4">
+                                {/* 카드 1: 전체 평균 점수 */}
+                                <div className="basic-card">
                                     <div className="flex items-center justify-between mb-4">
-                                        <span className="text-sm font-medium text-white">전체 평균 점수</span>
+                                        <span className="text-sm font-medium text-white">전체 평균 수면 점수</span>
                                         <IoStatsChart color="#a1a1aa" size={16} />
                                     </div>
                                     <div className="text-3xl font-bold text-white mb-2">{stats.averageScore}점</div>
                                     <div className="text-xs text-gray-400">{stats.totalRecords}일 기록</div>
                                 </div>
-                                <div className="stats-card">
+
+                                {/* 카드 2: 주간 평균 */}
+                                <div className="basic-card">
                                     <div className="flex items-center justify-between mb-4">
-                                        <span className="text-sm font-medium text-white">주간 평균</span>
+                                        <span className="text-sm font-medium text-white">주간 평균 수면 점수</span>
                                         <FaChartLine color="#a1a1aa" size={16} />
                                     </div>
                                     <div className="text-3xl font-bold text-white mb-2">{stats.weeklyAverage}점</div>
                                     <div className="text-xs text-gray-400">이번 주 평균</div>
                                 </div>
-                                <div className="stats-card">
+
+                                {/* 카드 3: 평균 수면 시간 */}
+                                <div className="basic-card">
                                     <div className="flex items-center justify-between mb-4">
-                                        <span className="text-sm font-medium text-white">평균 수면 시간</span>
+                                        <span className="text-sm font-medium text-white">전체 평균 수면 시간</span>
                                         <FaRegClock color="#a1a1aa" size={16} />
                                     </div>
                                     <div className="text-3xl font-bold text-white mb-2">{stats.averageSleepHours}h</div>
-                                    <div className="text-xs text-gray-400">목표: 8시간</div>
+                                    <div className="text-xs text-gray-400">목표: {targetSleepHours}시간</div>
                                 </div>
                             </div>
 
-                            {/* 수면 패턴 분석 (이번 주 수면시간 / 점수 추이 차트) */}
-                            <div className="sleep-goal-card mb-6">
+                            {/* 카드 4: 수면 패턴 분석 (이번 주 수면시간 / 점수 추이 차트) */}
+                            <div className="basic-card">
                                 <div className="flex items-center justify-between mb-6">
                                     <div className="flex items-center gap-2">
                                         <FaChartPie color="#a1a1aa" size={18} />
                                         <span className="text-lg font-bold text-white">수면 패턴 분석</span>
                                     </div>
-                                    <button className="px-4 py-2 bg-gray-600 border border-gray-500 text-white text-sm font-medium rounded-lg flex items-center gap-2 hover:bg-gray-500 transition-colors">
+                                    <button onClick={() => navigate('/statistics')} className="px-4 py-2 bg-gray-600 border border-gray-500 text-white text-sm font-medium rounded-lg flex items-center gap-2 hover:bg-gray-500 transition-colors">
                                         <IoStatsChart size={16} />
                                         통계 보기
                                     </button>
@@ -183,14 +335,14 @@ export default function SleepDashboard() {
                                                 <FaChartBar color="#a1a1aa" size={16} />
                                                 <span className="text-base font-medium text-white">수면 시간 추이</span>
                                             </div>
-                                            <SleepHoursChart data={chartData.sleepHours || []} />
+                                            <SleepTimeChart data={(chartData.sleepHours || []).map((d:any)=>({ day:d.dayOfWeekLabel, hours:d.hours }))} isWeekly={true} />
                                         </div>
                                         <div>
                                             <div className="flex items-center gap-2 mb-4">
                                                 <FaChartLine color="#a1a1aa" size={16} />
                                                 <span className="text-base font-medium text-white">수면 점수 추이</span>
                                             </div>
-                                            <SleepScoreChart data={chartData.sleepScores || []} />
+                                            <SleepScoreChart data={(chartData.sleepScores || []).map((d:any)=>({ day:d.dayOfWeekLabel, score:d.score }))} isWeekly={true} />
                                         </div>
                                     </div>
                                 ) : (
@@ -200,8 +352,8 @@ export default function SleepDashboard() {
                                 )}
                             </div>
                             
-                            {/* 수면 기록 달력 (월별 달력 + 날짜 클릭 시 상세 정보 표시) */}
-                            <div className="sleep-goal-card mb-6">
+                            {/* 카드 5: 수면 기록 달력 (월별 달력 + 날짜 클릭 시 상세 정보 표시) */}
+                            <div className="basic-card">
                                 <div className="flex items-center justify-between mb-6">
                                     <div className="flex items-center gap-2">
                                         <LuCalendarDays color="#a1a1aa" size={20} />
@@ -209,7 +361,7 @@ export default function SleepDashboard() {
                                     </div>
                                     <div className="flex items-center gap-4">
                                         <button onClick={goToPreviousMonth} className="w-8 h-8 bg-gray-600 border border-gray-500 text-white rounded-lg flex items-center justify-center hover:bg-gray-500 transition-colors"><FaChevronLeft size={14} /></button>
-                                        <span className="text-base font-medium text-white min-w-[120px] text-center">{getMonthName(currentMonth)}</span>
+                                        <span className="text-base font-medium text-white min-w-[120px] text-center">{currentMonth.getFullYear()}년 {currentMonth.getMonth() + 1}월</span>
                                         <button onClick={goToNextMonth} className="w-8 h-8 bg-gray-600 border border-gray-500 text-white rounded-lg flex items-center justify-center hover:bg-gray-500 transition-colors"><FaChevronRight size={14} /></button>
                                     </div>
                                 </div>
@@ -219,22 +371,31 @@ export default function SleepDashboard() {
                                         {['일', '월', '화', '수', '목', '금', '토'].map(day => (<div key={day} className="text-center text-sm font-medium text-gray-400">{day}</div>))}
                                     </div>
                                     <div className="grid grid-cols-7 gap-2">
-                                        {getCalendarDays(currentMonth).map((dayInfo, index) => {
-                                            const { day, isCurrentMonth, date } = dayInfo;
+                                        {/* calendarDays 배열을 사용하여 렌더링 */}
+                                        {calendarDays.map((dayInfo, index) => {
+                                            // 1. dayInfo가 null이면 (빈 칸이면) 빈 div를 렌더링합니다.
+                                            if (!dayInfo) {
+                                                return <div key={index} />;
+                                            }
+
+                                            // 2. dayInfo가 있으면 날짜 정보를 추출합니다.
+                                            const { day, date } = dayInfo;
                                             const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
                                             const dayData = findSleepDataByDate(sleepData, dateStr); 
                                             const isSelected = selectedDate === dateStr; 
                                             const isToday = dateStr === todayStr; 
-                                            const isClickable = isCurrentMonth && date <= today;
+                                            const isClickable = date <= today;
                                             
                                             return (
                                                 <div 
                                                     key={index} 
-                                                    className={`text-center font-medium text-base py-2 relative transition-all duration-200 rounded-lg ${isSelected ? 'bg-primary-400 text-black font-bold' : isToday ? 'bg-gray-600 text-white' : isClickable ? 'hover:bg-gray-600' : ''} ${isCurrentMonth ? 'text-white' : 'text-gray-500'} ${isClickable ? 'cursor-pointer' : 'cursor-default opacity-50'}`}
+                                                    className={`text-center font-medium text-base py-2 relative transition-all duration-200 rounded-lg text-white ${isSelected ? 'bg-primary-400 text-black font-bold' : isToday ? 'bg-gray-600' : ''} ${isClickable ? 'cursor-pointer hover:bg-gray-600' : 'cursor-default opacity-50'}`}
                                                     onClick={() => { if (isClickable) { setSelectedDate(dateStr); } }}
                                                 >
                                                     {day}
-                                                    {dayData && isCurrentMonth && (<div className="absolute bottom-1.5 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 rounded-full" style={{ backgroundColor: dayData.scoreColor }}/>)}
+                                                    {dayData && (
+                                                        <span className={`sleep-indicator ${dayData.sleepScore >= 85 ? 'good' : dayData.sleepScore >= 70 ? 'normal' : 'bad'} block mx-auto mt-1`} />
+                                                    )}
                                                 </div>
                                             );
                                         })}
@@ -244,14 +405,14 @@ export default function SleepDashboard() {
                                 {selectedDate ? (
                                     selectedDayData ? (
                                         <div className="bg-gray-800 rounded-lg p-4 flex items-center gap-4">
-                                            <div className="w-15 h-15 border-2 rounded-lg flex items-center justify-center text-xl font-bold" style={{ borderColor: selectedDayData.scoreColor, color: selectedDayData.scoreColor }}>{selectedDayData.sleepScore}</div>
+                                            <div className="w-10 h-10 border-2 rounded-full flex items-center justify-center text-sm font-bold" style={{ borderColor: selectedDayData.scoreColor, color: selectedDayData.scoreColor }}>{selectedDayData.sleepScore}</div>
                                             <div className="flex-1 grid grid-cols-2 gap-4">
                                                 <div><div className="text-xs text-gray-400 mb-1">수면 시간</div><div className="text-sm font-bold text-white">{selectedDayData.sleepDuration}</div></div>
                                                 <div><div className="text-xs text-gray-400 mb-1">수면 상태</div><div className="text-sm font-bold" style={{ color: selectedDayData.scoreColor }}>{selectedDayData.sleepStatus}</div></div>
                                                 <div><div className="text-xs text-gray-400 mb-1">취침 시각</div><div className="text-sm font-bold text-white">{selectedDayData.bedTime}</div></div>
                                                 <div><div className="text-xs text-gray-400 mb-1">기상 시각</div><div className="text-sm font-bold text-white">{selectedDayData.wakeTime}</div></div>
                                             </div>
-                                            <button className="px-4 py-2 bg-gray-600 border border-gray-500 text-white text-sm font-medium rounded-lg flex items-center gap-2 hover:bg-gray-500 transition-colors"><LuArrowRight size={16} />상세 기록</button>
+                                            <button onClick={() => navigate(`/daily-report/${selectedDate}`)} className="px-4 py-2 bg-gray-600 border border-gray-500 text-white text-sm font-medium rounded-lg flex items-center gap-2 hover:bg-gray-500 transition-colors"><LuArrowRight size={16} />상세 기록</button>
                                         </div>
                                     ) : (
                                         selectedDate === todayStr ? (
@@ -272,8 +433,8 @@ export default function SleepDashboard() {
                                 )}
                             </div>
                             
-                            {/* 최근 수면 기록 (최근 8일 카드 리스트) */}
-                            <div className="sleep-goal-card">
+                            {/* 카드 6: 최근 수면 기록 (최근 8일 카드 리스트) */}
+                            <div className="basic-card">
                                 <div className="mb-4"><span className="text-lg font-bold text-white">최근 수면 기록</span></div>
                                 <div className="text-sm text-gray-400 mb-6">최근 기록들을 한눈에 확인하고 월간 리포트에서 상세 분석을 확인하세요</div>
                                 <div className="grid grid-cols-4 gap-4">

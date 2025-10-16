@@ -19,25 +19,31 @@ interface BarChartProps {
 }
 
 // BarChart 컴포넌트
-export const BarChart: React.FC<BarChartProps> = ({ data, maxValue, color = '#00d4aa', height = 120, showTooltip = false }) => {
+export const BarChart: React.FC<BarChartProps> = ({ data, maxValue, color = '#00D4AA', height = 120, showTooltip = false }) => {
     const maxBarHeight = height - 20;
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-    const [animatedBars, setAnimatedBars] = useState<boolean[]>([]);
-
+const [animatedBars, setAnimatedBars] = useState<boolean[]>(new Array(data.length).fill(false));
     useEffect(() => {
-        // 각 바를 순차적으로 애니메이션
-        const animationSequence = data.map((_, index) => {
-            setTimeout(() => {
-                setAnimatedBars(prev => {
-                    const newState = [...prev];
-                    newState[index] = true;
-                    return newState;
-                });
-            }, index * 150); // 각 바마다 150ms 간격
+        // 모든 애니메이션 상태를 즉시 false로 초기화
+        setAnimatedBars(new Array(data.length).fill(false));
+        
+        const timers: NodeJS.Timeout[] = [];
+        data.forEach((item, index) => {
+            // 값이 0보다 큰 경우에만 애니메이션 적용
+            if (item.value > 0) {
+                const timerId = setTimeout(() => {
+                    setAnimatedBars(prev => {
+                        const newState = [...prev];
+                        newState[index] = true;
+                        return newState;
+                    });
+                }, index * 100);
+                timers.push(timerId);
+            }
         });
 
         return () => {
-            animationSequence.forEach(clearTimeout);
+            timers.forEach(clearTimeout);
         };
     }, [data]);
 
@@ -64,16 +70,17 @@ export const BarChart: React.FC<BarChartProps> = ({ data, maxValue, color = '#00
                     }}>
                         <div
                             style={{
-                                width: '100%',
+                                width: '70%',
                                 height: isAnimated ? barHeight : 0,
                                 backgroundColor: color,
-                                borderRadius: '2px 2px 0 0',
+                                borderRadius: '4px 4px 0 0',
                                 minHeight: barHeight > 0 ? 2 : 0,
                                 transition: 'height 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
                                 cursor: showTooltip ? 'pointer' : 'default',
                                 transform: isAnimated ? 'scaleY(1)' : 'scaleY(0)',
                                 transformOrigin: 'bottom',
-                                opacity: isAnimated ? 1 : 0
+                                opacity: isAnimated ? 1 : 0,
+                                margin: '0 auto'
                             }}
                             onMouseEnter={() => showTooltip && setHoveredIndex(index)}
                             onMouseLeave={() => showTooltip && setHoveredIndex(null)}
@@ -163,7 +170,7 @@ export const SleepHoursChart: React.FC<SleepHoursChartProps> = ({ data }) => {
                         displayValue: `${item.sleepHours}시간 ${item.sleepMinutes}분`
                     }))}
                     maxValue={maxHours}
-                    color="#00d4aa"
+                    color="#00D4AA"
                     height={120}
                     showTooltip={true}
                 />
@@ -229,7 +236,7 @@ export const SleepScoreChart: React.FC<SleepScoreChartProps> = ({ data }) => {
                         unit: '점'
                     }))}
                     maxValue={maxScore}
-                    color="#22c55e"
+                    color="#3B82F6"
                     height={120}
                     showTooltip={true}
                 />
@@ -255,3 +262,4 @@ export const SleepScoreChart: React.FC<SleepScoreChartProps> = ({ data }) => {
         </div>
     )
 }
+

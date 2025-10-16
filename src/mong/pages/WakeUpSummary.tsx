@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import '../styles/profile.css';
+import '../styles/wakeup-summary.css';
 
 const WakeUpSummary = () => {
     const navigate = useNavigate();

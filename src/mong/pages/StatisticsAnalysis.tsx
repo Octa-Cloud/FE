@@ -18,7 +18,8 @@ import '../styles/profile.css';
 const StatisticsAnalysis: React.FC = () => {
   const navigate = useNavigate();
   const [analysisType, setAnalysisType] = useState<'weekly' | 'monthly'>('weekly');
-  const [currentDate, setCurrentDate] = useState(new Date(2025, 9, 1)); // 2025년 10월 1일 (9/29-10/5 주간 테스트)
+  // 오늘 날짜를 기준으로 "이번 주"/"이번 달"을 계산하도록 현재 날짜 기본값 설정
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [sleepRecords, setSleepRecords] = useState<DailySleepRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
@@ -44,15 +45,22 @@ const StatisticsAnalysis: React.FC = () => {
     const loadData = async () => {
       setIsLoading(true);
       try {
-        // 테스트용: 하드코딩된 사용자 ID 사용
-        const testUserId = 'test-user-001';
+        // 현재 로그인된 사용자 ID 사용
+        const currentUserId = user?.id || profile?.id;
+        if (!currentUserId) {
+          console.warn('사용자 ID가 없습니다.');
+          setSleepRecords([]);
+          return;
+        }
+        
         // 실제로는 비동기 API 호출이 될 수 있음
         await new Promise(resolve => setTimeout(resolve, 100));
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth() + 1;
-        const records = getSleepRecordsByMonth(testUserId, year, month);
+        const records = getSleepRecordsByMonth(currentUserId, year, month);
         console.log('로드된 수면 기록:', records.length, '개');
         console.log('날짜 범위:', year, '년', month, '월');
+        console.log('사용자 ID:', currentUserId);
         setSleepRecords(records);
       } catch (error) {
         console.error('데이터 로드 오류:', error);
@@ -60,10 +68,10 @@ const StatisticsAnalysis: React.FC = () => {
       } finally {
         setIsLoading(false);
       }
-    };
+    }
     
     loadData();
-  }, [currentDate]);
+  }, [currentDate, user?.id, profile?.id]);
 
   // 실제 사용자 프로필 정보 사용 - 메모이제이션
   const currentUserProfile = useMemo(() => ({
@@ -188,6 +196,7 @@ const StatisticsAnalysis: React.FC = () => {
                 role="tablist"
                 aria-label="통계 분석 기간 선택"
               >
+                {/* 주간 분석 탭 */}
                 <button 
                   className={`px-3 py-2 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-all flex-1 sm:flex-none ${
                     analysisType === 'weekly' 
@@ -202,6 +211,7 @@ const StatisticsAnalysis: React.FC = () => {
                 >
                   주간 분석
                 </button>
+                {/* 월간 분석 탭 */}
                 <button 
                   className={`px-3 py-2 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-all flex-1 sm:flex-none ${
                     analysisType === 'monthly' 
@@ -260,7 +270,7 @@ const StatisticsAnalysis: React.FC = () => {
                     {analysisType === 'weekly' ? (
                       <>
                         <div className="space-y-3">
-                          <h4 className="text-xs sm:text-sm font-medium text-[#a1a1aa] mb-2 sm:mb-3" id="weekly-sleep-time-title">수면 시간 (시간)</h4>
+                          <h4 className="text-xs sm:text-sm font-medium text-[#a1a1aa] mb-2 sm:mb-3" id="weekly-sleep-time-title">주간 수면 시간</h4>
                           <div 
                             role="img" 
                             aria-labelledby="weekly-sleep-time-title"
@@ -277,7 +287,7 @@ const StatisticsAnalysis: React.FC = () => {
                           </div>
                         </div>
                         <div className="space-y-3">
-                          <h4 className="text-xs sm:text-sm font-medium text-[#a1a1aa] mb-2 sm:mb-3" id="weekly-sleep-score-title">수면 점수</h4>
+                          <h4 className="text-xs sm:text-sm font-medium text-[#a1a1aa] mb-2 sm:mb-3" id="weekly-sleep-score-title">주간 수면 점수</h4>
                           <div 
                             role="img" 
                             aria-labelledby="weekly-sleep-score-title"
@@ -285,9 +295,6 @@ const StatisticsAnalysis: React.FC = () => {
                           >
                             <SleepScoreChart 
                               data={weeklyData.sleepScoreChart}
-                              isWeekly={true}
-                              margin={{ top: 10, right: 30, left: 30, bottom: 30 }}
-                              yAxisConfig={sleepScoreYAxis}
                             />
                           </div>
                           <div id="weekly-sleep-score-desc" className="sr-only">
@@ -298,7 +305,7 @@ const StatisticsAnalysis: React.FC = () => {
                     ) : (
                       <>
                         <div className="space-y-3">
-                          <h4 className="text-xs sm:text-sm font-medium text-[#a1a1aa] mb-2 sm:mb-3" id="monthly-sleep-time-title">월간 수면 시간 (시간)</h4>
+                          <h4 className="text-xs sm:text-sm font-medium text-[#a1a1aa] mb-2 sm:mb-3" id="monthly-sleep-time-title">월간 수면 시간</h4>
                           <div 
                             role="img" 
                             aria-labelledby="monthly-sleep-time-title"
@@ -307,7 +314,6 @@ const StatisticsAnalysis: React.FC = () => {
                             <SleepTimeChart 
                               data={monthlyTimeChartData}
                               isWeekly={false}
-                              margin={{ top: 10, right: 30, left: 30, bottom: 30 }}
                             />
                           </div>
                           <div id="monthly-sleep-time-desc" className="sr-only">
@@ -324,7 +330,6 @@ const StatisticsAnalysis: React.FC = () => {
                             <SleepScoreChart 
                               data={monthlyScoreChartData}
                               isWeekly={false}
-                              margin={{ top: 10, right: 30, left: 30, bottom: 30 }}
                             />
                           </div>
                           <div id="monthly-sleep-score-desc" className="sr-only">
@@ -342,28 +347,28 @@ const StatisticsAnalysis: React.FC = () => {
               <div className="summary-card">
                 <div className="card-header">
                   <h4>{analysisType === 'weekly' ? '주간' : '월간'} 수면 요약</h4>
-                  <p>{analysisType === 'weekly' ? '이번 주' : '이번 달'} 수면 패턴 분석</p>
+                  <p>평균 수면 점수, 시간, 취침 시각</p>
                 </div>
                 <div className="summary-grid">
                   <div className="summary-item">
                     <div className="summary-icon blue">
                       <span>{currentData.summary.avgScore}</span>
                     </div>
-                    <p className="summary-label">{analysisType === 'weekly' ? '평균' : '월 평균'} 수면 점수</p>
+                    <p className="summary-label">{analysisType === 'weekly' ? '주간 평균' : '월간 평균'} 수면 점수</p>
                     <p className="summary-change">{currentData.summary.scoreChange}</p>
                   </div>
                   <div className="summary-item">
                     <div className="summary-icon green">
                       <span>{currentData.summary.avgHours}h</span>
                     </div>
-                    <p className="summary-label">{analysisType === 'weekly' ? '평균' : '월 평균'} 수면 시간</p>
+                    <p className="summary-label">{analysisType === 'weekly' ? '주간 평균' : '월간 평균'} 수면 시간</p>
                     <p className="summary-change">{currentData.summary.hoursStatus}</p>
                   </div>
                   <div className="summary-item">
                     <div className="summary-icon orange">
                       <span>{currentData.summary.avgBedtime}</span>
                     </div>
-                    <p className="summary-label">{analysisType === 'weekly' ? '평균' : '월 평균'} 취침 시간</p>
+                    <p className="summary-label">{analysisType === 'weekly' ? '주간 평균' : '월간 평균'} 취침 시각</p>
                     <p className="summary-change">{currentData.summary.bedtimeStatus}</p>
                   </div>
                 </div>
@@ -374,39 +379,30 @@ const StatisticsAnalysis: React.FC = () => {
               {sleepRecords.length > 0 && (
               <div className="patterns-card">
                 <div className="card-header">
-                  <h4>수면 패턴 분석</h4>
-                  <p>{analysisType === 'weekly' ? '이번 주' : '이번 달'} 상세 분석</p>
+                <h4>{analysisType === 'weekly' ? '주간' : '월간'} 수면 패턴</h4>
+                  <p>수면 단계별 평균 비율</p>
                 </div>
-                <div className="patterns-grid">
-                  <div className="pattern-item">
-                    <div className="pattern-icon blue">
+                <div className="summary-grid">
+                  <div className="summary-item">
+                    <div className="summary-icon blue">
                       <span>{currentData.patterns.deepSleep}</span>
                     </div>
-                    <p className="pattern-label">평균 깊은 수면</p>
-                    <p className="pattern-status">정상 범위</p>
+                    <p className="summary-label">평균 깊은 수면</p>
+                    <p className="summary-change">정상 범위</p>
                   </div>
-                  <div className="pattern-item">
-                    <div className="pattern-icon green">
+                  <div className="summary-item">
+                    <div className="summary-icon green">
                       <span>{currentData.patterns.lightSleep}</span>
                     </div>
-                    <p className="pattern-label">평균 얕은 수면</p>
-                    <p className="pattern-status">정상 범위</p>
+                    <p className="summary-label">평균 얕은 수면</p>
+                    <p className="summary-change">정상 범위</p>
                   </div>
-                  <div className="pattern-item">
-                    <div className="pattern-icon purple">
+                  <div className="summary-item">
+                    <div className="summary-icon orange">
                       <span>{currentData.patterns.remSleep}</span>
                     </div>
-                    <p className="pattern-label">평균 REM 수면</p>
-                    <p className="pattern-status">정상 범위</p>
-                  </div>
-                  <div className="pattern-item">
-                    <div className="pattern-icon orange">
-                      <span>{currentData.patterns.avgBedtime}</span>
-                    </div>
-                    <p className="pattern-label">평균 취침시간</p>
-                    <p className="pattern-status">
-                      {analysisType === 'weekly' ? '목표보다 25분 늦음' : '목표보다 30분 늦음'}
-                    </p>
+                    <p className="summary-label">평균 REM 수면</p>
+                    <p className="summary-change">정상 범위</p>
                   </div>
                 </div>
               </div>

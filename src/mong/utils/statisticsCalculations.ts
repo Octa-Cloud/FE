@@ -14,7 +14,7 @@ export const getWeekDates = (date: Date): Date[] => {
   const daysFromMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
   
   const startOfWeek = new Date(date);
-  startOfWeek.setDate(date.getDate() + daysFromMonday);
+  startOfWeek.setDate(date.getDate() - dayOfWeek);
   
   for (let i = 0; i < 7; i++) {
     const weekDate = new Date(startOfWeek);
@@ -168,12 +168,12 @@ export const analyzeWeeklyData = (records: DailySleepRecord[], startDate: Date) 
   });
 
   const sleepTimeChart = weekDates.map((date, index) => ({
-    day: ['월', '화', '수', '목', '금', '토', '일'][date.getDay() === 0 ? 6 : date.getDay() - 1], // 월요일부터 시작
-    hours: Math.round((weekData[index]?.sleepTimeHours || 0) * 10) / 10 // 소수점 1자리
+    day: ['일', '월', '화', '수', '목', '금', '토'][date.getDay()], // 일요일부터 시작
+    hours: weekData[index]?.sleepTimeHours || 0
   }));
 
   const sleepScoreChart = weekDates.map((date, index) => ({
-    day: ['월', '화', '수', '목', '금', '토', '일'][date.getDay() === 0 ? 6 : date.getDay() - 1], // 월요일부터 시작
+    day: ['일', '월', '화', '수', '목', '금', '토'][date.getDay()], // 일요일부터 시작
     score: weekData[index]?.sleepScore || 0
   }));
 
@@ -220,7 +220,7 @@ export const analyzeMonthlyData = (records: DailySleepRecord[], year: number, mo
     
     monthlyDailyChart.push({
       date: `${day}일`,
-      hours: dayRecord ? Math.round(dayRecord.sleepTimeHours * 10) / 10 : 0,
+      hours: dayRecord?.sleepTimeHours || 0,
       score: dayRecord ? dayRecord.sleepScore : 0
     });
   }

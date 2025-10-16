@@ -37,9 +37,9 @@ export default function Login() {
     // 로그인 시도
     const result = await login({ email: email.trim(), password: pw });
     
-    // 로그인 성공 시에만 프로필 페이지로 이동
+    // 로그인 성공 시 대시보드로 이동
     if (loginUser.fulfilled.match(result)) {
-      navigate('/profile');
+      navigate('/dashboard');
     } else if (loginUser.rejected.match(result)) {
       // 로그인 실패 시 사용자 친화적인 alert 메시지 표시
       const errorMessage: string = (result.payload as string) || '로그인에 실패했습니다.';
