@@ -462,7 +462,7 @@ const StatisticsAnalysis: React.FC = () => {
                       </div>
                       <div className="chart-area">
                         <div className="chart-lines">
-                          <svg className="prediction-svg" viewBox="0 -10 500 220" preserveAspectRatio="xMidYMid meet">
+                          <svg className="prediction-svg" viewBox="0 -10 500 220" preserveAspectRatio="none">
                             {/* 격자 시스템: Y축 5개 라벨 (92, 89, 86, 83, 80) = 5개 수평선 */}
                             {/* 격자 시스템: X축 6개 라벨 (1주전, 현재, 1주후, 2주후, 3주후, 4주후) = 6개 수직선 */}
                             
