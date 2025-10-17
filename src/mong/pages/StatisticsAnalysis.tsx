@@ -434,28 +434,107 @@ const StatisticsAnalysis: React.FC = () => {
               </div>
               )}
 
-              {/* 목표 및 성취 - 데이터가 있을 때만 표시 */}
+              {/* AI 예측 및 목표 - 데이터가 있을 때만 표시 */}
               {sleepRecords.length > 0 && (
-              <div className="goals-card">
+              <div className="ai-prediction-card">
                 <div className="card-header">
-                  <h4>수면 목표 및 성취</h4>
-                  <p>{analysisType === 'weekly' ? '이번 주' : '이번 달'} 목표 달성률</p>
+                  <div className="header-content">
+                    <div className="header-icon">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M3 3v18h18"/>
+                        <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/>
+                        <path d="M15 8h3v3"/>
+                      </svg>
+                    </div>
+                    <h4>AI 예측 및 목표</h4>
+                  </div>
+                  <p>현재 패턴을 기반으로 한 AI 분석 결과, 아래 개선사항을 실천하시면 4-6주 내에 수면 점수를 85점에서 90점으로 향상 시킬 수 있을 것으로 예측됩니다.</p>
                 </div>
-                <div className="goals-list">
-                  {currentData.goals.map((goal, index) => (
-                    <div key={index} className="goal-item">
-                      <div className="goal-header">
-                        <span className="goal-name">{goal.name}</span>
-                        <span className="goal-progress">{goal.progress}% 달성</span>
+                <div className="prediction-chart-container">
+                  <div className="prediction-chart">
+                    <div className="chart-content">
+                      <div className="chart-y-axis">
+                        <div className="y-label">92</div>
+                        <div className="y-label">89</div>
+                        <div className="y-label">86</div>
+                        <div className="y-label">83</div>
+                        <div className="y-label">80</div>
                       </div>
-                      <div className="goal-bar">
-                        <div 
-                          className={`goal-fill ${goal.color}`}
-                          style={{ width: `${goal.progress}%` }}
-                        ></div>
+                      <div className="chart-area">
+                        <div className="chart-lines">
+                          <svg className="prediction-svg" viewBox="0 -10 500 220" preserveAspectRatio="xMidYMid meet">
+                            {/* 격자 시스템: Y축 5개 라벨 (92, 89, 86, 83, 80) = 5개 수평선 */}
+                            {/* 격자 시스템: X축 6개 라벨 (1주전, 현재, 1주후, 2주후, 3주후, 4주후) = 6개 수직선 */}
+                            
+                            {/* Y축 수평 격자선 - 5개 (Y축 라벨 개수만큼) */}
+                            <line x1="0" y1="0" x2="500" y2="0" stroke="#3a3a3a" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
+                            <line x1="0" y1="50" x2="500" y2="50" stroke="#3a3a3a" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
+                            <line x1="0" y1="100" x2="500" y2="100" stroke="#3a3a3a" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
+                            <line x1="0" y1="150" x2="500" y2="150" stroke="#3a3a3a" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
+                            <line x1="0" y1="200" x2="500" y2="200" stroke="#3a3a3a" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
+                            
+                            {/* X축 수직 격자선 - 6개 (1주 전이 Y축에 완전히 붙어있음) */}
+                            <line x1="0" y1="0" x2="0" y2="200" stroke="#3a3a3a" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
+                            <line x1="100" y1="0" x2="100" y2="200" stroke="#a1a1aa" strokeWidth="1" strokeDasharray="4 4" opacity="0.75" />
+                            <line x1="200" y1="0" x2="200" y2="200" stroke="#3a3a3a" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
+                            <line x1="300" y1="0" x2="300" y2="200" stroke="#3a3a3a" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
+                            <line x1="400" y1="0" x2="400" y2="200" stroke="#3a3a3a" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
+                            <line x1="500" y1="0" x2="500" y2="200" stroke="#3a3a3a" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
+                            
+                            {/* 데이터 라인 및 포인트 */}
+                            {/* Y축 좌표 계산: (92-value) * 200 / (92-80) = (92-value) * 16.67 */}
+                            {/* 점수 80 = y:200, 점수 83 = y:150, 점수 86 = y:100, 점수 89 = y:50, 점수 92 = y:0 */}
+                            
+                            {/* 과거 데이터 (실제 성과) - 1주 전: 83점, 현재: 85점 */}
+                            <path 
+                              d="M 0 150 L 100 116.67" 
+                              stroke="#22c55e" 
+                              strokeWidth="3" 
+                              fill="none"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                            
+                            {/* 미래 예측 (AI 예측) - 1주후: 87점, 2주후: 89점, 3주후: 91점, 4주후: 92점 */}
+                            <path 
+                              d="M 200 83.33 L 300 50 L 400 16.67 L 500 0" 
+                              stroke="#3b82f6" 
+                              strokeWidth="3" 
+                              strokeDasharray="8 4"
+                              fill="none"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                            
+                            {/* 데이터 포인트 */}
+                            {/* 1주 전 (83점) - Y축에 완전히 붙어있음 */}
+                            <circle cx="0" cy="150" r="5" fill="#22c55e" stroke="#1a1a1a" strokeWidth="2" />
+                            {/* 현재 (85점) */}
+                            <circle cx="100" cy="116.67" r="5" fill="#22c55e" stroke="#1a1a1a" strokeWidth="2" />
+                            {/* 1주 후 (87점 예측) */}
+                            <circle cx="200" cy="83.33" r="5" fill="#3b82f6" stroke="#1a1a1a" strokeWidth="2" />
+                            {/* 2주 후 (89점 예측) */}
+                            <circle cx="300" cy="50" r="5" fill="#3b82f6" stroke="#1a1a1a" strokeWidth="2" />
+                            {/* 3주 후 (91점 예측) */}
+                            <circle cx="400" cy="16.67" r="5" fill="#3b82f6" stroke="#1a1a1a" strokeWidth="2" />
+                            {/* 4주 후 (92점 예측) */}
+                            <circle cx="500" cy="0" r="5" fill="#3b82f6" stroke="#1a1a1a" strokeWidth="2" />
+                            
+                            {/* '현재' 텍스트 레이블 - 그래프와 겹치지 않도록 위치 조정 */}
+                            <text x="100" y="130" className="current-label">현재</text>
+                          </svg>
+                        </div>
+                        <div className="chart-x-axis">
+                          <div className="x-label">1주 전</div>
+                          <div className="x-label current">현재</div>
+                          <div className="x-label">1주 후</div>
+                          <div className="x-label">2주 후</div>
+                          <div className="x-label">3주 후</div>
+                          <div className="x-label">4주 후</div>
+                        </div>
                       </div>
                     </div>
-                  ))}
+                  </div>
                 </div>
               </div>
               )}

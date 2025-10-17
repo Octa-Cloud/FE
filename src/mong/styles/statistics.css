@@ -56,12 +56,40 @@
 /* Cards */
 .summary-card,
 .patterns-card,
-.analysis-card,
-.goals-card {
+.analysis-card {
   background: #1a1a1a;
   border: 1px solid #2a2a2a;
   border-radius: 14px;
   padding: 24px;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.header-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a1a1aa;
+}
+
+.header-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.card-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  margin-bottom: 16px;
 }
 
 .card-header h4 {
@@ -69,15 +97,17 @@
   font-weight: 600;
   color: #ffffff;
   margin: 0 0 4px 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  text-align: left;
+  width: 100%;
 }
 
 .card-header p {
   font-size: 14px;
   color: #a1a1aa;
   margin: 0;
+  text-align: left;
+  width: 100%;
+  line-height: 1.4;
 }
 
 
@@ -194,57 +224,203 @@
 }
 
 
-/* Goals List */
-.goals-list {
-  margin-top: 24px;
-}
-
-.goal-item {
-  margin-bottom: 16px;
-}
-
-.goal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.goal-name {
-  font-size: 14px;
-  font-weight: 500;
-  color: #ffffff;
-}
-
-.goal-progress {
-  font-size: 14px;
-  color: #a1a1aa;
-}
-
-.goal-bar {
+/* AI Prediction Card - 피그마 디자인 정확 구현 */
+.ai-prediction-card {
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 14px;
+  padding: 24px;
   width: 100%;
-  height: 8px;
-  background: #2a2a2a;
-  border-radius: 4px;
+  max-width: 754px;
+  height: 404px;
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
 
-.goal-fill {
+.prediction-chart-container {
+  margin-top: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.prediction-chart {
+  background: #0f0f0f;
+  border-radius: 8px;
+  padding: 16px;
+  position: relative;
+  flex: 1;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+
+.chart-content {
+  display: flex;
+  flex: 1;
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.chart-y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 16px;
+  padding: 0;
+  flex-shrink: 0;
+  align-self: stretch;
+  position: relative;
+}
+
+.y-label {
+  font-size: 7px;
+  color: #a1a1aa;
+  text-align: right;
+  line-height: 1;
+  height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin: 0;
+  flex: 1;
+  position: relative;
+}
+
+/* Y축 라벨을 격자선과 정확히 정렬 - 격자선 중앙에 위치 */
+.y-label:nth-child(1) { /* 92점 - y=0 격자선 */
+  transform: translateY(0px);
+}
+
+.y-label:nth-child(2) { /* 89점 - y=50 격자선 */
+  transform: translateY(0px);
+}
+
+.y-label:nth-child(3) { /* 86점 - y=100 격자선 */
+  transform: translateY(0px);
+}
+
+.y-label:nth-child(4) { /* 83점 - y=150 격자선 */
+  transform: translateY(0px);
+}
+
+.y-label:nth-child(5) { /* 80점 - y=200 격자선 */
+  transform: translateY(0px);
+}
+
+.chart-area {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.chart-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  z-index: 1;
+}
+
+.grid-line.horizontal {
+  grid-column: 1 / -1;
+  height: 1px;
+  background: transparent;
+  border-top: 1px dashed #3a3a3a;
+  opacity: 0.6;
+  align-self: center;
+}
+
+.grid-line.vertical {
+  grid-row: 1 / -1;
+  width: 1px;
+  background: transparent;
+  border-left: 1px dashed #3a3a3a;
+  opacity: 0.6;
+  justify-self: center;
+}
+
+.grid-line.vertical.current {
+  opacity: 0.8;
+  border-left: 1px dashed #a1a1aa;
+}
+
+.chart-lines {
+  flex: 1;
+  position: relative;
+  z-index: 2;
+  overflow: visible;
+  width: 100%;
+  min-height: 0;
+  max-height: 100%;
+}
+
+.prediction-svg {
+  width: 100%;
   height: 100%;
-  border-radius: 4px;
-  transition: width 0.3s ease;
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
 }
 
-.goal-fill.primary {
-  background: #00d4aa;
+.current-label {
+  font-size: 11px;
+  fill: #ffffff;
+  font-weight: 500;
+  text-anchor: middle;
+  dominant-baseline: hanging;
+  paint-order: stroke fill;
+  stroke: #1a1a1a;
+  stroke-width: 3px;
+  stroke-linejoin: round;
 }
 
-.goal-fill.blue {
-  background: #3b82f6;
+.chart-x-axis {
+  display: flex;
+  justify-content: space-between;
+  height: 18px;
+  align-items: center;
+  position: relative;
+  flex-shrink: 0;
+  overflow: hidden;
 }
 
-.goal-fill.green {
-  background: #22c55e;
+.x-label {
+  font-size: 11px;
+  color: #a1a1aa;
+  text-align: center;
+  flex: 1;
+  margin: 0;
+  line-height: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.x-label.current {
+  color: #ffffff;
+  font-weight: 500;
 }
 
 
@@ -910,6 +1086,90 @@
   
   .recommendation-badges {
     align-self: flex-start;
+  }
+  
+  .card-header {
+    align-items: flex-start;
+    text-align: left;
+  }
+  
+  .card-header h4 {
+    text-align: left;
+    font-size: 16px;
+  }
+  
+  .card-header p {
+    text-align: left;
+    font-size: 13px;
+  }
+  
+  .header-content {
+    justify-content: flex-start;
+  }
+  
+  .ai-prediction-card {
+    padding: 16px;
+    height: auto;
+    min-height: 300px;
+    overflow: hidden;
+  }
+
+  .prediction-chart {
+    padding: 12px;
+    min-height: 0;
+    overflow: hidden;
+  }
+  
+  .prediction-chart-container {
+    margin-top: 16px;
+    overflow: hidden;
+  }
+  
+  .chart-content {
+    min-height: 0;
+    overflow: hidden;
+  }
+  
+  .chart-lines {
+    overflow: visible;
+    width: 100%;
+    min-height: 0;
+    max-height: 100%;
+  }
+  
+  .prediction-svg {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+  }
+  
+  .chart-x-axis {
+    height: 16px;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  
+  .x-label {
+    font-size: 9px;
+  }
+  
+  .y-label {
+    font-size: 9px;
+    height: 0;
+  }
+  
+  .chart-y-axis {
+    width: 14px;
+  }
+  
+  .y-label {
+    font-size: 6px;
+  }
+  
+  .current-label {
+    font-size: 9px;
+    stroke-width: 2px;
   }
 }
 
