@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../store/hooks";
 import { loginUser } from "../store/slices/authSlice";
+import { authAPI } from "../api/auth";
 import AuthHeader from "../components/AuthHeader";
 import BaseInput from "../components/BaseInput";
 import PasswordInput from "../components/PasswordInput";
@@ -34,25 +35,47 @@ export default function Login() {
       return;
     }
     
-    // 로그인 시도
-    const result = await login({ email: email.trim(), password: pw });
-    
-    // 로그인 성공 시 대시보드로 이동
-    if (loginUser.fulfilled.match(result)) {
-      navigate('/dashboard');
-    } else if (loginUser.rejected.match(result)) {
-      // 로그인 실패 시 사용자 친화적인 alert 메시지 표시
-      const errorMessage: string = (result.payload as string) || '로그인에 실패했습니다.';
+    try {
+      // API를 통한 로그인 시도
+      const response = await authAPI.login({
+        email: email.trim(),
+        password: pw
+      });
       
-      // 보안을 위해 일반적인 메시지만 표시
-      let userMessage = errorMessage;
-      if (errorMessage.includes('이메일 또는 비밀번호가 일치하지 않습니다') || errorMessage.includes('등록된 사용자가 없습니다')) {
-        userMessage = '이메일 또는 비밀번호가 일치하지 않습니다.';
-      } else if (errorMessage.includes('로그인 시도 횟수가 너무 많습니다')) {
-        userMessage = errorMessage; // 시도 횟수 제한 메시지는 그대로 표시
+      if (response.success) {
+        // 토큰 저장
+        localStorage.setItem('accessToken', response.data.accessToken);
+        localStorage.setItem('refreshToken', response.data.refreshToken);
+        
+        // 사용자 정보 저장
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        
+        // Redux store 업데이트
+        const result = await login({ email: email.trim(), password: pw });
+        
+        if (loginUser.fulfilled.match(result)) {
+          navigate('/dashboard');
+        }
+      }
+    } catch (error: any) {
+      console.error('Login error:', error);
+      
+      // 에러 메시지 처리
+      let errorMessage = '로그인에 실패했습니다.';
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
       }
       
-      alert(userMessage);
+      // 보안을 위해 일반적인 메시지만 표시
+      if (errorMessage.includes('이메일 또는 비밀번호가 일치하지 않습니다') || 
+          errorMessage.includes('등록된 사용자가 없습니다')) {
+        errorMessage = '이메일 또는 비밀번호가 일치하지 않습니다.';
+      }
+      
+      alert(errorMessage);
       
       // 로그인 실패 시 비밀번호 필드 초기화
       setPw('');
