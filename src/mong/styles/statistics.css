@@ -275,7 +275,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  width: 16px;
+  width: 40px;
   padding: 0;
   flex-shrink: 0;
   align-self: stretch;
@@ -285,7 +285,7 @@
 .y-label {
   font-size: 7px;
   color: #a1a1aa;
-  text-align: right;
+  text-align: center;
   line-height: 1;
   height: 0;
   display: flex;
@@ -389,6 +389,26 @@
   paint-order: stroke fill;
   stroke: #1a1a1a;
   stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+.axis-label {
+  font-size: 12px;
+  font-weight: 600;
+  fill: #ffffff;
+  paint-order: stroke fill;
+  stroke: #1a1a1a;
+  stroke-width: 2px;
+  stroke-linejoin: round;
+}
+
+.axis-label-vertical {
+  font-size: 12px;
+  font-weight: 600;
+  fill: #ffffff;
+  paint-order: stroke fill;
+  stroke: #1a1a1a;
+  stroke-width: 2px;
   stroke-linejoin: round;
 }
 
@@ -1161,7 +1181,7 @@
   }
   
   .chart-y-axis {
-    width: 14px;
+    width: 36px;
   }
   
   .y-label {

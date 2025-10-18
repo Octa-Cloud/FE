@@ -462,9 +462,18 @@ const StatisticsAnalysis: React.FC = () => {
                       </div>
                       <div className="chart-area">
                         <div className="chart-lines">
-                          <svg className="prediction-svg" viewBox="0 -10 500 220" preserveAspectRatio="none">
+                          <svg className="prediction-svg" viewBox="-50 -30 550 250" preserveAspectRatio="none">
                             {/* 격자 시스템: Y축 5개 라벨 (92, 89, 86, 83, 80) = 5개 수평선 */}
                             {/* 격자 시스템: X축 6개 라벨 (1주전, 현재, 1주후, 2주후, 3주후, 4주후) = 6개 수직선 */}
+                            
+                            {/* 좌표축 - X축과 Y축 화살표 실선 */}
+                            {/* Y축 (세로축) - 아래에서 위로 화살표 */}
+                            <line x1="0" y1="200" x2="0" y2="10" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" />
+                            <polygon points="0,10 -6,22 6,22" fill="#ffffff" />
+                            
+                            {/* X축 (가로축) - 왼쪽에서 오른쪽으로 화살표 */}
+                            <line x1="0" y1="200" x2="500" y2="200" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" />
+                            <polygon points="500,200 488,194 488,206" fill="#ffffff" />
                             
                             {/* Y축 수평 격자선 - 5개 (Y축 라벨 개수만큼) */}
                             <line x1="0" y1="0" x2="500" y2="0" stroke="#3a3a3a" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
@@ -522,6 +531,16 @@ const StatisticsAnalysis: React.FC = () => {
                             
                             {/* '현재' 텍스트 레이블 - 그래프와 겹치지 않도록 위치 조정 */}
                             <text x="100" y="130" className="current-label">현재</text>
+                            
+                            {/* 축 라벨 */}
+                            {/* Y축 라벨 (수면 점수) - 한 글자씩 세로로 배치, X축과 동일한 간격 */}
+                            <text x="-30" y="85" className="axis-label-vertical" textAnchor="middle">수</text>
+                            <text x="-30" y="100" className="axis-label-vertical" textAnchor="middle">면</text>
+                            <text x="-30" y="115" className="axis-label-vertical" textAnchor="middle">점</text>
+                            <text x="-30" y="130" className="axis-label-vertical" textAnchor="middle">수</text>
+                            
+                            {/* X축 라벨 (시간) */}
+                            <text x="250" y="220" className="axis-label" textAnchor="middle">시간</text>
                           </svg>
                         </div>
                         <div className="chart-x-axis">
