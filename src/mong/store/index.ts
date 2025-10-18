@@ -13,7 +13,7 @@ export const store = configureStore({
         ignoredActions: ['persist/PERSIST'],
       },
     }),
-  devTools: process.env.NODE_ENV !== 'production', // Redux DevTools 활성화
+  devTools: import.meta.env.DEV, // Redux DevTools 활성화
 });
 
 export type RootState = ReturnType<typeof store.getState>;

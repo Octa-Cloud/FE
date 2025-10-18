@@ -215,7 +215,7 @@ const generateOctoberSleepData = (): DailySleepRecord[] => {
       sleepScore: record.sleepScore
     });
     
-    if (!validation.isValid && process.env.NODE_ENV === 'development') {
+    if (!validation.isValid && import.meta.env.DEV) {
       console.warn(`날짜 ${dateStr} 데이터 검증 오류:`, validation.errors);
     }
     
@@ -298,7 +298,7 @@ export const getSleepStatus = (sleepScore: number): 'good' | 'normal' | null => 
 };
 
 // 개발 환경에서만 사용할 수 있도록 전역 객체에 추가
-if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+if (typeof window !== 'undefined' && import.meta.env.DEV) {
   (window as any).sleepData = {
     all: testSleepData,
     getByDate: getSleepRecordByDate,

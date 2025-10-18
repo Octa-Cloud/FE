@@ -228,7 +228,7 @@ const generateSleepDataForDates = (dates: string[], userId: string): DailySleepR
       sleepScore: record.sleepScore
     });
     
-    if (!validation.isValid && process.env.NODE_ENV === 'development') {
+    if (!validation.isValid && import.meta.env.DEV) {
       console.warn(`날짜 ${dateStr} 데이터 검증 오류:`, validation.errors);
     }
     
@@ -388,7 +388,7 @@ export const initializeAdditionalTestData = () => {
 };
 
 // 개발 환경에서만 사용
-if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+if (typeof window !== 'undefined' && import.meta.env.DEV) {
   (window as any).additionalTestData = {
     initialize: initializeAdditionalTestData,
     users: additionalTestUsers,
@@ -401,7 +401,7 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
 }
 
 // DummyData.ts 파일 끝에 추가
-if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+if (typeof window !== 'undefined' && import.meta.env.DEV) {
     // 페이지 로드 시 자동으로 한 번만 실행
     const initialized = localStorage.getItem('additionalUsersInitialized');
     if (!initialized) {

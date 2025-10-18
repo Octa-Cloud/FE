@@ -128,7 +128,7 @@ export const RECOMMENDATION_EFFECT = {
 
 // 개발 환경 설정
 export const DEV_CONFIG = {
-  ENABLE_CONSOLE_TOOLS: process.env.NODE_ENV === 'development',
-  SHOW_VALIDATION_WARNINGS: process.env.NODE_ENV === 'development'
+  ENABLE_CONSOLE_TOOLS: import.meta.env.DEV,
+  SHOW_VALIDATION_WARNINGS: import.meta.env.DEV
 } as const;
 
