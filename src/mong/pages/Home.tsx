@@ -1,6 +1,9 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom';
 import Container from '../components/Container'
+import moonIcon from '../assets/moonIcon.svg'
+import heartIcon from '../assets/heartIcon.svg'
+import statisticsIcon from '../assets/statisticsIcon.svg'
 
 export default function Home() {
   const navigate = useNavigate();
@@ -9,7 +12,7 @@ export default function Home() {
     <Container backgroundColor="#000" minHeight="100vh" textColor="#fff">
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, paddingTop: 48, paddingBottom: 48 }}>
           <div style={{ width: 80, height: 80, borderRadius: 9999, backgroundColor: 'rgba(0, 212, 170, 0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ width: 40, height: 40, backgroundColor: '#00d4aa', borderRadius: 8 }} />
+            <img src={moonIcon} alt="moon" style={{ width: 40, height: 40 }} />
           </div>
           <h1 style={{ fontSize: 48, lineHeight: '48px', margin: 0, fontFamily: 'Righteous, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', textAlign: 'center' }}>mong</h1>
           <p style={{ fontSize: 20, lineHeight: '28px', color: '#a1a1aa', margin: 0, textAlign: 'center' }}>
@@ -22,16 +25,19 @@ export default function Home() {
             {[{
               title: '스마트 수면 측정',
               desc: '정확한 수면 단계 분석으로 수면의 질을 측\n정합니다',
+              icon: moonIcon
             }, {
               title: '상세한 통계',
               desc: '개인 맞춤 수면 패턴 분석과 개선 제안을 제\n공합니다',
+              icon: statisticsIcon
             }, {
               title: '건강 관리',
               desc: '수면을 통한 전체적인 건강 상태 모니터링',
+              icon: heartIcon
             }].map((card, idx) => (
               <div key={idx} style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 14, padding: 16, display: 'flex', alignItems: 'center', flexDirection: 'column', gap: 8 }}>
                 <div style={{ width: 48, height: 48, borderRadius: 9999, backgroundColor: 'rgba(0, 212, 170, 0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 8 }}>
-                  <div style={{ width: 24, height: 24, backgroundColor: '#00d4aa', borderRadius: 6 }} />
+                  <img src={card.icon} alt="icon" style={{ width: 24, height: 24 }} />
                 </div>
                 <div style={{ fontSize: 18, lineHeight: '28px' }}>{card.title}</div>
                 <div style={{ fontSize: 14, lineHeight: '22.75px', color: '#a1a1aa', textAlign: 'center', whiteSpace: 'pre-line' }}>{card.desc}</div>
