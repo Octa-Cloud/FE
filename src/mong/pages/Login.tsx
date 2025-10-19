@@ -42,13 +42,17 @@ export default function Login() {
         password: pw
       });
       
-      if (response.success) {
+      if (response.code === 'COMMON200' && response.result) {
         // 토큰 저장
-        localStorage.setItem('accessToken', response.data.accessToken);
-        localStorage.setItem('refreshToken', response.data.refreshToken);
+        localStorage.setItem('accessToken', response.result.accessToken);
+        localStorage.setItem('refreshToken', response.result.refreshToken);
         
-        // 사용자 정보 저장
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+        // 기본 사용자 정보 저장
+        const userInfo = {
+          email: email.trim(),
+          name: '사용자'
+        };
+        localStorage.setItem('user', JSON.stringify(userInfo));
         
         // Redux store 업데이트
         const result = await login({ email: email.trim(), password: pw });

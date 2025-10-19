@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { User, LoginCredentials, RegisterData } from '../../types';
 import { AuthState } from '../../types/redux';
 import { userStorage } from '../../utils/storage';
+import { authAPI } from '../../api/auth';
 
 // 비동기 액션들
 export const loginUser = createAsyncThunk(
@@ -34,38 +35,41 @@ export const loginUser = createAsyncThunk(
         await new Promise(resolve => setTimeout(resolve, delay));
       }
 
-      // 등록된 사용자 목록 확인
-      const users = userStorage.getUsers() || [];
-      console.log('👥 사용자 목록:', users);
+      console.log('🔑 API 서버로 로그인 요청:', credentials);
       
-      if (users.length === 0) {
-        throw new Error('등록된 사용자가 없습니다. 먼저 회원가입을 해주세요.');
+      // 실제 API 서버로 로그인 요청
+      const response = await authAPI.login(credentials);
+      console.log('📡 API 응답:', response);
+      
+      // 토큰을 localStorage에 저장
+      localStorage.setItem('accessToken', response.result.accessToken);
+      localStorage.setItem('refreshToken', response.result.refreshToken);
+      
+      // 사용자 정보 구성 (API에서 사용자 정보를 반환하지 않는 경우)
+      const user: User = {
+        id: 'api-user', // API에서 사용자 ID를 반환하지 않으므로 임시 ID
+        email: credentials.email,
+        password: credentials.password, // 보안상 실제로는 저장하지 않아야 함
+        name: 'API 사용자',
+        birthDate: '',
+        gender: '',
+        createdAt: new Date().toISOString(),
+      };
+      
+      console.log('✅ 로그인 성공 - 사용자 정보:', user);
+      return user;
+      
+    } catch (error: any) {
+      console.error('Login API error:', error);
+      
+      // API 에러 응답 처리
+      if (error.response?.data?.message) {
+        return rejectWithValue(error.response.data.message);
+      } else if (error.message) {
+        return rejectWithValue(error.message);
+      } else {
+        return rejectWithValue('로그인에 실패했습니다.');
       }
-      
-      console.log('🔑 입력된 로그인 정보:', credentials);
-      
-      // 입력한 이메일과 비밀번호와 일치하는 사용자 찾기
-      const matchedUser = users.find(user => {
-        const emailMatch = user.email.trim() === credentials.email.trim();
-        const passwordMatch = user.password === credentials.password;
-        console.log(`📧 사용자 ${user.email} 이메일 매치:`, emailMatch);
-        console.log(`🔒 사용자 ${user.email} 비밀번호 매치:`, passwordMatch);
-        return emailMatch && passwordMatch;
-      });
-      
-      console.log('✅ 매치된 사용자:', matchedUser);
-      
-      // 일치하는 사용자가 없으면 오류
-      if (!matchedUser) {
-        throw new Error('이메일 또는 비밀번호가 일치하지 않습니다.');
-      }
-      
-      // 일치하는 사용자 정보 반환
-      return matchedUser;
-      
-    } catch (error) {
-      console.error('Login validation error:', error);
-      return rejectWithValue((error as Error).message);
     }
   }
 );

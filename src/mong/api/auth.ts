@@ -1,13 +1,24 @@
 import apiClient from './client';
-import {
-  BaseResponse,
-  LoginRequest,
-  LoginResponse,
-  TokenReissueRequest,
-  TokenReissueResponse,
-  SignUpRequest,
-  SignUpResponse,
-} from './types';
+
+// 로그인 요청 타입
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+// 로그인 응답 타입
+export interface LoginResponse {
+  accessToken: string;
+  refreshToken: string;
+}
+
+// API 응답 타입
+export interface BaseResponse<T> {
+  timestamp: string;
+  code: string;
+  message: string;
+  result: T;
+}
 
 // Auth API 클래스
 export class AuthAPI {
@@ -21,52 +32,9 @@ export class AuthAPI {
     );
     return response.data;
   }
-
-  /**
-   * 로그아웃
-   */
-  static async logout(): Promise<BaseResponse<void>> {
-    const response = await apiClient.post<BaseResponse<void>>('/api/auth/logout');
-    return response.data;
-  }
-
-  /**
-   * 토큰 재발급
-   */
-  static async reissueToken(
-    refreshToken: string
-  ): Promise<BaseResponse<TokenReissueResponse>> {
-    const response = await apiClient.post<BaseResponse<TokenReissueResponse>>(
-      '/api/auth/token/reissue',
-      { refreshToken }
-    );
-    return response.data;
-  }
-
-  /**
-   * 인증 검증 (내부 API)
-   */
-  static async verifyAuthentication(): Promise<void> {
-    await apiClient.post('/api/auth/internal');
-  }
-
-  /**
-   * 회원가입 (추후 구현 예정)
-   */
-  static async signUp(userData: SignUpRequest): Promise<BaseResponse<SignUpResponse>> {
-    const response = await apiClient.post<BaseResponse<SignUpResponse>>(
-      '/api/auth/signup',
-      userData
-    );
-    return response.data;
-  }
 }
 
 // 편의 함수들
 export const authAPI = {
   login: AuthAPI.login,
-  logout: AuthAPI.logout,
-  reissueToken: AuthAPI.reissueToken,
-  verifyAuthentication: AuthAPI.verifyAuthentication,
-  signUp: AuthAPI.signUp,
 };
