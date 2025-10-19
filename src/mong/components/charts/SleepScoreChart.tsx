@@ -19,7 +19,7 @@ const SleepScoreChart: React.FC<SleepScoreChartProps> = ({ data, isWeekly = true
 
   return (
     <ErrorBoundary fallback={<div className="text-center py-8 text-[#a1a1aa]">차트를 표시할 수 없습니다</div>}>
-      <div style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 14, padding: 16, height: 200, display: 'flex' }}>
+      <div style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 14, padding: 16, height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ position: 'relative', height: 120, fontSize: 11, color: '#a1a1aa', marginRight: 8, minWidth: 30 }}>
           <span style={{ position: 'absolute', top: 10, right: 0, transform: 'translateY(-50%)' }}>{maxScore}점</span>
           <span style={{ position: 'absolute', top: '50%', right: 0, transform: 'translateY(-50%)' }}>{Math.round(maxScore * 0.5)}점</span>

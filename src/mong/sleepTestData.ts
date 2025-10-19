@@ -14,18 +14,16 @@ export interface SleepData {
 
 // 수면 점수에 따른 색상 반환
 export const getScoreColor = (score: number): string => {
-    if (score >= 85) return '#22c55e'; // 좋음 (녹색)
-    if (score >= 75) return '#eab308'; // 보통 (노란색)
-    if (score >= 65) return '#f97316'; // 나쁨 (주황색)
-    return '#ef4444'; // 매우 나쁨 (빨간색)
+    if (score >= 80) return '#22c55e'; // 좋음 (녹색)
+    if (score >= 60) return '#eab308'; // 보통 (노란색)
+    return '#ef4444'; // 나쁨 (빨간색)
 }
 
 // 수면 점수에 따른 상태 텍스트 반환
 export const getSleepStatus = (score: number): string => {
-    if (score >= 85) return '좋음';
-    if (score >= 75) return '보통';
-    if (score >= 65) return '나쁨';
-    return '매우 나쁨';
+    if (score >= 80) return '좋음';
+    if (score >= 60) return '보통';
+    return '나쁨';
 }
 
 // 시간을 시:분 형식으로 포맷팅
@@ -66,11 +64,11 @@ const generateRandomSleepData = (date: Date): SleepData => {
     if (isWeekend) {
         bedTimeHour = Math.floor(random1 * 3) + 24;
         wakeTimeHour = Math.floor(random2 * 3) + 8;
-        sleepScore = Math.floor(random3 * 15) + 75;
+        sleepScore = Math.floor(random3 * 20) + 70;
     } else {
         bedTimeHour = Math.floor(random1 * 2) + 22;
         wakeTimeHour = Math.floor(random2 * 2) + 6;
-        sleepScore = Math.floor(random3 * 20) + 70;
+        sleepScore = Math.floor(random3 * 25) + 65;
     }
 
     const bedTimeMinute = Math.floor(random4 * 60);

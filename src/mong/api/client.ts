@@ -42,7 +42,7 @@ apiClient.interceptors.response.use(
         // 토큰 재발급 시도
         const refreshToken = localStorage.getItem('refreshToken');
         if (refreshToken) {
-          const response = await axios.post(`${API_BASE_URL}/api/auth/token/reissue`, {
+          const response = await axios.post(`${API_BASE_URL}/api/auth/reissue`, {
             refreshToken,
           });
 

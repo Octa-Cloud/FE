@@ -45,14 +45,25 @@ export const loginUser = createAsyncThunk(
       localStorage.setItem('accessToken', response.result.accessToken);
       localStorage.setItem('refreshToken', response.result.refreshToken);
       
-      // 사용자 정보 구성 (API에서 사용자 정보를 반환하지 않는 경우)
+      // 사용자 정보 API 호출 (서버에서 토큰을 해체해서 userNo 추출)
+      console.log('👤 사용자 정보 요청 중...');
+      const userInfoResponse = await authAPI.getUserInfo();
+      console.log('📡 사용자 정보 응답:', userInfoResponse);
+      
+      // 성별 변환 (MALE -> 남, FEMALE -> 여)
+      const genderMap: Record<string, '남' | '여'> = {
+        'MALE': '남',
+        'FEMALE': '여'
+      };
+      
+      // 사용자 정보 구성
       const user: User = {
-        id: 'api-user', // API에서 사용자 ID를 반환하지 않으므로 임시 ID
-        email: credentials.email,
+        id: credentials.email, // 임시로 이메일을 ID로 사용 (실제로는 서버에서 userNo를 반환해야 함)
+        email: userInfoResponse.result.email,
         password: credentials.password, // 보안상 실제로는 저장하지 않아야 함
-        name: 'API 사용자',
-        birthDate: '',
-        gender: '',
+        name: userInfoResponse.result.name,
+        birthDate: userInfoResponse.result.birth || '',
+        gender: genderMap[userInfoResponse.result.gender] || '남',
         createdAt: new Date().toISOString(),
       };
       

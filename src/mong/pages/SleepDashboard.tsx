@@ -5,6 +5,7 @@ import Container from '../components/Container';
 import SleepTimeChart from '../components/charts/SleepTimeChart';
 import SleepScoreChart from '../components/charts/SleepScoreChart';
 import { useAuth, useUserProfile } from '../store/hooks';
+import { sleepAPI, SleepPattern } from '../api/sleep';
 import '../styles/sleep-dashboard.css';
 import '../styles/statistics.css';
 
@@ -118,69 +119,111 @@ export default function SleepDashboard() {
         return days;
     }, [currentMonth]);
 
-    const loadSleepData = useCallback(() => {
+    const loadSleepData = useCallback(async () => {
         clearSleepData();
-        
-        // localStorage에서 현재 사용자의 수면 데이터 가져오기
-        const storedSleepData = JSON.parse(localStorage.getItem('sleepData') || '[]');
-        const currentUserId = user?.id || profile?.id;
         
         let data: SleepData[] = [];
         
-        if (currentUserId) {
-            const userData = storedSleepData.find((data: any) => data.userId === currentUserId);
-            if (userData) {
-                // DummyData 형식을 SleepData 형식으로 변환
-                data = userData.records.map((record: any) => {
-                    // sleepTime을 숫자로 변환 (예: "7시간 30분" -> 7.5)
-                    let sleepDurationHours = 0;
-                    if (typeof record.sleepTime === 'string') {
-                        // "7시간 30분" 형식을 파싱
-                        const timeMatch = record.sleepTime.match(/(\d+)시간\s*(\d+)?분?/);
-                        if (timeMatch) {
-                            const hours = parseInt(timeMatch[1]);
-                            const minutes = timeMatch[2] ? parseInt(timeMatch[2]) : 0;
-                            sleepDurationHours = hours + (minutes / 60);
+        try {
+            // 현재 월의 시작일과 종료일 계산
+            const today = new Date();
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+            
+            // 이번 달 첫째 날
+            const startDate = new Date(currentYear, currentMonth, 1);
+            // 이번 달 마지막 날
+            const endDate = new Date(currentYear, currentMonth + 1, 0);
+            
+            // API에서 수면 패턴 데이터 가져오기
+            const patterns = await sleepAPI.getSleepPatterns(
+                startDate.toISOString().split('T')[0],
+                endDate.toISOString().split('T')[0]
+            );
+            
+            // SleepPattern을 SleepData 형식으로 변환
+            data = patterns.map((pattern: SleepPattern) => {
+                const sleepHours = Math.floor(pattern.totalSleepTime / 60);
+                const sleepMinutes = pattern.totalSleepTime % 60;
+                const sleepDurationHours = sleepHours + (sleepMinutes / 60);
+                
+                return {
+                    date: pattern.date,
+                    sleepScore: pattern.score,
+                    sleepDuration: `${sleepHours}시간 ${sleepMinutes}분`,
+                    sleepHours: sleepHours,
+                    sleepMinutes: sleepMinutes,
+                    sleepTimeHours: sleepDurationHours,
+                    sleepStatus: pattern.score >= 80 ? '좋음' : pattern.score >= 60 ? '보통' : '나쁨',
+                    scoreColor: pattern.score >= 80 ? '#22C55E' : pattern.score >= 60 ? '#EAB308' : '#C52222',
+                    bedTime: '22:00', // API에서 제공되지 않는 데이터는 기본값 사용
+                    wakeTime: '07:00',
+                    sleepEfficiency: 85,
+                    sleepStages: { deep: 20, light: 50, rem: 30 },
+                    brainwaveData: [],
+                    noiseEvents: [],
+                    sleepMemo: ''
+                };
+            });
+            
+        } catch (error) {
+            console.error('수면 패턴 API 호출 실패:', error);
+            
+            // API 호출 실패 시 localStorage에서 데이터 가져오기 (fallback)
+            const storedSleepData = JSON.parse(localStorage.getItem('sleepData') || '[]');
+            const currentUserId = user?.id || profile?.id;
+            
+            if (currentUserId) {
+                const userData = storedSleepData.find((data: any) => data.userId === currentUserId);
+                if (userData) {
+                    data = userData.records.map((record: any) => {
+                        let sleepDurationHours = 0;
+                        if (typeof record.sleepTime === 'string') {
+                            const timeMatch = record.sleepTime.match(/(\d+)시간\s*(\d+)?분?/);
+                            if (timeMatch) {
+                                const hours = parseInt(timeMatch[1]);
+                                const minutes = timeMatch[2] ? parseInt(timeMatch[2]) : 0;
+                                sleepDurationHours = hours + (minutes / 60);
+                            }
+                        } else if (typeof record.sleepTime === 'number') {
+                            sleepDurationHours = record.sleepTime;
                         }
-                    } else if (typeof record.sleepTime === 'number') {
-                        sleepDurationHours = record.sleepTime;
-                    }
-                    
-                    return {
-                        date: record.date,
-                        sleepScore: record.sleepScore,
-                        sleepDuration: sleepDurationHours > 0 ? `${Math.floor(sleepDurationHours)}시간 ${Math.round((sleepDurationHours % 1) * 60)}분` : record.sleepTime,
-                        sleepHours: Math.floor(sleepDurationHours),
-                        sleepMinutes: Math.round((sleepDurationHours % 1) * 60),
-                        sleepTimeHours: record.sleepTimeHours || sleepDurationHours, // 정확한 수면 시간 추가
-                        sleepStatus: record.sleepScore >= 85 ? '좋음' : record.sleepScore >= 70 ? '보통' : '나쁨',
-                        scoreColor: record.sleepScore >= 85 ? '#22C55E' : record.sleepScore >= 70 ? '#EAB308' : '#C52222',
-                        bedTime: record.bedtime,
-                        wakeTime: record.wakeTime,
-                        sleepEfficiency: record.sleepEfficiency,
-                        sleepStages: record.sleepStages,
-                        brainwaveData: record.brainwaveData,
-                        noiseEvents: record.noiseEvents,
-                        sleepMemo: record.sleepMemo
-                    };
-                });
+                        
+                        return {
+                            date: record.date,
+                            sleepScore: record.sleepScore,
+                            sleepDuration: sleepDurationHours > 0 ? `${Math.floor(sleepDurationHours)}시간 ${Math.round((sleepDurationHours % 1) * 60)}분` : record.sleepTime,
+                            sleepHours: Math.floor(sleepDurationHours),
+                            sleepMinutes: Math.round((sleepDurationHours % 1) * 60),
+                            sleepTimeHours: record.sleepTimeHours || sleepDurationHours,
+                            sleepStatus: record.sleepScore >= 80 ? '좋음' : record.sleepScore >= 60 ? '보통' : '나쁨',
+                            scoreColor: record.sleepScore >= 80 ? '#22C55E' : record.sleepScore >= 60 ? '#EAB308' : '#C52222',
+                            bedTime: record.bedtime,
+                            wakeTime: record.wakeTime,
+                            sleepEfficiency: record.sleepEfficiency,
+                            sleepStages: record.sleepStages,
+                            brainwaveData: record.brainwaveData,
+                            noiseEvents: record.noiseEvents,
+                            sleepMemo: record.sleepMemo
+                        };
+                    });
+                }
             }
-        }
-        
-        // localStorage에 데이터가 없으면 기본 데이터 생성
-        if (data.length === 0) {
-            data = generateSleepData();
+            
+            // 데이터가 없으면 빈 배열로 유지 (더미 데이터 생성하지 않음)
+            if (data.length === 0) {
+                console.log('No sleep data found');
+            }
         }
         
         setSleepData(data); 
         
-        // 실제 사용자 프로필 데이터를 사용하여 통계 계산
-        const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
-        const currentUser = storedUsers.find((u: any) => u.id === currentUserId);
-        
-        let calculatedStats;
-        if (currentUser && currentUser.profile) {
-            // 이번 주의 실제 평균 계산
+        // 실제 API에서 수면 통계 가져오기
+        try {
+            const apiResponse = await sleepAPI.getTotalSleepStats();
+            const apiStats = apiResponse.result;
+            
+            // 이번 주의 실제 평균 계산 (기존 로컬 데이터 사용)
             const today = new Date();
             const dayOfWeek = today.getDay();
             const startOfWeek = new Date(today);
@@ -197,23 +240,37 @@ export default function SleepDashboard() {
                 const weeklyScore = currentWeekData.reduce((sum, sleepData) => sum + sleepData.sleepScore, 0);
                 weeklyAverage = Math.round(weeklyScore / currentWeekData.length);
             } else {
-                // 이번 주 데이터가 없으면 전체 평균 사용
-                weeklyAverage = currentUser.profile.averageScore || 85;
+                // 이번 주 데이터가 없으면 API에서 가져온 전체 평균 사용
+                weeklyAverage = apiStats.avgScore || 0;
             }
 
-            // 프로필 데이터 사용
-            calculatedStats = {
-                averageScore: currentUser.profile.averageScore || 85,
+            // API 데이터와 로컬 주간 데이터 결합
+            const calculatedStats = {
+                averageScore: apiStats.avgScore || 0,
                 weeklyAverage: weeklyAverage,
-                averageSleepHours: currentUser.profile.averageSleepTime || 7.5,
-                totalRecords: currentUser.profile.totalDays || 30
+                averageSleepHours: apiStats.avgSleepTime ? (apiStats.avgSleepTime / 60).toFixed(1) : 0, // 분을 시간으로 변환
+                totalRecords: data.length
             };
-        } else {
-            // 실제 수면 기록 데이터 기반 계산
-            calculatedStats = calculateStats(data);
-        }
-        
-        setStats(calculatedStats); 
+            
+            setStats(calculatedStats);
+        } catch (error: any) {
+            console.error('수면 통계 API 호출 실패:', error);
+            
+            // 404 에러인 경우 (데이터가 없음)
+            if (error.response?.status === 404) {
+                const calculatedStats = {
+                    averageScore: 0,
+                    weeklyAverage: 0,
+                    averageSleepHours: 0,
+                    totalRecords: 0
+                };
+                setStats(calculatedStats);
+            } else {
+                // 다른 에러인 경우 로컬 데이터 사용
+                const calculatedStats = calculateStats(data);
+                setStats(calculatedStats);
+            }
+        } 
         const chart = generateCurrentWeekChartData(data); 
         setChartData(chart); 
         const recent = getRecentRecords(data); 
@@ -291,8 +348,12 @@ export default function SleepDashboard() {
                                         <span className="text-sm font-medium text-white">전체 평균 수면 점수</span>
                                         <IoStatsChart color="#a1a1aa" size={16} />
                                     </div>
-                                    <div className="text-3xl font-bold text-white mb-2">{stats.averageScore}점</div>
-                                    <div className="text-xs text-gray-400">{stats.totalRecords}일 기록</div>
+                                    <div className="text-3xl font-bold text-white mb-2">
+                                        {stats.totalRecords > 0 ? `${stats.averageScore}점` : '데이터 없음'}
+                                    </div>
+                                    <div className="text-xs text-gray-400">
+                                        {stats.totalRecords > 0 ? `${stats.totalRecords}일 기록` : '수면 기록이 없습니다'}
+                                    </div>
                                 </div>
 
                                 {/* 카드 2: 주간 평균 */}
@@ -301,8 +362,12 @@ export default function SleepDashboard() {
                                         <span className="text-sm font-medium text-white">주간 평균 수면 점수</span>
                                         <FaChartLine color="#a1a1aa" size={16} />
                                     </div>
-                                    <div className="text-3xl font-bold text-white mb-2">{stats.weeklyAverage}점</div>
-                                    <div className="text-xs text-gray-400">이번 주 평균</div>
+                                    <div className="text-3xl font-bold text-white mb-2">
+                                        {stats.weeklyAverage > 0 ? `${stats.weeklyAverage}점` : '데이터 없음'}
+                                    </div>
+                                    <div className="text-xs text-gray-400">
+                                        {stats.weeklyAverage > 0 ? '이번 주 평균' : '이번 주 기록이 없습니다'}
+                                    </div>
                                 </div>
 
                                 {/* 카드 3: 평균 수면 시간 */}
@@ -311,8 +376,12 @@ export default function SleepDashboard() {
                                         <span className="text-sm font-medium text-white">전체 평균 수면 시간</span>
                                         <FaRegClock color="#a1a1aa" size={16} />
                                     </div>
-                                    <div className="text-3xl font-bold text-white mb-2">{stats.averageSleepHours}h</div>
-                                    <div className="text-xs text-gray-400">목표: {targetSleepHours}시간</div>
+                                    <div className="text-3xl font-bold text-white mb-2">
+                                        {stats.averageSleepHours > 0 ? `${stats.averageSleepHours}h` : '데이터 없음'}
+                                    </div>
+                                    <div className="text-xs text-gray-400">
+                                        {stats.averageSleepHours > 0 ? `목표: ${targetSleepHours}시간` : '수면 기록이 없습니다'}
+                                    </div>
                                 </div>
                             </div>
 
@@ -328,28 +397,22 @@ export default function SleepDashboard() {
                                         통계 보기
                                     </button>
                                 </div>
-                                {hasChartData ? (
-                                    <div className="grid grid-cols-2 gap-6">
-                                        <div>
-                                            <div className="flex items-center gap-2 mb-4">
-                                                <FaChartBar color="#a1a1aa" size={16} />
-                                                <span className="text-base font-medium text-white">수면 시간 추이</span>
-                                            </div>
-                                            <SleepTimeChart data={(chartData.sleepHours || []).map((d:any)=>({ day:d.dayOfWeekLabel, hours:d.hours }))} isWeekly={true} />
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-4">
+                                            <FaChartBar color="#a1a1aa" size={16} />
+                                            <span className="text-base font-medium text-white">수면 시간 추이</span>
                                         </div>
-                                        <div>
-                                            <div className="flex items-center gap-2 mb-4">
-                                                <FaChartLine color="#a1a1aa" size={16} />
-                                                <span className="text-base font-medium text-white">수면 점수 추이</span>
-                                            </div>
-                                            <SleepScoreChart data={(chartData.sleepScores || []).map((d:any)=>({ day:d.dayOfWeekLabel, score:d.score }))} isWeekly={true} />
+                                        <SleepTimeChart data={(chartData.sleepHours || []).map((d:any)=>({ day:d.dayOfWeekLabel, hours:d.hours }))} isWeekly={true} />
+                                    </div>
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-4">
+                                            <FaChartLine color="#a1a1aa" size={16} />
+                                            <span className="text-base font-medium text-white">수면 점수 추이</span>
                                         </div>
+                                        <SleepScoreChart data={(chartData.sleepScores || []).map((d:any)=>({ day:d.dayOfWeekLabel, score:d.score }))} isWeekly={true} />
                                     </div>
-                                ) : (
-                                    <div className="h-56 bg-gray-700 rounded-lg flex items-center justify-center text-gray-400 text-sm">
-                                        이번 주 수면 기록이 없습니다.
-                                    </div>
-                                )}
+                                </div>
                             </div>
                             
                             {/* 카드 5: 수면 기록 달력 (월별 달력 + 날짜 클릭 시 상세 정보 표시) */}
@@ -394,7 +457,7 @@ export default function SleepDashboard() {
                                                 >
                                                     {day}
                                                     {dayData && (
-                                                        <span className={`sleep-indicator ${dayData.sleepScore >= 85 ? 'good' : dayData.sleepScore >= 70 ? 'normal' : 'bad'} block mx-auto mt-1`} />
+                                                        <span className={`sleep-indicator ${dayData.sleepScore >= 80 ? 'good' : dayData.sleepScore >= 60 ? 'normal' : 'bad'} block mx-auto mt-1`} />
                                                     )}
                                                 </div>
                                             );
@@ -437,24 +500,30 @@ export default function SleepDashboard() {
                             <div className="basic-card">
                                 <div className="mb-4"><span className="text-lg font-bold text-white">최근 수면 기록</span></div>
                                 <div className="text-sm text-gray-400 mb-6">최근 기록들을 한눈에 확인하고 월간 리포트에서 상세 분석을 확인하세요</div>
-                                <div className="grid grid-cols-4 gap-4">
-                                    {recentRecords.map((record, index) => {
-                                        const date = new Date(record.date); 
-                                        const formattedDate = `${date.getMonth() + 1}월 ${date.getDate()}일`;
-                                        return (
-                                            <div key={index} className="stats-card">
-                                                <div className="flex items-center justify-between mb-4">
-                                                    <span className="text-sm font-medium text-white">{formattedDate}</span>
-                                                    <div className="w-10 h-10 border-2 rounded-full flex items-center justify-center text-sm font-bold" style={{ borderColor: record.scoreColor, color: record.scoreColor }}>{record.sleepScore}</div>
+                                {recentRecords.length > 0 ? (
+                                    <div className="grid grid-cols-4 gap-4">
+                                        {recentRecords.map((record, index) => {
+                                            const date = new Date(record.date); 
+                                            const formattedDate = `${date.getMonth() + 1}월 ${date.getDate()}일`;
+                                            return (
+                                                <div key={index} className="stats-card">
+                                                    <div className="flex items-center justify-between mb-4">
+                                                        <span className="text-sm font-medium text-white">{formattedDate}</span>
+                                                        <div className="w-10 h-10 border-2 rounded-full flex items-center justify-center text-sm font-bold" style={{ borderColor: record.scoreColor, color: record.scoreColor }}>{record.sleepScore}</div>
+                                                    </div>
+                                                    <div className="text-xs text-gray-400 mb-1">수면 시간</div>
+                                                    <div className="text-sm text-white mb-4 font-medium">{record.sleepDuration}</div>
+                                                    <div className="text-xs text-gray-400 mb-2">수면 패턴</div>
+                                                    <div className="bg-gray-600 rounded-lg px-2 py-1 inline-block text-xs font-medium" style={{ color: record.scoreColor }}>{record.sleepStatus}</div>
                                                 </div>
-                                                <div className="text-xs text-gray-400 mb-1">수면 시간</div>
-                                                <div className="text-sm text-white mb-4 font-medium">{record.sleepDuration}</div>
-                                                <div className="text-xs text-gray-400 mb-2">수면 패턴</div>
-                                                <div className="bg-gray-600 rounded-lg px-2 py-1 inline-block text-xs font-medium" style={{ color: record.scoreColor }}>{record.sleepStatus}</div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <div className="h-32 bg-gray-700 rounded-lg flex items-center justify-center text-gray-400 text-sm">
+                                        수면 기록이 없습니다. 수면 측정을 시작해보세요.
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

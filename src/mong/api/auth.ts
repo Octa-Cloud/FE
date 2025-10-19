@@ -20,6 +20,15 @@ export interface BaseResponse<T> {
   result: T;
 }
 
+// 사용자 정보 타입
+export interface UserInfo {
+  name: string;
+  email: string;
+  nickname: string;
+  birth: string;
+  gender: string;
+}
+
 // Auth API 클래스
 export class AuthAPI {
   /**
@@ -32,9 +41,20 @@ export class AuthAPI {
     );
     return response.data;
   }
+
+  /**
+   * 사용자 정보 조회
+   */
+  static async getUserInfo(): Promise<BaseResponse<UserInfo>> {
+    const response = await apiClient.get<BaseResponse<UserInfo>>(
+      '/api/users/information'
+    );
+    return response.data;
+  }
 }
 
 // 편의 함수들
 export const authAPI = {
   login: AuthAPI.login,
+  getUserInfo: AuthAPI.getUserInfo,
 };
