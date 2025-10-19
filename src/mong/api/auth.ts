@@ -29,6 +29,15 @@ export interface UserInfo {
   gender: string;
 }
 
+// 회원가입 요청 타입
+export interface SignUpRequest {
+  name: string;
+  nickname: string;
+  email: string;
+  password: string;
+  gender: 'MALE' | 'FEMALE';
+}
+
 // Auth API 클래스
 export class AuthAPI {
   /**
@@ -51,10 +60,58 @@ export class AuthAPI {
     );
     return response.data;
   }
+
+  /**
+   * 이메일 인증 요청
+   */
+  static async sendVerificationEmail(email: string): Promise<BaseResponse<void>> {
+    console.log('📧 API 호출: 이메일 인증 요청', { email });
+    const response = await apiClient.post<BaseResponse<void>>(
+      '/api/users/email/send',
+      null,
+      {
+        params: { email }
+      }
+    );
+    console.log('📧 API 응답: 이메일 인증 요청', response.data);
+    return response.data;
+  }
+
+  /**
+   * 이메일 인증 코드 검증
+   */
+  static async verifyEmail(email: string, code: string): Promise<BaseResponse<void>> {
+    console.log('🔐 API 호출: 이메일 인증 코드 검증', { email, code });
+    const response = await apiClient.post<BaseResponse<void>>(
+      '/api/users/email/verify',
+      null,
+      {
+        params: { email, code }
+      }
+    );
+    console.log('🔐 API 응답: 이메일 인증 코드 검증', response.data);
+    return response.data;
+  }
+
+  /**
+   * 회원가입
+   */
+  static async signUp(signUpData: SignUpRequest): Promise<BaseResponse<void>> {
+    console.log('👤 API 호출: 회원가입', signUpData);
+    const response = await apiClient.post<BaseResponse<void>>(
+      '/api/users/sign-up',
+      signUpData
+    );
+    console.log('👤 API 응답: 회원가입', response.data);
+    return response.data;
+  }
 }
 
 // 편의 함수들
 export const authAPI = {
   login: AuthAPI.login,
   getUserInfo: AuthAPI.getUserInfo,
+  sendVerificationEmail: AuthAPI.sendVerificationEmail,
+  verifyEmail: AuthAPI.verifyEmail,
+  signUp: AuthAPI.signUp,
 };

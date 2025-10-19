@@ -125,94 +125,103 @@ export default function SleepDashboard() {
         let data: SleepData[] = [];
         
         try {
-            // 현재 월의 시작일과 종료일 계산
-            const today = new Date();
-            const currentMonth = today.getMonth();
-            const currentYear = today.getFullYear();
+            // 현재 선택된 월의 연도와 월 계산
+            const year = currentMonth.getFullYear();
+            const month = currentMonth.getMonth() + 1; // getMonth()는 0부터 시작하므로 +1
             
-            // 이번 달 첫째 날
-            const startDate = new Date(currentYear, currentMonth, 1);
-            // 이번 달 마지막 날
-            const endDate = new Date(currentYear, currentMonth + 1, 0);
+            console.log('🔍 API 호출: 월별 수면 요약 조회', { year, month });
             
-            // API에서 수면 패턴 데이터 가져오기
-            const patterns = await sleepAPI.getSleepPatterns(
-                startDate.toISOString().split('T')[0],
-                endDate.toISOString().split('T')[0]
-            );
+            // API에서 월별 수면 요약 데이터 가져오기
+            const response = await sleepAPI.getMonthlySleepSummary(year, month);
+            console.log('✅ API 응답: 월별 수면 요약 조회 성공', response);
             
-            // SleepPattern을 SleepData 형식으로 변환
-            data = patterns.map((pattern: SleepPattern) => {
-                const sleepHours = Math.floor(pattern.totalSleepTime / 60);
-                const sleepMinutes = pattern.totalSleepTime % 60;
-                const sleepDurationHours = sleepHours + (sleepMinutes / 60);
+            if (response.result && response.result.length > 0) {
+                // SleepSummaryResponse를 SleepData 형식으로 변환
+                data = response.result.map((summary: any) => {
+                    const sleepHours = Math.floor(summary.totalSleepTime / 60);
+                    const sleepMinutes = summary.totalSleepTime % 60;
+                    const sleepDurationHours = sleepHours + (sleepMinutes / 60);
+                    
+                    return {
+                        date: summary.date,
+                        sleepScore: summary.score,
+                        sleepDuration: `${sleepHours}시간 ${sleepMinutes}분`,
+                        sleepHours: sleepHours,
+                        sleepMinutes: sleepMinutes,
+                        sleepTimeHours: sleepDurationHours,
+                        sleepStatus: summary.score >= 80 ? '좋음' : summary.score >= 60 ? '보통' : '나쁨',
+                        scoreColor: summary.score >= 80 ? '#22C55E' : summary.score >= 60 ? '#EAB308' : '#C52222',
+                        bedTime: summary.bedTime || '22:00',
+                        wakeTime: summary.wakeTime || '07:00',
+                        sleepEfficiency: 85,
+                        sleepStages: { deep: 20, light: 50, rem: 30 },
+                        brainwaveData: [],
+                        noiseEvents: [],
+                        sleepMemo: ''
+                    };
+                });
                 
-                return {
-                    date: pattern.date,
-                    sleepScore: pattern.score,
-                    sleepDuration: `${sleepHours}시간 ${sleepMinutes}분`,
-                    sleepHours: sleepHours,
-                    sleepMinutes: sleepMinutes,
-                    sleepTimeHours: sleepDurationHours,
-                    sleepStatus: pattern.score >= 80 ? '좋음' : pattern.score >= 60 ? '보통' : '나쁨',
-                    scoreColor: pattern.score >= 80 ? '#22C55E' : pattern.score >= 60 ? '#EAB308' : '#C52222',
-                    bedTime: '22:00', // API에서 제공되지 않는 데이터는 기본값 사용
-                    wakeTime: '07:00',
-                    sleepEfficiency: 85,
-                    sleepStages: { deep: 20, light: 50, rem: 30 },
-                    brainwaveData: [],
-                    noiseEvents: [],
-                    sleepMemo: ''
-                };
-            });
-            
-        } catch (error) {
-            console.error('수면 패턴 API 호출 실패:', error);
-            
-            // API 호출 실패 시 localStorage에서 데이터 가져오기 (fallback)
-            const storedSleepData = JSON.parse(localStorage.getItem('sleepData') || '[]');
-            const currentUserId = user?.id || profile?.id;
-            
-            if (currentUserId) {
-                const userData = storedSleepData.find((data: any) => data.userId === currentUserId);
-                if (userData) {
-                    data = userData.records.map((record: any) => {
-                        let sleepDurationHours = 0;
-                        if (typeof record.sleepTime === 'string') {
-                            const timeMatch = record.sleepTime.match(/(\d+)시간\s*(\d+)?분?/);
-                            if (timeMatch) {
-                                const hours = parseInt(timeMatch[1]);
-                                const minutes = timeMatch[2] ? parseInt(timeMatch[2]) : 0;
-                                sleepDurationHours = hours + (minutes / 60);
-                            }
-                        } else if (typeof record.sleepTime === 'number') {
-                            sleepDurationHours = record.sleepTime;
-                        }
-                        
-                        return {
-                            date: record.date,
-                            sleepScore: record.sleepScore,
-                            sleepDuration: sleepDurationHours > 0 ? `${Math.floor(sleepDurationHours)}시간 ${Math.round((sleepDurationHours % 1) * 60)}분` : record.sleepTime,
-                            sleepHours: Math.floor(sleepDurationHours),
-                            sleepMinutes: Math.round((sleepDurationHours % 1) * 60),
-                            sleepTimeHours: record.sleepTimeHours || sleepDurationHours,
-                            sleepStatus: record.sleepScore >= 80 ? '좋음' : record.sleepScore >= 60 ? '보통' : '나쁨',
-                            scoreColor: record.sleepScore >= 80 ? '#22C55E' : record.sleepScore >= 60 ? '#EAB308' : '#C52222',
-                            bedTime: record.bedtime,
-                            wakeTime: record.wakeTime,
-                            sleepEfficiency: record.sleepEfficiency,
-                            sleepStages: record.sleepStages,
-                            brainwaveData: record.brainwaveData,
-                            noiseEvents: record.noiseEvents,
-                            sleepMemo: record.sleepMemo
-                        };
-                    });
-                }
+                console.log('😴 월별 수면 데이터 변환 완료:', data.length, '개 기록');
+            } else {
+                console.log('📝 해당 월의 수면 기록이 없습니다.');
+                data = [];
             }
             
-            // 데이터가 없으면 빈 배열로 유지 (더미 데이터 생성하지 않음)
-            if (data.length === 0) {
-                console.log('No sleep data found');
+        } catch (error: any) {
+            console.error('❌ 월별 수면 요약 API 호출 실패:', error);
+            
+            // 모든 에러를 콘솔에만 로그하고 UI에는 표시하지 않음
+            if (error.response?.status === 404) {
+                console.log('📝 404 에러: 해당 월의 수면 기록이 없습니다.');
+                data = [];
+            } else {
+                console.log('⚠️ API 호출 실패: localStorage에서 데이터 가져오기 시도');
+                
+                // API 호출 실패 시 localStorage에서 데이터 가져오기 (fallback)
+                const storedSleepData = JSON.parse(localStorage.getItem('sleepData') || '[]');
+                const currentUserId = user?.id || profile?.id;
+            
+                if (currentUserId) {
+                    const userData = storedSleepData.find((data: any) => data.userId === currentUserId);
+                    if (userData) {
+                        data = userData.records.map((record: any) => {
+                            let sleepDurationHours = 0;
+                            if (typeof record.sleepTime === 'string') {
+                                const timeMatch = record.sleepTime.match(/(\d+)시간\s*(\d+)?분?/);
+                                if (timeMatch) {
+                                    const hours = parseInt(timeMatch[1]);
+                                    const minutes = timeMatch[2] ? parseInt(timeMatch[2]) : 0;
+                                    sleepDurationHours = hours + (minutes / 60);
+                                }
+                            } else if (typeof record.sleepTime === 'number') {
+                                sleepDurationHours = record.sleepTime;
+                            }
+                            
+                            return {
+                                date: record.date,
+                                sleepScore: record.sleepScore,
+                                sleepDuration: sleepDurationHours > 0 ? `${Math.floor(sleepDurationHours)}시간 ${Math.round((sleepDurationHours % 1) * 60)}분` : record.sleepTime,
+                                sleepHours: Math.floor(sleepDurationHours),
+                                sleepMinutes: Math.round((sleepDurationHours % 1) * 60),
+                                sleepTimeHours: record.sleepTimeHours || sleepDurationHours,
+                                sleepStatus: record.sleepScore >= 80 ? '좋음' : record.sleepScore >= 60 ? '보통' : '나쁨',
+                                scoreColor: record.sleepScore >= 80 ? '#22C55E' : record.sleepScore >= 60 ? '#EAB308' : '#C52222',
+                                bedTime: record.bedtime,
+                                wakeTime: record.wakeTime,
+                                sleepEfficiency: record.sleepEfficiency,
+                                sleepStages: record.sleepStages,
+                                brainwaveData: record.brainwaveData,
+                                noiseEvents: record.noiseEvents,
+                                sleepMemo: record.sleepMemo
+                            };
+                        });
+                    }
+                }
+                
+                // 데이터가 없으면 빈 배열로 유지 (더미 데이터 생성하지 않음)
+                if (data.length === 0) {
+                    console.log('No sleep data found in localStorage');
+                }
             }
         }
         
@@ -275,7 +284,7 @@ export default function SleepDashboard() {
         setChartData(chart); 
         const recent = getRecentRecords(data); 
         setRecentRecords(recent);
-    }, [user?.id, profile?.id])
+    }, [user?.id, profile?.id, currentMonth])
 
     useEffect(() => {
         loadSleepData()
@@ -283,11 +292,29 @@ export default function SleepDashboard() {
 
     const hasChartData = chartData.sleepHours?.some((day: any) => day.hours > 0);
 
-    // 실제 사용자 프로필 정보 사용 - 메모이제이션
-    const currentUserProfile = useMemo(() => ({
-        name: profile?.name || user?.name || '사용자',
-        avatar: (profile?.name || user?.name || '사용자').charAt(0)
-    }), [profile?.name, user?.name]);
+    // 실제 사용자 프로필 정보 사용 - 메모이제이션 (localStorage fallback 포함)
+    const currentUserProfile = useMemo(() => {
+        // Redux store에서 먼저 시도
+        let userName = profile?.name || user?.name;
+        
+        // Redux store에 정보가 없으면 localStorage에서 가져오기
+        if (!userName) {
+            const currentUserId = user?.id || profile?.id;
+            if (currentUserId) {
+                const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
+                const currentUser = storedUsers.find((u: any) => u.id === currentUserId);
+                userName = currentUser?.name || currentUser?.profile?.name;
+            }
+        }
+        
+        // 그래도 없으면 기본값 사용
+        userName = userName || '사용자';
+        
+        return {
+            name: userName,
+            avatar: userName.charAt(0)
+        };
+    }, [profile?.name, user?.name, user?.id, profile?.id]);
 
     // 사용자의 수면 목표 시간 가져오기 - 메모이제이션
     const targetSleepHours = useMemo(() => {

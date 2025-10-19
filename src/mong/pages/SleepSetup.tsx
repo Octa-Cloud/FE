@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Container from '../components/Container'
+import { SleepAPI, SleepGoalResponse } from '../api/sleep'
 
 // --- 아이콘 import ---
 import { IoTimeOutline, IoWarningOutline, IoCheckmarkCircleOutline, IoArrowBack } from "react-icons/io5";
@@ -11,7 +12,73 @@ export default function SleepSetup() {
     const [wakeHour, setWakeHour] = useState<number>(6)
     const [wakeMinute, setWakeMinute] = useState<number>(0)
 
+    // API 상태 관리
+    const [apiSleepGoal, setApiSleepGoal] = useState<SleepGoalResponse | null>(null);
+    const [apiLoading, setApiLoading] = useState(false);
+    const [apiError, setApiError] = useState<string | null>(null);
+
     const navigate = useNavigate()
+
+    // API에서 수면 목표 정보 가져오기
+    const fetchSleepGoal = useCallback(async () => {
+        try {
+            setApiLoading(true);
+            setApiError(null);
+            
+            // 토큰 확인
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                console.warn('⚠️ 액세스 토큰이 없습니다. 로그인이 필요합니다.');
+                setApiError('로그인이 필요합니다. 로그인 페이지로 이동하세요.');
+                return;
+            }
+            
+            console.log('🔍 API 호출: 수면 목표 조회 (SleepSetup)');
+            
+            const response = await SleepAPI.getSleepGoal();
+            console.log('✅ API 응답: 수면 목표 조회 성공 (SleepSetup)', response);
+            
+            if (response.result) {
+                setApiSleepGoal(response.result);
+                console.log('😴 수면 목표 설정 (SleepSetup):', response.result);
+                
+                // API에서 가져온 기상 시간으로 폼 데이터 업데이트
+                const wakeTime = response.result.goalWakeTime.split(':');
+                setWakeHour(parseInt(wakeTime[0]));
+                setWakeMinute(parseInt(wakeTime[1]));
+            }
+        } catch (error: any) {
+            console.error('❌ API 호출 실패: 수면 목표 조회 (SleepSetup)', error);
+            
+            // 404 에러일 때는 기본 데이터 설정하고 에러 메시지 표시하지 않음
+            if (error.response?.status === 404) {
+                console.log('📝 404 에러: 기본 기상 시간 설정');
+                setWakeHour(6);  // 기본 06:00
+                setWakeMinute(0);
+                setApiSleepGoal(null);
+                setApiLoading(false);
+                return;
+            }
+            
+            // 에러 타입별 처리 - 모든 에러를 콘솔에만 로그하고 UI에는 표시하지 않음
+            if (error.response?.status === 401) {
+                console.log('🔑 401 에러: 토큰 재발급 시도 중...');
+            } else if (error.response?.status === 403) {
+                console.log('🚫 403 에러: 접근 권한이 없습니다.');
+            } else if (error.code === 'NETWORK_ERROR' || !error.response) {
+                console.log('🌐 네트워크 에러: 연결을 확인해주세요.');
+            } else {
+                console.log('❌ 수면 목표 조회 실패:', error.message || '알 수 없는 오류');
+            }
+        } finally {
+            setApiLoading(false);
+        }
+    }, []);
+
+    // 컴포넌트 마운트 시 API에서 수면 목표 데이터 로드
+    useEffect(() => {
+        fetchSleepGoal();
+    }, [fetchSleepGoal]);
 
     const handleStartRecording = () => {
         // 하루 한 번 측정 확인 팝업 -> "예" 버튼 클릭 시 수면 측정 페이지로 이동
@@ -61,7 +128,42 @@ export default function SleepSetup() {
                             <IoTimeOutline color="#a1a1aa" size={20} />
                             <span className="basic-card-title">목표 기상 시간 설정</span>
                         </div>
-                        <p className="basic-card-description">목표 기상 시간을 설정하세요</p>
+                        <p className="basic-card-description">
+                            {apiLoading ? '목표 기상 시간을 불러오는 중...' : '목표 기상 시간을 설정하세요'}
+                        </p>
+
+                        {/* API 에러 메시지 */}
+                        {apiError && (
+                            <div style={{ 
+                                color: '#ef4444', 
+                                fontSize: '14px', 
+                                marginBottom: '16px',
+                                padding: '8px 12px',
+                                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                border: '1px solid rgba(239, 68, 68, 0.2)',
+                                borderRadius: '6px'
+                            }}>
+                                {apiError}
+                                {apiError.includes('로그인이 필요합니다') && (
+                                    <div style={{ marginTop: '8px' }}>
+                                        <button 
+                                            onClick={() => navigate('/login')}
+                                            style={{
+                                                padding: '6px 12px',
+                                                fontSize: '12px',
+                                                backgroundColor: '#007bff',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '4px',
+                                                cursor: 'pointer'
+                                            }}
+                                        >
+                                            로그인하러 가기
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         {/* 시/분 입력 필드 */}
                         <div style={{ marginBottom: 16 }}>
@@ -78,6 +180,7 @@ export default function SleepSetup() {
                                                 setWakeHour(value) 
                                             } 
                                         }} 
+                                        disabled={apiLoading}
                                         className="basic-input-time"
                                     />
                                     <label className="basic-input-label">시</label>
@@ -97,6 +200,7 @@ export default function SleepSetup() {
                                                 setWakeMinute(value) 
                                             } 
                                         }} 
+                                        disabled={apiLoading}
                                         className="basic-input-time"
                                     />
                                     <label className="basic-input-label">분</label>
@@ -121,6 +225,7 @@ export default function SleepSetup() {
                                     <button 
                                         key={preset.label} 
                                         onClick={() => { setWakeHour(preset.hour); setWakeMinute(preset.minute); }} 
+                                        disabled={apiLoading}
                                         className={`basic-preset-button ${wakeHour === preset.hour && wakeMinute === preset.minute ? 'active' : ''}`}
                                         style={{ transition: 'all 0.2s ease' }}
                                         onMouseOver={(e) => {

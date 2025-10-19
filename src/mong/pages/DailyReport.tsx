@@ -208,12 +208,30 @@ const DailyReport: React.FC = () => {
     return monthlyData.some(r => r.date === dateStr);
   };
 
-  // 실제 사용자 프로필 정보 사용 - 메모이제이션
-  const currentUserProfile = useMemo(() => ({
-    name: profile?.name || user?.name || '사용자',
-    avatar: '',
-    email: profile?.email || user?.email || ''
-  }), [profile?.name, profile?.email, user?.name, user?.email]);
+  // 실제 사용자 프로필 정보 사용 - 메모이제이션 (localStorage fallback 포함)
+  const currentUserProfile = useMemo(() => {
+    // Redux store에서 먼저 시도
+    let userName = profile?.name || user?.name;
+    
+    // Redux store에 정보가 없으면 localStorage에서 가져오기
+    if (!userName) {
+      const currentUserId = user?.id || profile?.id;
+      if (currentUserId) {
+        const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
+        const currentUser = storedUsers.find((u: any) => u.id === currentUserId);
+        userName = currentUser?.name || currentUser?.profile?.name;
+      }
+    }
+    
+    // 그래도 없으면 기본값 사용
+    userName = userName || '사용자';
+    
+    return {
+      name: userName,
+      avatar: '',
+      email: profile?.email || user?.email || ''
+    };
+  }, [profile?.name, profile?.email, user?.name, user?.email, user?.id, profile?.id]);
 
   // 로딩 중
   if (isLoading) {

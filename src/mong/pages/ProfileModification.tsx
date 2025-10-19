@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, useUserProfile } from '../store/hooks';
 import NavBar from '../components/NavBar';
 import ProfileStatsCard from '../components/ProfileStatsCard';
 import BasicInfoForm from '../components/BasicInfoForm';
 import Container from '../components/Container';
+import { AuthAPI, UserInfo } from '../api/auth';
 import '../styles/profile.css';
 import { User } from '../types';
 
@@ -24,8 +25,13 @@ const ProfileModification = () => {
     clearTempProfile 
   } = useUserProfile();
 
+  // API에서 가져온 사용자 정보 상태
+  const [apiUserInfo, setApiUserInfo] = useState<UserInfo | null>(null);
+  const [apiLoading, setApiLoading] = useState<boolean>(false);
+  const [apiError, setApiError] = useState<string | null>(null);
+
   // 현재 로그인한 사용자의 프로필 데이터 가져오기 - 실제 사용자 데이터 사용
-  const getCurrentUserProfile = () => {
+  const getCurrentUserProfile = useCallback(() => {
     // localStorage에서 사용자 프로필 정보 가져오기
     const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
     const currentUserId = user?.id;
@@ -56,13 +62,93 @@ const ProfileModification = () => {
       birthDate: '1990-01-15',
       gender: '여'
     };
-  };
+  }, [user?.id]);
 
-  const defaultUserData = getCurrentUserProfile();
+  // API에서 사용자 정보 가져오기
+  const fetchUserInfo = useCallback(async () => {
+    try {
+      setApiLoading(true);
+      setApiError(null);
+      
+      // 토큰 확인
+      const token = localStorage.getItem('accessToken');
+      console.log('🔑 토큰 확인:', {
+        hasToken: !!token,
+        tokenLength: token ? token.length : 0,
+        tokenPreview: token ? token.substring(0, 20) + '...' : '없음',
+        allLocalStorageKeys: Object.keys(localStorage)
+      });
+      
+      if (!token) {
+        console.warn('⚠️ 액세스 토큰이 없습니다. 로그인이 필요합니다.');
+        console.log('📝 로컬 스토리지 내용:', localStorage);
+        
+        // 개발용 테스트 토큰 (실제 토큰으로 교체 필요)
+        console.log('🧪 개발용: 테스트 토큰을 추가하려면 브라우저 콘솔에서 다음을 실행하세요:');
+        console.log('localStorage.setItem("accessToken", "test-token-123")');
+        
+        setApiError('로그인이 필요합니다. 로그인 페이지로 이동하세요.');
+        return;
+      }
+      
+      console.log('🔍 API 호출: 사용자 정보 조회');
+      
+      const response = await AuthAPI.getUserInfo();
+      console.log('✅ API 응답: 사용자 정보 조회 성공', response);
+      
+      if (response.result) {
+        setApiUserInfo(response.result);
+        console.log('👤 사용자 정보 설정:', response.result);
+        
+        // API에서 가져온 정보로 Redux store도 업데이트
+        const currentDefaultData = getCurrentUserProfile();
+        const apiUserData = {
+          ...currentDefaultData,
+          name: response.result.name,
+          email: response.result.email,
+          birthDate: response.result.birth,
+          gender: response.result.gender === 'MALE' ? '남' : '여',
+          avatar: response.result.name ? response.result.name.charAt(0) : 'U'
+        };
+        setProfile(apiUserData as any);
+      }
+    } catch (error: any) {
+      console.error('❌ API 호출 실패: 사용자 정보 조회', error);
+      
+            // 에러 타입별 처리 - 모든 에러를 콘솔에만 로그하고 UI에는 표시하지 않음
+            if (error.response?.status === 401) {
+              console.log('🔑 401 에러: 토큰 재발급 시도 중...');
+            } else if (error.response?.status === 403) {
+              console.log('🚫 403 에러: 접근 권한이 없습니다.');
+            } else if (error.code === 'NETWORK_ERROR' || !error.response) {
+              console.log('🌐 네트워크 에러: 연결을 확인해주세요.');
+            } else {
+              console.log('❌ 사용자 정보 조회 실패:', error.message || '알 수 없는 오류');
+            }
+    } finally {
+      setApiLoading(false);
+    }
+  }, [getCurrentUserProfile, setProfile]);
 
-  // 현재 표시할 사용자 데이터 (localStorage > profile > user > defaultUserData 순으로 우선순위)
+  const defaultUserData = useMemo(() => getCurrentUserProfile(), [getCurrentUserProfile]);
+
+  // 현재 표시할 사용자 데이터 (API > localStorage > profile > user > defaultUserData 순으로 우선순위)
   const currentUserData = useMemo(() => {
-    // localStorage에서 직접 확인 (가장 확실한 방법)
+    // API에서 가져온 사용자 정보가 있으면 우선 사용
+    if (apiUserInfo) {
+      console.log('🌐 ProfileModification - API 사용자 데이터 사용:', apiUserInfo);
+      const userData = {
+        ...defaultUserData,
+        name: apiUserInfo.name,
+        email: apiUserInfo.email,
+        birthDate: apiUserInfo.birth,
+        gender: apiUserInfo.gender === 'MALE' ? '남' : '여',
+        avatar: apiUserInfo.name ? apiUserInfo.name.charAt(0) : 'U'
+      };
+      return userData;
+    }
+    
+    // localStorage에서 직접 확인
     const localStorageUser = localStorage.getItem('user');
     if (localStorageUser) {
       try {
@@ -99,14 +185,16 @@ const ProfileModification = () => {
     // 둘 다 없으면 기본 데이터 사용
     console.log('⚠️ ProfileModification - 기본 데이터 사용:', defaultUserData);
     return defaultUserData;
-  }, [user, profile]); // 의존성 배열 유지
+  }, [apiUserInfo, user, profile]); // apiUserInfo를 의존성 배열에 추가
 
   // 컴포넌트가 마운트되었는지 확인
   const [isMounted, setIsMounted] = useState<boolean>(false);
   
   useEffect(() => {
     setIsMounted(true);
-  }, []);
+    // 컴포넌트 마운트 시 API에서 사용자 정보 가져오기
+    fetchUserInfo();
+  }, [fetchUserInfo]);
 
   // 사용자 데이터 초기화 (한 번만 실행)
   useEffect(() => {
@@ -202,11 +290,11 @@ const ProfileModification = () => {
   };
 
   // 컴포넌트가 마운트되지 않았거나 로딩 중일 때
-  if (!isMounted || loading) {
+  if (!isMounted || loading || apiLoading) {
     return (
       <Container className="profile-modification-page" width="100vw">
         <div style={{ padding: '2rem', textAlign: 'center' }}>
-          {!isMounted ? '초기화 중...' : '로딩 중...'}
+          {!isMounted ? '초기화 중...' : apiLoading ? '사용자 정보를 불러오는 중...' : '로딩 중...'}
         </div>
       </Container>
     );
@@ -248,9 +336,27 @@ const ProfileModification = () => {
               onCancel={handleCancel}
               onFormDataChange={handleFormDataChange}
             />
-            {error && (
+            {(error || apiError) && (
               <div className="profile-error-message">
-                {error}
+                {apiError || error}
+                {apiError && apiError.includes('로그인이 필요합니다') && (
+                  <div style={{ marginTop: '8px' }}>
+                    <button 
+                      onClick={() => navigate('/login')}
+                      style={{
+                        padding: '8px 16px',
+                        fontSize: '14px',
+                        backgroundColor: '#007bff',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      로그인하러 가기
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>

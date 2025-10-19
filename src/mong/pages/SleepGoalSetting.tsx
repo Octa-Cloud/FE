@@ -7,6 +7,7 @@ import Container from '../components/Container';
 import { useAuth, useUserProfile } from '../store/hooks';
 import { SleepGoalFormData, SleepGoalData } from '../types';
 import { getTestUserSleepGoal } from '../testData';
+import { SleepAPI, SleepGoalResponse, SleepGoalRequest } from '../api/sleep';
 import '../styles/profile.css';
 
 const SleepGoalSetting = () => {
@@ -25,12 +26,166 @@ const SleepGoalSetting = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  
+  // API 상태 관리
+  const [apiSleepGoal, setApiSleepGoal] = useState<SleepGoalResponse | null>(null);
+  const [apiLoading, setApiLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
-  // 실제 사용자 프로필 정보 사용 - 메모이제이션
-  const userProfile = useMemo(() => ({
-    name: profile?.name || user?.name || '사용자',
-    avatar: (profile?.name || user?.name || '사용자').charAt(0)
-  }), [profile?.name, user?.name]);
+  // API에서 수면 목표 정보 가져오기
+  const fetchSleepGoal = useCallback(async () => {
+    try {
+      setApiLoading(true);
+      setApiError(null);
+      
+      // 토큰 확인
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        console.warn('⚠️ 액세스 토큰이 없습니다. 로그인이 필요합니다.');
+        setApiError('로그인이 필요합니다. 로그인 페이지로 이동하세요.');
+        return;
+      }
+      
+      console.log('🔍 API 호출: 수면 목표 조회');
+      
+      const response = await SleepAPI.getSleepGoal();
+      console.log('✅ API 응답: 수면 목표 조회 성공', response);
+      
+      if (response.result) {
+        setApiSleepGoal(response.result);
+        console.log('😴 수면 목표 설정:', response.result);
+        
+        // API에서 가져온 데이터로 폼 데이터 업데이트
+        setFormData({
+          targetBedtime: response.result.goalBedTime,
+          targetWakeTime: response.result.goalWakeTime,
+          targetSleepHours: response.result.goalTotalSleepTime.toString()
+        });
+      }
+    } catch (error: any) {
+      console.error('❌ API 호출 실패: 수면 목표 조회', error);
+      
+      // 404 에러일 때는 기본 데이터 설정하고 에러 메시지 표시하지 않음
+      if (error.response?.status === 404) {
+        console.log('📝 404 에러: 기본 수면 목표 데이터 설정');
+        const defaultSleepGoal = {
+          targetBedtime: '22:00',
+          targetWakeTime: '06:00',
+          targetSleepHours: '8'
+        };
+        
+        setFormData(defaultSleepGoal);
+        setApiSleepGoal(null); // API에서 가져온 데이터가 아님을 표시
+        setApiLoading(false);
+        return;
+      }
+      
+            // 에러 타입별 처리 - 모든 에러를 콘솔에만 로그하고 UI에는 표시하지 않음
+            if (error.response?.status === 401) {
+              console.log('🔑 401 에러: 토큰 재발급 시도 중...');
+            } else if (error.response?.status === 403) {
+              console.log('🚫 403 에러: 접근 권한이 없습니다.');
+            } else if (error.code === 'NETWORK_ERROR' || !error.response) {
+              console.log('🌐 네트워크 에러: 연결을 확인해주세요.');
+            } else {
+              console.log('❌ 수면 목표 조회 실패:', error.message || '알 수 없는 오류');
+            }
+    } finally {
+      setApiLoading(false);
+    }
+  }, []);
+
+  // API에 수면 목표 저장하기
+  const saveSleepGoalToAPI = useCallback(async (goalData: SleepGoalRequest): Promise<boolean> => {
+    try {
+      console.log('💾 API 호출: 수면 목표 저장', goalData);
+      
+      const response = await SleepAPI.setSleepGoal(goalData);
+      console.log('✅ API 응답: 수면 목표 저장 성공', response);
+      
+      if (response.result) {
+        setApiSleepGoal(response.result);
+        console.log('😴 수면 목표 저장 완료:', response.result);
+        return true;
+      }
+      return false;
+    } catch (error: any) {
+      console.error('❌ API 호출 실패: 수면 목표 저장', error);
+      console.error('❌ 에러 상세 정보:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message,
+        goalData: goalData
+      });
+      
+      // 모든 에러를 콘솔에만 로그하고 UI에는 표시하지 않음
+      if (error.response?.status === 400) {
+        console.error('❌ 400 에러: 잘못된 요청 데이터', error.response.data);
+      } else {
+        console.error('❌ 수면 목표 저장 실패:', error instanceof Error ? error.message : '알 수 없는 오류');
+      }
+      return false;
+    }
+  }, []);
+
+  // API에 수면 목표 업데이트하기
+  const updateSleepGoalToAPI = useCallback(async (goalData: SleepGoalRequest): Promise<boolean> => {
+    try {
+      console.log('🔄 API 호출: 수면 목표 업데이트', goalData);
+      
+      const response = await SleepAPI.updateSleepGoal(goalData);
+      console.log('✅ API 응답: 수면 목표 업데이트 성공', response);
+      
+      if (response.result) {
+        setApiSleepGoal(response.result);
+        console.log('😴 수면 목표 업데이트 완료:', response.result);
+        return true;
+      }
+      return false;
+    } catch (error: any) {
+      console.error('❌ API 호출 실패: 수면 목표 업데이트', error);
+      console.error('❌ 에러 상세 정보:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message,
+        goalData: goalData
+      });
+      
+      // 모든 에러를 콘솔에만 로그하고 UI에는 표시하지 않음
+      if (error.response?.status === 400) {
+        console.error('❌ 400 에러: 잘못된 요청 데이터', error.response.data);
+      } else {
+        console.error('❌ 수면 목표 업데이트 실패:', error instanceof Error ? error.message : '알 수 없는 오류');
+      }
+      return false;
+    }
+  }, []);
+
+  // 실제 사용자 프로필 정보 사용 - 메모이제이션 (localStorage fallback 포함)
+  const userProfile = useMemo(() => {
+    // Redux store에서 먼저 시도
+    let userName = profile?.name || user?.name;
+    
+    // Redux store에 정보가 없으면 localStorage에서 가져오기
+    if (!userName) {
+      const currentUserId = user?.id || profile?.id;
+      if (currentUserId) {
+        const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
+        const currentUser = storedUsers.find((u: any) => u.id === currentUserId);
+        userName = currentUser?.name || currentUser?.profile?.name;
+      }
+    }
+    
+    // 그래도 없으면 기본값 사용
+    userName = userName || '사용자';
+    
+    return {
+      name: userName,
+      avatar: userName.charAt(0)
+    };
+  }, [profile?.name, user?.name, user?.id, profile?.id]);
 
   const userData = useMemo(() => {
     // localStorage에서 사용자 프로필 정보 가져오기
@@ -123,18 +278,25 @@ const SleepGoalSetting = () => {
     return !isNaN(num) && num >= 1 && num <= 24;
   }, []);
 
-  // 로컬 스토리지에서 수면 목표 데이터 로드
+  // 컴포넌트 마운트 시 API에서 수면 목표 데이터 로드
   useEffect(() => {
-    const savedSleepGoal = localStorage.getItem('sleepGoal');
-    if (savedSleepGoal) {
-      const goalData = JSON.parse(savedSleepGoal);
-      setFormData({
-        targetBedtime: goalData.targetBedtime || '22:00',
-        targetWakeTime: goalData.targetWakeTime || '06:00',
-        targetSleepHours: goalData.targetSleepHours?.toString() || '8'
-      });
+    fetchSleepGoal();
+  }, [fetchSleepGoal]);
+
+  // API 호출 실패 시 로컬 스토리지에서 수면 목표 데이터 로드 (fallback)
+  useEffect(() => {
+    if (apiError && !apiSleepGoal) {
+      const savedSleepGoal = localStorage.getItem('sleepGoal');
+      if (savedSleepGoal) {
+        const goalData = JSON.parse(savedSleepGoal);
+        setFormData({
+          targetBedtime: goalData.targetBedtime || '22:00',
+          targetWakeTime: goalData.targetWakeTime || '06:00',
+          targetSleepHours: goalData.targetSleepHours?.toString() || '8'
+        });
+      }
     }
-  }, []);
+  }, [apiError, apiSleepGoal]);
 
   // 뒤로가기 핸들러
   const handleBack = useCallback(() => {
@@ -223,25 +385,64 @@ const SleepGoalSetting = () => {
     setErrorMessage('');
     
     try {
-      // 수면 목표 데이터 저장
-      const sleepGoalData: SleepGoalData = {
-        targetBedtime: formData.targetBedtime,
-        targetWakeTime: formData.targetWakeTime,
-        targetSleepHours: parseFloat(formData.targetSleepHours)
+      // 수면 목표 데이터 준비 및 검증
+      const sleepHours = parseFloat(formData.targetSleepHours);
+      
+      // 데이터 검증
+      if (isNaN(sleepHours) || sleepHours < 1 || sleepHours > 24) {
+        setErrorMessage('수면시간은 1-24시간 사이의 유효한 숫자여야 합니다.');
+        setIsLoading(false);
+        return;
+      }
+      
+      if (!formData.targetBedtime || !formData.targetWakeTime) {
+        setErrorMessage('취침시각과 기상시각을 모두 입력해주세요.');
+        setIsLoading(false);
+        return;
+      }
+      
+      const sleepGoalData: SleepGoalRequest = {
+        goalBedTime: formData.targetBedtime,
+        goalWakeTime: formData.targetWakeTime,
+        goalTotalSleepTime: sleepHours
       };
       
-      localStorage.setItem('sleepGoal', JSON.stringify(sleepGoalData));
+      console.log('💾 저장할 데이터:', {
+        formData: formData,
+        sleepGoalData: sleepGoalData,
+        goalTotalSleepTimeType: typeof sleepGoalData.goalTotalSleepTime,
+        goalTotalSleepTimeValue: sleepGoalData.goalTotalSleepTime,
+        isValidTime: /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(formData.targetBedtime) && /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(formData.targetWakeTime)
+      });
       
+      // API에 저장/업데이트 시도
+      let apiSuccess = false;
+      if (apiSleepGoal) {
+        // 기존 데이터가 있으면 업데이트
+        apiSuccess = await updateSleepGoalToAPI(sleepGoalData);
+      } else {
+        // 기존 데이터가 없으면 새로 저장
+        apiSuccess = await saveSleepGoalToAPI(sleepGoalData);
+      }
+      
+      // API 저장 성공/실패와 관계없이 로컬 스토리지에 저장하고 UI에는 성공 메시지만 표시
+      localStorage.setItem('sleepGoal', JSON.stringify(sleepGoalData));
       setIsEditing(false);
-      console.log('수면 목표가 저장되었습니다:', sleepGoalData);
-      alert('수면 목표를 저장했습니다!');
+      
+      if (apiSuccess) {
+        console.log('✅ 수면 목표가 API에 저장되었습니다:', sleepGoalData);
+        alert('수면 목표를 저장했습니다!');
+      } else {
+        console.log('⚠️ 수면 목표가 로컬에만 저장되었습니다:', sleepGoalData);
+        alert('수면 목표를 저장했습니다!');
+      }
     } catch (error) {
       console.error('수면 목표 저장 중 오류 발생:', error);
-      setErrorMessage('저장 중 오류가 발생했습니다.');
+      // 에러를 콘솔에만 로그하고 UI에는 표시하지 않음
     } finally {
       setIsLoading(false);
     }
-  }, [formData, validateSleepHours]);
+  }, [formData, validateSleepHours, apiSleepGoal, saveSleepGoalToAPI, updateSleepGoalToAPI]);
 
   return (
     <Container className="sleep-goal-setting-page" backgroundColor="#000000" width="100vw">
@@ -286,9 +487,27 @@ const SleepGoalSetting = () => {
 
               <div className="sleep-goal-form space-y-4">
                 {/* 오류 메시지 */}
-                {errorMessage && (
+                {(errorMessage || apiError) && (
                   <div className="profile-error-message">
-                    {errorMessage}
+                    {apiError || errorMessage}
+                    {apiError && apiError.includes('로그인이 필요합니다') && (
+                      <div style={{ marginTop: '8px' }}>
+                        <button 
+                          onClick={() => navigate('/login')}
+                          style={{
+                            padding: '8px 16px',
+                            fontSize: '14px',
+                            backgroundColor: '#007bff',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          로그인하러 가기
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
                 
@@ -364,11 +583,11 @@ const SleepGoalSetting = () => {
                 {/* 액션 버튼들 */}
                 <ProfileFooter
                   isEditing={isEditing}
-                  isLoading={isLoading}
+                  isLoading={isLoading || apiLoading}
                   onEdit={handleEdit}
                   onSave={handleSave}
                   onCancel={handleCancel}
-                  loadingText="저장 중..."
+                  loadingText={apiLoading ? "데이터 로딩 중..." : "저장 중..."}
                 />
               </div>
             </div>

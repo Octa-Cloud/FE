@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../store/hooks";
+import { authAPI, SignUpRequest } from "../api/auth";
 import AuthHeader from "../components/AuthHeader";
 import BaseInput from "../components/BaseInput";
 import InputWithButtons from "../components/InputWithButtons";
@@ -65,38 +66,62 @@ export default function SignupCard() {
   };
 
   // 이메일 입력 처리
-  const handleEmailSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleEmailSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (validateEmail(formData.email)) {
-      // 이메일 중복 검증
-      const existingUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
-      const duplicateEmail = existingUsers.find(user => user.email === formData.email);
-      
-      if (duplicateEmail) {
-        alert('이미 등록된 이메일입니다. 다른 이메일을 사용해주세요.');
-        return;
+      try {
+        console.log('🚀 이메일 인증 요청 시작:', formData.email);
+        // 이메일 인증 요청 API 호출
+        const response = await authAPI.sendVerificationEmail(formData.email);
+        console.log('✅ 이메일 인증 요청 성공:', response);
+        setEmailValid(true);
+        setVerificationSent(true);
+        setCurrentStep(2);
+        setErrorMessage('');
+      } catch (error: any) {
+        console.error('❌ 이메일 인증 요청 실패:', error);
+        console.error('❌ 에러 응답:', error.response?.data);
+        setErrorMessage(error.response?.data?.message || '이메일 인증 요청에 실패했습니다.');
       }
-      
-      setEmailValid(true);
-      setVerificationSent(true);
-      setCurrentStep(2);
     }
   };
 
   // 인증번호 입력 처리
-  const handleVerificationSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleVerificationSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (formData.verificationCode.length === 6) {
-      setVerificationValid(true);
-      setCurrentStep(3);
+      try {
+        console.log('🔐 이메일 인증 코드 검증 시작:', {
+          email: formData.email,
+          code: formData.verificationCode
+        });
+        // 이메일 인증 코드 검증 API 호출
+        const response = await authAPI.verifyEmail(formData.email, formData.verificationCode);
+        console.log('✅ 이메일 인증 코드 검증 성공:', response);
+        setVerificationValid(true);
+        setCurrentStep(3);
+        setErrorMessage('');
+      } catch (error: any) {
+        console.error('❌ 이메일 인증 코드 검증 실패:', error);
+        console.error('❌ 에러 응답:', error.response?.data);
+        setErrorMessage(error.response?.data?.message || '인증 코드가 올바르지 않습니다.');
+      }
     }
   };
 
   // 재전송 버튼 클릭
-  const handleResendClick = () => {
-    setShowResendMessage(true);
-    // 실제로는 여기서 재전송 API 호출
-    console.log("인증번호 재전송:", formData.email);
+  const handleResendClick = async () => {
+    try {
+      console.log('🔄 이메일 재전송 시작:', formData.email);
+      const response = await authAPI.sendVerificationEmail(formData.email);
+      console.log('✅ 이메일 재전송 성공:', response);
+      setShowResendMessage(true);
+      setErrorMessage('');
+    } catch (error: any) {
+      console.error('❌ 이메일 재전송 실패:', error);
+      console.error('❌ 에러 응답:', error.response?.data);
+      setErrorMessage(error.response?.data?.message || '이메일 재전송에 실패했습니다.');
+    }
   };
 
   // 중복 검증 함수
@@ -194,22 +219,41 @@ export default function SignupCard() {
       // 에러 메시지 초기화
       setErrorMessage('');
       
-      const userData = {
+      // 성별을 백엔드 형식으로 변환
+      const genderMapping = {
+        '남': 'MALE' as const,
+        '여': 'FEMALE' as const
+      };
+
+      const signUpData: SignUpRequest = {
         email: formData.email,
         password: formData.password,
         name: formData.name,
-        birthDate: `${formData.birthYear}-${formData.birthMonth}-${formData.birthDay}`,
-        gender: formData.gender as '남' | '여',
+        nickname: formData.name, // 현재는 이름을 닉네임으로 사용
+        gender: genderMapping[formData.gender as '남' | '여']
       };
 
-      await register(userData);
+      console.log('🚀 회원가입 시작:', signUpData);
+      await authAPI.signUp(signUpData);
       
       // 회원가입 성공 시 알림창 표시 후 대시보드로 이동
       alert('회원가입이 완료되었습니다! 반가워요!');
       navigate('/dashboard');
-    } catch (error) {
-      console.error('Registration failed:', error);
-      setErrorMessage('회원가입에 실패했습니다. 다시 시도해주세요.');
+    } catch (error: any) {
+      console.error('❌ 회원가입 실패:', error);
+      console.error('❌ 에러 응답:', error.response?.data);
+      
+      // 에러 코드별 메시지 처리
+      const errorCode = error.response?.data?.code;
+      const errorMessage = error.response?.data?.message;
+      
+      if (errorCode === 'AUTH009') {
+        setErrorMessage('이미 가입된 이메일입니다. 다른 이메일을 사용해주세요.');
+      } else if (errorCode === 'AUTH008') {
+        setErrorMessage('이메일 인증이 완료되지 않았습니다. 이메일 인증을 먼저 진행해주세요.');
+      } else {
+        setErrorMessage(errorMessage || '회원가입에 실패했습니다. 다시 시도해주세요.');
+      }
     }
   };
 

@@ -3,6 +3,10 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Provider, useDispatch } from 'react-redux';
 import { store, AppDispatch } from './store';
 import { restoreUser } from './store/slices/authSlice';
+import { setProfile } from './store/slices/userSlice';
+import { authAPI } from './api/auth';
+import { User } from './types';
+import { userStorage } from './utils/storage';
 import Home from './pages/Home';
 import SignUp from './pages/SignUp';
 import Login from './pages/Login';
@@ -16,7 +20,6 @@ import SleepSetup from './pages/SleepSetup';
 import SleepMeasuring from './pages/SleepMeasuring';
 import WakeUp from './pages/WakeUp';
 import WakeUpSummary from './pages/WakeUpSummary';
-import { User } from './types';
 import { initializeTestData } from './testData';
 import { initializeAdditionalTestData } from './DummyData';
 
@@ -124,6 +127,62 @@ function AppInitializer() {
     
     // 앱 시작 시 로컬 스토리지에서 사용자 정보 복원
     dispatch(restoreUser());
+    
+    // 토큰이 있으면 사용자 정보 자동 복원
+    const accessToken = localStorage.getItem('accessToken');
+    const refreshToken = localStorage.getItem('refreshToken');
+    
+    if (accessToken && refreshToken) {
+      console.log('🔑 토큰 발견: 사용자 정보 자동 복원 시도');
+      
+      // 토큰이 있으면 사용자 정보를 API에서 가져와서 Redux store에 설정
+      const restoreUserFromToken = async () => {
+        try {
+          console.log('👤 토큰으로 사용자 정보 조회 중...');
+          const userInfoResponse = await authAPI.getUserInfo();
+          console.log('✅ 토큰으로 사용자 정보 조회 성공:', userInfoResponse);
+          
+          if (userInfoResponse.result) {
+            // 성별 변환
+            const genderMap: Record<string, '남' | '여'> = {
+              'MALE': '남',
+              'FEMALE': '여'
+            };
+            
+            const user: User = {
+              id: userInfoResponse.result.email, // 임시로 이메일을 ID로 사용
+              email: userInfoResponse.result.email,
+              password: '', // 토큰 기반 복원에서는 비밀번호 없음
+              name: userInfoResponse.result.name,
+              birthDate: userInfoResponse.result.birth || '',
+              gender: genderMap[userInfoResponse.result.gender] || '남',
+              createdAt: new Date().toISOString(),
+            };
+            
+            // Redux store에 사용자 정보 설정
+            dispatch(setProfile(user));
+            
+            // localStorage에도 저장
+            userStorage.setCurrentUser(user);
+            
+            console.log('💾 토큰 기반 사용자 정보 복원 완료:', user);
+          }
+        } catch (error: any) {
+          console.error('❌ 토큰으로 사용자 정보 조회 실패:', error);
+          
+          // 토큰이 만료되었거나 유효하지 않은 경우 토큰 제거
+          if (error.response?.status === 401 || error.response?.status === 403) {
+            console.log('🧹 만료된 토큰 제거');
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+          }
+        }
+      };
+      
+      restoreUserFromToken();
+    } else {
+      console.log('🔍 토큰 없음: 로컬 스토리지에서만 사용자 정보 복원');
+    }
   }, [dispatch]); // dispatch는 안정적이므로 의존성 배열에 포함
 
   return (
