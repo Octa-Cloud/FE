@@ -59,6 +59,24 @@ export interface PeriodicReportResponse {
   scorePrediction: number[];  // 점수 예측 배열
 }
 
+// 일간 리포트 응답 타입
+export interface DailyReportResponse {
+  deepSleepTime: number;        // 깊은 수면 시간 (분 단위)
+  lightSleepTime: number;       // 얕은 수면 시간 (분 단위)
+  remSleepTime: number;         // REM 수면 시간 (분 단위)
+  deepSleepRatio: number;       // 깊은 수면 비율
+  lightSleepRatio: number;      // 얕은 수면 비율
+  remSleepRatio: number;        // REM 수면 비율
+  memo: string;                 // 사용자 메모
+  microwaveGrades: number[];    // 뇌파 평균 값 배열
+  noiseEventTypes: string[];    // 소음 이벤트 유형들
+  analysisTitle: string;        // 분석 제목
+  analysisDescription: string;  // 분석 설명
+  analysisSteps: string[];      // 분석 단계들
+  analysisDifficulty: string;   // 분석 난이도
+  analysisEffect: string;       // 분석 효과
+}
+
 // API 응답 타입
 export interface BaseResponse<T> {
   timestamp: string;
@@ -182,6 +200,21 @@ export class SleepAPI {
     );
     return response.data;
   }
+
+  /**
+   * 일간 리포트 조회
+   */
+  static async getDailyReport(date: string): Promise<BaseResponse<DailyReportResponse>> {
+    const response = await apiClient.get<BaseResponse<DailyReportResponse>>(
+      '/api/sleep/report/daily',
+      {
+        params: {
+          date
+        }
+      }
+    );
+    return response.data;
+  }
 }
 
 // 편의 함수들
@@ -194,4 +227,5 @@ export const sleepAPI = {
   getMonthlySleepSummary: SleepAPI.getMonthlySleepSummary,
   getWeeklyReport: SleepAPI.getWeeklyReport,
   getMonthlyReport: SleepAPI.getMonthlyReport,
+  getDailyReport: SleepAPI.getDailyReport,
 };

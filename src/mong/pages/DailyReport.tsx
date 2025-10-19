@@ -6,8 +6,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorBoundary from '../components/ErrorBoundary';
 import BrainwaveChart from '../components/charts/BrainwaveChart';
 import { useAuth, useUserProfile } from '../store/hooks';
-import { getSleepRecordByDate, getSleepRecordsByMonth, getSleepStatus as getSleepStatusByScore } from '../sleepData';
-import { DailySleepRecord } from '../types/sleepData';
+import { sleepAPI, DailyReportResponse } from '../api/sleep';
 import { WEEKDAYS_KR } from '../constants/sleep';
 import '../styles/statistics.css';
 import '../styles/daily-report.css';
@@ -42,44 +41,129 @@ const DailyReport: React.FC = () => {
   });
 
   // 현재 날짜의 수면 데이터
-  const [reportData, setReportData] = useState<DailySleepRecord | null>(null);
+  const [reportData, setReportData] = useState<DailyReportResponse | null>(null);
 
-  // 현재 월의 수면 데이터 (캘린더 표시용)
-  const [monthlyData, setMonthlyData] = useState<DailySleepRecord[]>([]);
+  // 현재 날짜의 summary 데이터 (취침/기상 시간용)
+  const [summaryData, setSummaryData] = useState<any>(null);
+
+  // 현재 월의 수면 데이터 (캘린더 표시용) - summary API 사용
+  const [monthlyData, setMonthlyData] = useState<any[]>([]);
 
   // 데이터 로드
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
       try {
-        if (user?.id && date) {
-          // 실제로는 비동기 API 호출이 될 수 있음
-          await new Promise(resolve => setTimeout(resolve, 100));
-          const record = getSleepRecordByDate(user.id, date);
-          setReportData(record);
+        // 토큰 확인
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+          console.log('토큰이 없습니다.');
+          return;
         }
-      } catch (error) {
-        console.error('데이터 로드 오류:', error);
-        setReportData(null);
+
+        if (date) {
+          console.log('🔍 API 호출: 일간 리포트 조회', { date });
+
+          // 일간 리포트 조회
+          const response = await sleepAPI.getDailyReport(date);
+          console.log('✅ API 응답: 일간 리포트 조회 성공', response);
+          
+          if (response.result) {
+            setReportData(response.result);
+            console.log('📊 일간 리포트 설정:', response.result);
+          } else {
+            console.log('📝 일간 리포트 데이터가 없습니다.');
+            setReportData(null);
+          }
+
+          // 해당 날짜의 summary 데이터도 조회 (취침/기상 시간용)
+          const dateObj = new Date(date);
+          const year = dateObj.getFullYear();
+          const month = dateObj.getMonth() + 1;
+          
+          console.log('🔍 API 호출: 월별 수면 요약 조회 (단일 날짜용)', { year, month });
+          
+          const summaryResponse = await sleepAPI.getMonthlySleepSummary(year, month);
+          console.log('✅ API 응답: 월별 수면 요약 조회 성공', summaryResponse);
+          
+          if (summaryResponse.result && summaryResponse.result.length > 0) {
+            // 해당 날짜의 데이터 찾기
+            const dayData = summaryResponse.result.find((item: any) => item.date === date);
+            if (dayData) {
+              setSummaryData(dayData);
+              console.log('📊 일간 summary 데이터 설정:', dayData);
+            } else {
+              console.log('📝 해당 날짜의 summary 데이터가 없습니다.');
+              setSummaryData(null);
+            }
+          } else {
+            console.log('📝 해당 월의 summary 데이터가 없습니다.');
+            setSummaryData(null);
+          }
+        }
+      } catch (error: any) {
+        console.error('❌ 일간 리포트 API 호출 실패:', error);
+        
+        // 404 에러일 때는 해당 날짜에 데이터가 없음을 로그로 남기고 null 설정
+        if (error.response?.status === 404) {
+          console.log('📝 404 에러: 해당 날짜의 리포트가 없습니다.');
+          setReportData(null);
+          setSummaryData(null);
+        } else {
+          console.log('⚠️ API 호출 실패: 일간 리포트 데이터 없음');
+          setReportData(null);
+          setSummaryData(null);
+        }
       } finally {
         setIsLoading(false);
       }
     };
     
     loadData();
-  }, [user?.id, date]);
+  }, [date]);
 
-  // 월별 데이터 로드 (캘린더용)
+  // 월별 데이터 로드 (캘린더용) - summary API 사용
   useEffect(() => {
-    if (user?.id) {
-      const records = getSleepRecordsByMonth(
-        user.id,
-        currentMonth.getFullYear(),
-        currentMonth.getMonth() + 1
-      );
-      setMonthlyData(records);
-    }
-  }, [user?.id, currentMonth]);
+    const loadMonthlyData = async () => {
+      try {
+        // 토큰 확인
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+          console.log('토큰이 없습니다.');
+          return;
+        }
+
+        const year = currentMonth.getFullYear();
+        const month = currentMonth.getMonth() + 1;
+        console.log('🔍 API 호출: 월별 수면 요약 조회', { year, month });
+
+        // 월별 수면 요약 데이터 가져오기
+        const response = await sleepAPI.getMonthlySleepSummary(year, month);
+        console.log('✅ API 응답: 월별 수면 요약 조회 성공', response);
+        
+        if (response.result && response.result.length > 0) {
+          setMonthlyData(response.result);
+          console.log('📊 월별 데이터 설정:', response.result.length, '개 기록');
+        } else {
+          console.log('📝 해당 월의 수면 기록이 없습니다.');
+          setMonthlyData([]);
+        }
+      } catch (error: any) {
+        console.error('❌ 월별 수면 요약 API 호출 실패:', error);
+        
+        // 404 에러일 때는 해당 월에 데이터가 없음을 로그로 남기고 빈 배열 설정
+        if (error.response?.status === 404) {
+          console.log('📝 404 에러: 해당 월의 수면 기록이 없습니다.');
+          setMonthlyData([]);
+        } else {
+          console.log('⚠️ API 호출 실패: 월별 데이터 없음');
+          setMonthlyData([]);
+        }
+      }
+    };
+
+    loadMonthlyData();
+  }, [currentMonth]);
 
   const handleStartSleepRecord = useCallback(() => {
     console.log('수면 기록 시작');
@@ -567,13 +651,13 @@ const DailyReport: React.FC = () => {
                 <div className="score-card primary-border">
                   <div className="score-content">
                     <div className="score-icon">
-                      <span>{reportData.sleepScore}</span>
+                      <span>{reportData ? Math.round((reportData.deepSleepRatio + reportData.lightSleepRatio + reportData.remSleepRatio) * 10) : 0}</span>
                     </div>
                     <h2>수면 점수</h2>
-                    <span className={`score-badge ${getScoreBadgeColor(reportData.sleepScore)}`}>
-                      {getScoreLabel(reportData.sleepScore)}
+                    <span className={`score-badge ${reportData ? getScoreBadgeColor(Math.round((reportData.deepSleepRatio + reportData.lightSleepRatio + reportData.remSleepRatio) * 10)) : 'gray'}`}>
+                      {reportData ? getScoreLabel(Math.round((reportData.deepSleepRatio + reportData.lightSleepRatio + reportData.remSleepRatio) * 10)) : '데이터 없음'}
                     </span>
-                    <p>전체 평균보다 높은 점수입니다</p>
+                    <p>{reportData ? '수면 품질 분석 완료' : '수면 데이터가 없습니다'}</p>
                   </div>
                 </div>
 
@@ -581,7 +665,7 @@ const DailyReport: React.FC = () => {
                 <div className="sleep-info-card">
                   <div className="card-header">
                     <h4>수면 시간 정보</h4>
-                    <p>{reportData.date ? new Date(reportData.date).toLocaleDateString('ko-KR', { 
+                    <p>{date ? new Date(date).toLocaleDateString('ko-KR', { 
                       year: 'numeric', 
                       month: 'long', 
                       day: 'numeric'
@@ -596,8 +680,8 @@ const DailyReport: React.FC = () => {
                         <span>취침 시간</span>
                       </div>
                       <div className="sleep-info-value">
-                        <div className="value">{reportData.bedtime}</div>
-                        <p>{reportData.sleepScore >= 85 ? '목표 시간 달성' : '목표보다 늦음'}</p>
+                        <div className="value">{summaryData ? summaryData.bedTime : '--:--'}</div>
+                        <p>{summaryData ? '취침 시간' : '데이터 없음'}</p>
                       </div>
                     </div>
                     <div className="sleep-info-item">
@@ -609,8 +693,8 @@ const DailyReport: React.FC = () => {
                         <span>총 수면 시간</span>
                       </div>
                       <div className="sleep-info-value">
-                        <div className="value">{reportData.sleepTime}</div>
-                        <p>{reportData.sleepTimeHours >= 7 ? '충분한 수면' : '수면 부족'}</p>
+                        <div className="value">{reportData ? `${Math.round((reportData.deepSleepTime + reportData.lightSleepTime + reportData.remSleepTime) / 60)}시간 ${(reportData.deepSleepTime + reportData.lightSleepTime + reportData.remSleepTime) % 60}분` : '--:--'}</div>
+                        <p>{reportData ? '총 수면 시간' : '데이터 없음'}</p>
                       </div>
                     </div>
                     <div className="sleep-info-item">
@@ -629,8 +713,8 @@ const DailyReport: React.FC = () => {
                         <span>기상 시간</span>
                       </div>
                       <div className="sleep-info-value">
-                        <div className="value">{reportData.wakeTime}</div>
-                        <p>기상 완료</p>
+                        <div className="value">{summaryData ? summaryData.wakeTime : '--:--'}</div>
+                        <p>{summaryData ? '기상 시간' : '데이터 없음'}</p>
                       </div>
                     </div>
                   </div>
@@ -645,19 +729,19 @@ const DailyReport: React.FC = () => {
                   <div className="sleep-stages-list">
                     <div className="sleep-stage-item">
                       <span>깊은 수면</span>
-                      <span>{reportData.sleepStages.deep}</span>
+                      <span>{reportData ? `${reportData.deepSleepTime}분` : '--분'}</span>
                     </div>
                     <div className="sleep-stage-item">
                       <span>얕은 수면</span>
-                      <span>{reportData.sleepStages.light}</span>
+                      <span>{reportData ? `${reportData.lightSleepTime}분` : '--분'}</span>
                     </div>
                     <div className="sleep-stage-item">
                       <span>REM 수면</span>
-                      <span>{reportData.sleepStages.rem}</span>
+                      <span>{reportData ? `${reportData.remSleepTime}분` : '--분'}</span>
                     </div>
                     <div className="sleep-stage-item total">
-                      <span>수면 효율</span>
-                      <span>{reportData.sleepEfficiency}%</span>
+                      <span>총 수면 시간</span>
+                      <span>{reportData ? `${Math.round((reportData.deepSleepTime + reportData.lightSleepTime + reportData.remSleepTime) / 60)}시간 ${(reportData.deepSleepTime + reportData.lightSleepTime + reportData.remSleepTime) % 60}분` : '--시간 --분'}</span>
                     </div>
                   </div>
                 </div>
@@ -671,24 +755,24 @@ const DailyReport: React.FC = () => {
                   <div className="sleep-ratios-grid">
                     <div className="sleep-ratio-item">
                       <div className="ratio-icon blue">
-                        <span>{reportData.sleepRatios.deep}%</span>
+                        <span>{reportData ? Math.round(reportData.deepSleepRatio) : 0}%</span>
                       </div>
                       <p className="ratio-label">깊은 수면</p>
-                      <p className="ratio-status">이상적</p>
+                      <p className="ratio-status">{reportData ? '이상적' : '데이터 없음'}</p>
                     </div>
                     <div className="sleep-ratio-item">
                       <div className="ratio-icon green">
-                        <span>{reportData.sleepRatios.light}%</span>
+                        <span>{reportData ? Math.round(reportData.lightSleepRatio) : 0}%</span>
                       </div>
                       <p className="ratio-label">얕은 수면</p>
-                      <p className="ratio-status">양호</p>
+                      <p className="ratio-status">{reportData ? '양호' : '데이터 없음'}</p>
                     </div>
                     <div className="sleep-ratio-item">
                       <div className="ratio-icon purple">
-                        <span>{reportData.sleepRatios.rem}%</span>
+                        <span>{reportData ? Math.round(reportData.remSleepRatio) : 0}%</span>
                       </div>
                       <p className="ratio-label">REM 수면</p>
-                      <p className="ratio-status">정상</p>
+                      <p className="ratio-status">{reportData ? '정상' : '데이터 없음'}</p>
                     </div>
                   </div>
                 </div>
@@ -729,7 +813,27 @@ const DailyReport: React.FC = () => {
                         </div>
                       }
                     >
-                      <BrainwaveChart brainwaveAnalysis={reportData.brainwaveAnalysis} />
+                      <BrainwaveChart brainwaveAnalysis={reportData ? {
+                        totalDuration: `${Math.round((reportData.deepSleepTime + reportData.lightSleepTime + reportData.remSleepTime) / 60)}시간 ${(reportData.deepSleepTime + reportData.lightSleepTime + reportData.remSleepTime) % 60}분`,
+                        averageLevel: reportData.microwaveGrades.length > 0 ? (reportData.microwaveGrades.reduce((a, b) => a + b, 0) / reportData.microwaveGrades.length).toFixed(1) : '0.0',
+                        deepSleepRatio: reportData.deepSleepRatio,
+                        lightSleepRatio: reportData.lightSleepRatio,
+                        remSleepRatio: reportData.remSleepRatio,
+                        awakeRatio: 0,
+                        dataPoints: reportData.microwaveGrades.map((grade, index) => ({
+                          time: `${Math.floor((index * 5) / 60).toString().padStart(2, '0')}:${((index * 5) % 60).toString().padStart(2, '0')}`,
+                          level: grade <= 20 ? 'A' : grade <= 40 ? 'B' : grade <= 60 ? 'C' : grade <= 80 ? 'D' : 'E',
+                          intensity: grade
+                        }))
+                      } : {
+                        totalDuration: '0시간 0분',
+                        averageLevel: '0.0',
+                        deepSleepRatio: 0,
+                        lightSleepRatio: 0,
+                        remSleepRatio: 0,
+                        awakeRatio: 0,
+                        dataPoints: []
+                      }} />
                     </ErrorBoundary>
                   </div>
                   <div className="brainwave-legend">
@@ -754,18 +858,18 @@ const DailyReport: React.FC = () => {
                       </button>
                     </div>
                     <div className="noise-events-grid">
-                      {reportData?.noiseEvents && reportData.noiseEvents.length > 0 ? (
+                      {reportData?.noiseEventTypes && reportData.noiseEventTypes.length > 0 ? (
                         <div className="grid grid-cols-2 gap-3">
-                          {reportData.noiseEvents.map((event, index) => (
+                          {reportData.noiseEventTypes.map((eventType, index) => (
                           <div key={index} className="flex items-center gap-2 text-base">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary">
-                              {event.icon === 'user' && (
+                              {eventType === 'user' && (
                                 <>
                                   <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
                                   <circle cx="12" cy="7" r="4"/>
                                 </>
                               )}
-                              {event.icon === 'air-vent' && (
+                              {eventType === 'air-vent' && (
                                 <>
                                   <path d="M18 17.5a2.5 2.5 0 1 1-4 2.03V12"/>
                                   <path d="M6 12H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
@@ -773,7 +877,7 @@ const DailyReport: React.FC = () => {
                                   <path d="M6.6 15.572A2 2 0 1 0 10 17v-5"/>
                                 </>
                               )}
-                              {event.icon === 'car' && (
+                              {eventType === 'car' && (
                                 <>
                                   <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
                                   <circle cx="7" cy="17" r="2"/>
@@ -781,7 +885,7 @@ const DailyReport: React.FC = () => {
                                   <circle cx="17" cy="17" r="2"/>
                                 </>
                               )}
-                              {event.icon === 'bird' && (
+                              {eventType === 'bird' && (
                                 <>
                                   <path d="M16 7h.01"/>
                                   <path d="M21.2 8c.4 0 .8.3.8.8v2.4c0 .4-.3.8-.8.8-.1 0-.2 0-.3-.1l-1.1-1.1-1.1 1.1c-.1.1-.2.1-.3.1-.4 0-.8-.3-.8-.8V8.8c0-.4.3-.8.8-.8.1 0 .2 0 .3.1l1.1 1.1L20.9 8c.1-.1.2-.1.3-.1z"/>
@@ -789,7 +893,7 @@ const DailyReport: React.FC = () => {
                                 </>
                               )}
                             </svg>
-                            <span className="flex-1">{event.type}</span>
+                            <span className="flex-1">{eventType}</span>
                           </div>
                           ))}
                         </div>
@@ -809,7 +913,7 @@ const DailyReport: React.FC = () => {
                 </div>
 
                 {/* 수면 기록 메모 */}
-                {reportData.sleepMemo && (
+                {reportData?.memo && (
                   <div className="sleep-memo-card">
                     <div className="card-header">
                       <h4>
@@ -821,7 +925,7 @@ const DailyReport: React.FC = () => {
                       <p>이날 밤 수면에 대한 개인 기록</p>
                     </div>
                     <div className="memo-content">
-                      <p>{reportData.sleepMemo}</p>
+                      <p>{reportData.memo}</p>
                     </div>
                   </div>
                 )}
@@ -845,7 +949,7 @@ const DailyReport: React.FC = () => {
                         </div>
                       </div>
                       <p className="recommendation-description">
-                        현재 수면 패턴을 분석한 결과, 수면 환경 개선이 필요합니다. 뇌파 분석에서 깊은 수면 비율이 {reportData?.brainwaveAnalysis?.deepSleepRatio ?? 0}%로 나타났으며, 소음 이벤트가 {reportData?.noiseEvents?.length ?? 0}회 감지되었습니다. 규칙적인 취침 시간과 최적화된 수면 환경을 통해 수면의 질을 크게 향상시킬 수 있습니다.
+                        {reportData ? reportData.analysisDescription : '수면 데이터가 없어 분석할 수 없습니다.'}
                       </p>
                       <div className="text-[#00d4aa] text-sm font-medium mt-3">예상 기간: 2-3주</div>
                       <div className="recommendation-steps">
@@ -870,7 +974,7 @@ const DailyReport: React.FC = () => {
                         </div>
                       </div>
                       <p className="recommendation-description">
-                        수면 환경은 깊은 수면에 직접적인 영향을 미칩니다. 현재 깊은 수면 비율이 {reportData?.brainwaveAnalysis?.deepSleepRatio ?? 0}%로 나타났으며, 각성 상태가 {reportData?.brainwaveAnalysis?.awakeRatio ?? 0}% 감지되었습니다. 적절한 온도(18-20°C)는 체온 조절을 돕고, 완전한 암흑 상태는 멜라토닌 분비를 촉진합니다. 조용한 환경은 수면 중 각성을 방지해 연속적인 깊은 수면을 가능하게 합니다.
+                        {reportData ? reportData.analysisDescription : '수면 환경 개선이 필요합니다.'}
                       </p>
                       <div className="text-[#00d4aa] text-sm font-medium mt-3">예상 기간: 1주</div>
                       <div className="recommendation-steps">
@@ -895,7 +999,7 @@ const DailyReport: React.FC = () => {
                         </div>
                       </div>
                       <p className="recommendation-description">
-                        현재 수면 시간은 {reportData?.sleepTimeHours ?? 0}시간으로 나타났으며, 수면 효율은 {reportData?.sleepEfficiency ?? 0}%입니다. 뇌파 분석에서 REM 수면 비율이 {reportData?.brainwaveAnalysis?.remSleepRatio ?? 0}%로 측정되었습니다. 카페인은 6-8시간 동안 체내에 머물며 잠들기 어렵게 만들고, 블루라이트는 멜라토닌 분비를 억제합니다. 취침 전 차분한 활동은 교감신경을 진정시켜 자연스러운 수면 유도에 도움이 됩니다.
+                        {reportData ? reportData.analysisDescription : '수면 패턴 개선이 필요합니다.'}
                       </p>
                       <div className="text-[#00d4aa] text-sm font-medium mt-3">예상 기간: 1-2주</div>
                       <div className="recommendation-steps">
